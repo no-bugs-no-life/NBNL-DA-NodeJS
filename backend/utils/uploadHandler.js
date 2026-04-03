@@ -1,0 +1,70 @@
+let multer = require('multer')
+let path = require('path')
+
+//storage - luu o dau, luu ten gi
+let storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, 'uploads/')
+    },
+    filename: function (req, file, cb) {
+        let ext = path.extname(file.originalname)
+        let fileName = Date.now() + "-" + Math.round(Math.random() * 1000_000_000) + ext;
+        cb(null, fileName)
+    }
+})
+let filterImage = function (req, file, cb) {
+    if (file.mimetype.includes("image")) {
+        cb(null, true)
+    } else {
+        cb(new Error("file sai dinh dang"), false)
+    }
+}
+let filterExcel = function (req, file, cb) {
+    if (file.mimetype.includes("spreadsheetml")) {
+        cb(null, true)
+    } else {
+        cb(new Error("file sai dinh dang"), false)
+    }
+}
+
+let filterApk = function (req, file, cb) {
+    let ext = path.extname(file.originalname).toLowerCase();
+    if (ext === ".apk" || file.mimetype.includes("application/vnd.android.package-archive")) {
+        cb(null, true)
+    } else {
+        cb(new Error("Chi chap nhan file .apk"), false)
+    }
+}
+
+let filterIpa = function (req, file, cb) {
+    let ext = path.extname(file.originalname).toLowerCase();
+    if (ext === ".ipa" || file.mimetype.includes("application/octet-stream")) {
+        cb(null, true)
+    } else {
+        cb(new Error("Chi chap nhan file .ipa"), false)
+    }
+}
+
+module.exports = {
+    uploadImage: multer({
+        storage: storage,
+        limits: 5 * 1024 * 1024,
+        fileFilter: filterImage
+    }),
+    uploadExcel: multer({
+        storage: storage,
+        limits: 5 * 1024 * 1024,
+        fileFilter: filterExcel
+    }),
+    uploadApk: multer({
+        storage: storage,
+        limits: 200 * 1024 * 1024,   // 200MB
+        fileFilter: filterApk
+    }),
+    uploadIpa: multer({
+        storage: storage,
+        limits: 200 * 1024 * 1024,   // 200MB
+        fileFilter: filterIpa
+    })
+}
+
