@@ -29,7 +29,7 @@ let filterExcel = function (req, file, cb) {
 
 let filterApk = function (req, file, cb) {
     let ext = path.extname(file.originalname).toLowerCase();
-    if (ext === ".apk" || file.mimetype.includes("application/vnd.android.package-archive")) {
+    if (ext === ".apk") {
         cb(null, true)
     } else {
         cb(new Error("Chi chap nhan file .apk"), false)
@@ -38,7 +38,7 @@ let filterApk = function (req, file, cb) {
 
 let filterIpa = function (req, file, cb) {
     let ext = path.extname(file.originalname).toLowerCase();
-    if (ext === ".ipa" || file.mimetype.includes("application/octet-stream")) {
+    if (ext === ".ipa") {
         cb(null, true)
     } else {
         cb(new Error("Chi chap nhan file .ipa"), false)

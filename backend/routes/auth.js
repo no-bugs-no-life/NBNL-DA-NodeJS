@@ -95,12 +95,7 @@ router.post('/resetpassword/:token',resetPasswordValidator,validateResult, async
     user.forgotpasswordTokenExp = null;
     await user.save()
     res.send("update password thanh cong")
-
 })
-
-
-
-
 
 
 module.exports = router;

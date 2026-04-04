@@ -1,61 +1,86 @@
 var express = require('express');
 var router = express.Router();
-let { checkLogin, checkRole } = require('../utils/authHandler.js')
-let cartModel = require('../schemas/cart')
+let { checkLogin } = require('../utils/authHandler.js');
+let cartController = require('../controllers/carts');
 
-router.get('/', checkLogin, async function (req, res, next) {
-    let userId = req.userId;
-    let currentCart = await cartModel.findOne({
-        user: userId
-    });
-    res.send(currentCart.items)
-})
-router.post('/add-items', checkLogin, async function (req, res, next) {
-    let userId = req.userId;
-    let { product, quantity } = req.body;
-    let currentCart = await cartModel.findOne({
-        user: userId
-    });
-    let index = currentCart.items.findIndex(
-        function (e) {
-            return e.product == product;
+// ============================================================
+// GET /api/v1/carts                    - Get current user's cart
+// ============================================================
+router.get('/', checkLogin, async function (req, res) {
+    try {
+        let cart = await cartController.getCart(req.userId);
+        if (!cart) {
+            return res.send({ user: req.userId, items: [], totalPrice: 0 });
         }
-    )
-    if (index < 0) {
-        currentCart.items.push({
-            product: product,
-            quantity: quantity
-        });
-    } else {
-        currentCart.items[index].quantity += quantity
+        res.send(cart);
+    } catch (error) {
+        res.status(500).send({ message: error.message });
     }
-    await currentCart.save()
-    res.send(currentCart)
-})
-router.post('/decrease-items', checkLogin, async function (req, res, next) {
-    let userId = req.userId;
-    let { product, quantity } = req.body;
-    let currentCart = await cartModel.findOne({
-        user: userId
-    });
-    let index = currentCart.items.findIndex(
-        function (e) {
-            return e.product == product;
-        }
-    )
-    if (index < 0) {
+});
 
-    } else {
-        if (currentCart.items[index].quantity > quantity) {
-            currentCart.items[index].quantity -= quantity
-        } else {
-            if (currentCart.items[index].quantity == quantity) {
-                currentCart.items.splice(index, 1)
-            }
+// ============================================================
+// POST /api/v1/carts/items                      - Add app to cart
+// ============================================================
+router.post('/items', checkLogin, async function (req, res) {
+    try {
+        let { appId, itemType, plan, quantity } = req.body;
+        if (!appId) {
+            return res.status(400).send({ message: "appId la bat buoc" });
         }
+        let result = await cartController.addItem(req.userId, { appId, itemType, plan, quantity });
+        if (result && result.error) {
+            return res.status(result.code || 400).send({ message: result.error });
+        }
+        res.status(201).send(result);
+    } catch (error) {
+        res.status(400).send({ message: error.message });
     }
-    await currentCart.save()
-    res.send(currentCart)
-})
+});
+
+// ============================================================
+// PUT /api/v1/carts/items/:appId          - Update item in cart
+// ============================================================
+router.put('/items/:appId', checkLogin, async function (req, res) {
+    try {
+        let { quantity, plan } = req.body;
+        let result = await cartController.updateItem(req.userId, req.params.appId, { quantity, plan });
+        if (result && result.error) {
+            return res.status(result.code || 400).send({ message: result.error });
+        }
+        res.send(result);
+    } catch (error) {
+        res.status(400).send({ message: error.message });
+    }
+});
+
+// ============================================================
+// DELETE /api/v1/carts/items/:appId    - Remove item from cart
+// ============================================================
+router.delete('/items/:appId', checkLogin, async function (req, res) {
+    try {
+        let result = await cartController.removeItem(req.userId, req.params.appId);
+        if (result && result.error) {
+            return res.status(result.code || 400).send({ message: result.error });
+        }
+        res.send({ message: "Da xoa khoi gio hang", cart: result });
+    } catch (error) {
+        res.status(400).send({ message: error.message });
+    }
+});
+
+// ============================================================
+// DELETE /api/v1/carts             - Clear entire cart
+// ============================================================
+router.delete('/', checkLogin, async function (req, res) {
+    try {
+        let cart = await cartController.clearCart(req.userId);
+        if (!cart) {
+            return res.status(404).send({ message: "Cart not found" });
+        }
+        res.send({ message: "Gio hang da duoc xoa", cart });
+    } catch (error) {
+        res.status(500).send({ message: error.message });
+    }
+});
 
 module.exports = router;

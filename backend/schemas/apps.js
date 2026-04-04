@@ -38,6 +38,16 @@ const appSchema = new mongoose.Schema(
             type: String,
             default: ""
         },
+        price: {
+            type: Number,
+            min: 0,
+            default: 0
+        },
+        subscriptionPrice: {
+            type: Number,
+            min: 0,
+            default: 0
+        },
         isDeleted: {
             type: Boolean,
             default: false
