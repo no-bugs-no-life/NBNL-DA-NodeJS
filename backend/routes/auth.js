@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
 let userController = require('../controllers/users');
+let roleModel = require('../schemas/roles');
 let jwt = require('jsonwebtoken')
 let bcrypt = require('bcrypt')
 let { checkLogin } = require('../utils/authHandler.js')
@@ -11,15 +12,27 @@ let mailHandler = require('../utils/sendMailHandler')
 /* GET home page. */
 //localhost:3000
 router.post('/register', async function (req, res, next) {
-    let newUser = await userController.CreateAnUser(
-        req.body.username,
-        req.body.password,
-        req.body.email,
-        "69a5462f086d74c9e772b804"
-    )
-    res.send({
-        message: "dang ki thanh cong"
-    })
+    try {
+        let { username, password, email } = req.body;
+        if (!username || !password || !email) {
+            return res.status(400).send({ message: "username, password, email la bat buoc" });
+        }
+
+        // Tu dong lay hoac tao role USER
+        let userRole = await roleModel.findOne({ name: 'USER', isDeleted: false });
+        if (!userRole) {
+            userRole = new roleModel({ name: 'USER', description: 'Nguoi dung thong thuong' });
+            await userRole.save();
+        }
+
+        let newUser = await userController.CreateAnUser(username, password, email, userRole._id);
+        res.status(201).send({ message: "Dang ki thanh cong", userId: newUser._id });
+    } catch (error) {
+        if (error.code === 11000) {
+            return res.status(400).send({ message: "Username hoac email da ton tai" });
+        }
+        res.status(400).send({ message: error.message });
+    }
 });
 router.post('/login', async function (req, res, next) {
     let result = await userController.QueryByUserNameAndPassword(
