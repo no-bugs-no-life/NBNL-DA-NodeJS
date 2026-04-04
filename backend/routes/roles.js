@@ -2,7 +2,9 @@ var express = require("express");
 var router = express.Router();
 let roleController = require('../controllers/roles');
 
-router.get("/", async function (req, res, next) {
+router.get("/",
+    /* #swagger.tags = ['Roles'] */
+ async function (req, res, next) {
     try {
         let roles = await roleController.getAllRoles();
         res.send(roles);
@@ -11,7 +13,9 @@ router.get("/", async function (req, res, next) {
     }
 });
 
-router.get("/:id", async function (req, res, next) {
+router.get("/:id",
+    /* #swagger.tags = ['Roles'] */
+ async function (req, res, next) {
     try {
         let role = await roleController.getRoleById(req.params.id);
         if (!role) {
@@ -23,7 +27,9 @@ router.get("/:id", async function (req, res, next) {
     }
 });
 
-router.post("/", async function (req, res, next) {
+router.post("/",
+    /* #swagger.tags = ['Roles'] */
+ async function (req, res, next) {
     try {
         let newRole = await roleController.createRole(req.body.name, req.body.description);
         res.status(201).send(newRole);
@@ -32,7 +38,9 @@ router.post("/", async function (req, res, next) {
     }
 });
 
-router.put("/:id", async function (req, res, next) {
+router.put("/:id",
+    /* #swagger.tags = ['Roles'] */
+ async function (req, res, next) {
     try {
         let role = await roleController.updateRole(req.params.id, req.body);
         if (!role) {
@@ -44,7 +52,9 @@ router.put("/:id", async function (req, res, next) {
     }
 });
 
-router.delete("/:id", async function (req, res, next) {
+router.delete("/:id",
+    /* #swagger.tags = ['Roles'] */
+ async function (req, res, next) {
     try {
         let role = await roleController.deleteRole(req.params.id);
         if (!role) {

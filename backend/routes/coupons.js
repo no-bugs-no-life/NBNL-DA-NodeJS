@@ -10,7 +10,9 @@ let { checkLogin, checkRole } = require('../utils/authHandler.js');
 // ============================================================
 
 // List all coupons (ADMIN / MODERATOR only)
-router.get('/', checkLogin, checkRole('ADMIN', 'MODERATOR'), async function (req, res, next) {
+router.get('/',
+    /* #swagger.tags = ['Coupons'] */
+ checkLogin, checkRole('ADMIN', 'MODERATOR'), async function (req, res, next) {
     try {
         let coupons = await couponController.getAllCoupons(req.query);
         res.send(coupons);
@@ -20,7 +22,9 @@ router.get('/', checkLogin, checkRole('ADMIN', 'MODERATOR'), async function (req
 });
 
 // Validate coupon (any logged-in user)
-router.get('/validate', checkLogin, async function (req, res, next) {
+router.get('/validate',
+    /* #swagger.tags = ['Coupons'] */
+ checkLogin, async function (req, res, next) {
     try {
         let { code, appId, cartTotal } = req.query;
         if (!code) {
@@ -42,7 +46,9 @@ router.get('/validate', checkLogin, async function (req, res, next) {
 });
 
 // Get coupon by ID (ADMIN / MODERATOR only)
-router.get('/:id', checkLogin, checkRole('ADMIN', 'MODERATOR'), async function (req, res, next) {
+router.get('/:id',
+    /* #swagger.tags = ['Coupons'] */
+ checkLogin, checkRole('ADMIN', 'MODERATOR'), async function (req, res, next) {
     try {
         let coupon = await couponController.getCouponById(req.params.id);
         if (!coupon) {
@@ -60,7 +66,9 @@ router.get('/:id', checkLogin, checkRole('ADMIN', 'MODERATOR'), async function (
 // ============================================================
 
 // Create coupon (ADMIN / MODERATOR only)
-router.post('/', checkLogin, checkRole('ADMIN', 'MODERATOR'), async function (req, res, next) {
+router.post('/',
+    /* #swagger.tags = ['Coupons'] */
+ checkLogin, checkRole('ADMIN', 'MODERATOR'), async function (req, res, next) {
     try {
         let result = await couponController.createCoupon(req.body);
         if (result && result.error) {
@@ -73,7 +81,9 @@ router.post('/', checkLogin, checkRole('ADMIN', 'MODERATOR'), async function (re
 });
 
 // Apply coupon (login required)
-router.post('/apply', checkLogin, async function (req, res, next) {
+router.post('/apply',
+    /* #swagger.tags = ['Coupons'] */
+ checkLogin, async function (req, res, next) {
     try {
         let { code, appId, cartTotal } = req.body;
         if (!code) {
@@ -98,7 +108,9 @@ router.post('/apply', checkLogin, async function (req, res, next) {
 // PUT /api/v1/coupons/:id         - Update coupon (ADMIN/MOD only)
 // ============================================================
 
-router.put('/:id', checkLogin, checkRole('ADMIN', 'MODERATOR'), async function (req, res, next) {
+router.put('/:id',
+    /* #swagger.tags = ['Coupons'] */
+ checkLogin, checkRole('ADMIN', 'MODERATOR'), async function (req, res, next) {
     try {
         let result = await couponController.updateCoupon(req.params.id, req.body);
         if (result && result.error) {
@@ -114,7 +126,9 @@ router.put('/:id', checkLogin, checkRole('ADMIN', 'MODERATOR'), async function (
 // DELETE /api/v1/coupons/:id        - Soft delete coupon (ADMIN/MOD only)
 // ============================================================
 
-router.delete('/:id', checkLogin, checkRole('ADMIN', 'MODERATOR'), async function (req, res, next) {
+router.delete('/:id',
+    /* #swagger.tags = ['Coupons'] */
+ checkLogin, checkRole('ADMIN', 'MODERATOR'), async function (req, res, next) {
     try {
         let result = await couponController.deleteCoupon(req.params.id);
         if (result && result.error) {

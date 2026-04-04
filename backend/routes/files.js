@@ -14,7 +14,9 @@ let fs = require('fs');
 // ============================================================
 
 // List files (ADMIN/MOD or owner)
-router.get('/', checkLogin, async function (req, res, next) {
+router.get('/',
+    /* #swagger.tags = ['Files'] */
+ checkLogin, async function (req, res, next) {
     try {
         let user = await userController.FindUserById(req.userId);
         let isAdminOrMod = user && ['ADMIN', 'MODERATOR'].includes(user.role.name);
@@ -37,7 +39,9 @@ router.get('/', checkLogin, async function (req, res, next) {
 });
 
 // Get file detail (ADMIN/MOD or owner)
-router.get('/:id', checkLogin, async function (req, res, next) {
+router.get('/:id',
+    /* #swagger.tags = ['Files'] */
+ checkLogin, async function (req, res, next) {
     try {
         let file = await fileController.getFileById(req.params.id);
         if (!file) {
@@ -57,7 +61,9 @@ router.get('/:id', checkLogin, async function (req, res, next) {
 });
 
 // Download file (ADMIN/MOD or owner)
-router.get('/:id/download', checkLogin, async function (req, res, next) {
+router.get('/:id/download',
+    /* #swagger.tags = ['Files'] */
+ checkLogin, async function (req, res, next) {
     try {
         let file = await fileController.getFileById(req.params.id);
         if (!file) {
@@ -87,7 +93,9 @@ router.get('/:id/download', checkLogin, async function (req, res, next) {
 // ============================================================
 
 // Upload image
-router.post('/upload-image', checkLogin, uploadImage.single('file'), async function (req, res, next) {
+router.post('/upload-image',
+    /* #swagger.tags = ['Files'] */
+ checkLogin, uploadImage.single('file'), async function (req, res, next) {
     try {
         let { ownerType, ownerId, fileType } = req.body;
         if (!req.file) {
@@ -119,7 +127,9 @@ router.post('/upload-image', checkLogin, uploadImage.single('file'), async funct
 });
 
 // Upload APK
-router.post('/upload-apk', checkLogin, uploadApk.single('file'), async function (req, res, next) {
+router.post('/upload-apk',
+    /* #swagger.tags = ['Files'] */
+ checkLogin, uploadApk.single('file'), async function (req, res, next) {
     try {
         let { ownerType, ownerId } = req.body;
         if (!req.file) {
@@ -143,7 +153,9 @@ router.post('/upload-apk', checkLogin, uploadApk.single('file'), async function 
 });
 
 // Upload IPA
-router.post('/upload-ipa', checkLogin, uploadIpa.single('file'), async function (req, res, next) {
+router.post('/upload-ipa',
+    /* #swagger.tags = ['Files'] */
+ checkLogin, uploadIpa.single('file'), async function (req, res, next) {
     try {
         let { ownerType, ownerId } = req.body;
         if (!req.file) {
@@ -170,7 +182,9 @@ router.post('/upload-ipa', checkLogin, uploadIpa.single('file'), async function 
 // PUT /api/v1/files/:id           - Update file metadata (owner / ADMIN/MOD)
 // ============================================================
 
-router.put('/:id', checkLogin, async function (req, res, next) {
+router.put('/:id',
+    /* #swagger.tags = ['Files'] */
+ checkLogin, async function (req, res, next) {
     try {
         let user = await userController.FindUserById(req.userId);
         let isAdminOrMod = user && ['ADMIN', 'MODERATOR'].includes(user.role.name);
@@ -189,7 +203,9 @@ router.put('/:id', checkLogin, async function (req, res, next) {
 // DELETE /api/v1/files/:id       - Delete file + physical file (owner / ADMIN/MOD)
 // ============================================================
 
-router.delete('/:id', checkLogin, async function (req, res, next) {
+router.delete('/:id',
+    /* #swagger.tags = ['Files'] */
+ checkLogin, async function (req, res, next) {
     try {
         let user = await userController.FindUserById(req.userId);
         let isAdminOrMod = user && ['ADMIN', 'MODERATOR'].includes(user.role.name);

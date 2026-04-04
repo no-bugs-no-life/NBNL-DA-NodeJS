@@ -4,7 +4,9 @@ let categoryController = require('../controllers/categories');
 let { checkLogin, checkRole } = require('../utils/authHandler.js');
 
 /* GET all categories. */
-router.get('/', async function(req, res, next) {
+router.get('/',
+    /* #swagger.tags = ['Categories'] */
+ async function(req, res, next) {
   try {
     let categories = await categoryController.getAllCategories();
     res.send(categories);
@@ -14,7 +16,9 @@ router.get('/', async function(req, res, next) {
 });
 
 /* GET category by id. */
-router.get('/:id', async function(req, res, next) {
+router.get('/:id',
+    /* #swagger.tags = ['Categories'] */
+ async function(req, res, next) {
   try {
     let category = await categoryController.getCategoryById(req.params.id);
     if (category) {
@@ -28,7 +32,9 @@ router.get('/:id', async function(req, res, next) {
 });
 
 /* POST create category. */
-router.post('/', checkLogin, checkRole("ADMIN", "MODERATOR"), async function(req, res, next) {
+router.post('/',
+    /* #swagger.tags = ['Categories'] */
+ checkLogin, checkRole("ADMIN", "MODERATOR"), async function(req, res, next) {
   try {
     let { name, parentId, iconUrl } = req.body;
     let newCategory = await categoryController.createCategory(name, parentId, iconUrl);
@@ -39,7 +45,9 @@ router.post('/', checkLogin, checkRole("ADMIN", "MODERATOR"), async function(req
 });
 
 /* PUT update category. */
-router.put('/:id', checkLogin, checkRole("ADMIN", "MODERATOR"), async function(req, res, next) {
+router.put('/:id',
+    /* #swagger.tags = ['Categories'] */
+ checkLogin, checkRole("ADMIN", "MODERATOR"), async function(req, res, next) {
   try {
     let updatedCategory = await categoryController.updateCategory(req.params.id, req.body);
     if (!updatedCategory) {
@@ -52,7 +60,9 @@ router.put('/:id', checkLogin, checkRole("ADMIN", "MODERATOR"), async function(r
 });
 
 /* DELETE category. */
-router.delete('/:id', checkLogin, checkRole("ADMIN", "MODERATOR"), async function(req, res, next) {
+router.delete('/:id',
+    /* #swagger.tags = ['Categories'] */
+ checkLogin, checkRole("ADMIN", "MODERATOR"), async function(req, res, next) {
   try {
     let deletedCategory = await categoryController.deleteCategory(req.params.id);
     if (!deletedCategory) {

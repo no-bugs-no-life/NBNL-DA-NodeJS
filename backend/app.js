@@ -6,6 +6,14 @@ var logger = require('morgan');
 let mongoose = require('mongoose')
 
 var app = express();
+const swaggerUi = require('swagger-ui-express');
+try {
+  const swaggerFile = require('./scripts/swagger-output.json');
+  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerFile));
+} catch (e) {
+  console.log("swagger-output.json not found, skipping swagger UI");
+}
+
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));

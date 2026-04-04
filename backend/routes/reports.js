@@ -10,7 +10,9 @@ let { checkLogin, checkRole } = require('../utils/authHandler.js');
 // GET /api/v1/reports/:id                          - Get detail
 // ============================================================
 
-router.get('/', checkLogin, checkRole('ADMIN', 'MODERATOR'), async function (req, res, next) {
+router.get('/',
+    /* #swagger.tags = ['Reports'] */
+ checkLogin, checkRole('ADMIN', 'MODERATOR'), async function (req, res, next) {
     try {
         let reports = await reportController.getAllReports(req.query);
         res.send(reports);
@@ -19,7 +21,9 @@ router.get('/', checkLogin, checkRole('ADMIN', 'MODERATOR'), async function (req
     }
 });
 
-router.get('/my', checkLogin, async function (req, res, next) {
+router.get('/my',
+    /* #swagger.tags = ['Reports'] */
+ checkLogin, async function (req, res, next) {
     try {
         let reports = await reportController.getMyReports(req.userId, req.query);
         res.send(reports);
@@ -28,7 +32,9 @@ router.get('/my', checkLogin, async function (req, res, next) {
     }
 });
 
-router.get('/pending', checkLogin, checkRole('ADMIN', 'MODERATOR'), async function (req, res, next) {
+router.get('/pending',
+    /* #swagger.tags = ['Reports'] */
+ checkLogin, checkRole('ADMIN', 'MODERATOR'), async function (req, res, next) {
     try {
         let reports = await reportController.getPendingReports();
         res.send(reports);
@@ -37,7 +43,9 @@ router.get('/pending', checkLogin, checkRole('ADMIN', 'MODERATOR'), async functi
     }
 });
 
-router.get('/:id', checkLogin, async function (req, res, next) {
+router.get('/:id',
+    /* #swagger.tags = ['Reports'] */
+ checkLogin, async function (req, res, next) {
     try {
         let result = await reportController.getReportById(req.params.id, req.userId);
         if (result && result.error) return res.status(result.code || 400).send({ message: result.error });
@@ -51,7 +59,9 @@ router.get('/:id', checkLogin, async function (req, res, next) {
 // POST /api/v1/reports                                   - Create report
 // ============================================================
 
-router.post('/', checkLogin, async function (req, res, next) {
+router.post('/',
+    /* #swagger.tags = ['Reports'] */
+ checkLogin, async function (req, res, next) {
     try {
         let result = await reportController.createReport(req.userId, req.body);
         if (result && result.error) return res.status(result.code || 400).send({ message: result.error });
@@ -66,7 +76,9 @@ router.post('/', checkLogin, async function (req, res, next) {
 // PUT /api/v1/reports/:id/status             - Update status (ADMIN/MOD)
 // ============================================================
 
-router.put('/:id', checkLogin, checkRole('ADMIN', 'MODERATOR'), async function (req, res, next) {
+router.put('/:id',
+    /* #swagger.tags = ['Reports'] */
+ checkLogin, checkRole('ADMIN', 'MODERATOR'), async function (req, res, next) {
     try {
         let result = await reportController.updateReport(req.params.id, req.body);
         if (result && result.error) return res.status(result.code || 400).send({ message: result.error });
@@ -76,7 +88,9 @@ router.put('/:id', checkLogin, checkRole('ADMIN', 'MODERATOR'), async function (
     }
 });
 
-router.put('/:id/status', checkLogin, checkRole('ADMIN', 'MODERATOR'), async function (req, res, next) {
+router.put('/:id/status',
+    /* #swagger.tags = ['Reports'] */
+ checkLogin, checkRole('ADMIN', 'MODERATOR'), async function (req, res, next) {
     try {
         let { status } = req.body;
         if (!status) return res.status(400).send({ message: "status la bat buoc" });
@@ -92,7 +106,9 @@ router.put('/:id/status', checkLogin, checkRole('ADMIN', 'MODERATOR'), async fun
 // DELETE /api/v1/reports/:id     - Soft delete (ADMIN/MOD only)
 // ============================================================
 
-router.delete('/:id', checkLogin, checkRole('ADMIN', 'MODERATOR'), async function (req, res, next) {
+router.delete('/:id',
+    /* #swagger.tags = ['Reports'] */
+ checkLogin, checkRole('ADMIN', 'MODERATOR'), async function (req, res, next) {
     try {
         let result = await reportController.deleteReport(req.params.id);
         if (result && result.error) return res.status(result.code || 400).send({ message: result.error });

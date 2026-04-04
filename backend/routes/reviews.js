@@ -5,7 +5,9 @@ let reviewController = require('../controllers/reviews');
 let { checkLogin, checkRole } = require('../utils/authHandler.js');
 
 // GET /api/v1/reviews - List approved reviews (public)
-router.get('/', async function (req, res, next) {
+router.get('/',
+    /* #swagger.tags = ['Reviews'] */
+ async function (req, res, next) {
     try {
         let reviews = await reviewController.getAllReviews(req.query);
         res.send(reviews);
@@ -15,7 +17,9 @@ router.get('/', async function (req, res, next) {
 });
 
 // GET /api/v1/reviews/my - List user's own reviews
-router.get('/my', checkLogin, async function (req, res, next) {
+router.get('/my',
+    /* #swagger.tags = ['Reviews'] */
+ checkLogin, async function (req, res, next) {
     try {
         let reviews = await reviewController.getMyReviews(req.userId);
         res.send(reviews);
@@ -25,7 +29,9 @@ router.get('/my', checkLogin, async function (req, res, next) {
 });
 
 // GET /api/v1/reviews/pending - List pending reviews
-router.get('/pending', checkLogin, checkRole('ADMIN', 'MODERATOR'), async function (req, res, next) {
+router.get('/pending',
+    /* #swagger.tags = ['Reviews'] */
+ checkLogin, checkRole('ADMIN', 'MODERATOR'), async function (req, res, next) {
     try {
         let reviews = await reviewController.getPendingReviews();
         res.send(reviews);
@@ -35,7 +41,9 @@ router.get('/pending', checkLogin, checkRole('ADMIN', 'MODERATOR'), async functi
 });
 
 // GET /api/v1/reviews/:id - Get review detail
-router.get('/:id', checkLogin, async function (req, res, next) {
+router.get('/:id',
+    /* #swagger.tags = ['Reviews'] */
+ checkLogin, async function (req, res, next) {
     try {
         let review = await reviewController.getReviewById(req.params.id);
         if (!review) {
@@ -57,7 +65,9 @@ router.get('/:id', checkLogin, async function (req, res, next) {
 });
 
 // POST /api/v1/reviews - Create new review
-router.post('/', checkLogin, async function (req, res, next) {
+router.post('/',
+    /* #swagger.tags = ['Reviews'] */
+ checkLogin, async function (req, res, next) {
     try {
         let { appId, rating, comment } = req.body;
         let result = await reviewController.createReview({
@@ -73,7 +83,9 @@ router.post('/', checkLogin, async function (req, res, next) {
 });
 
 // PUT /api/v1/reviews/:id - Update own review
-router.put('/:id', checkLogin, async function (req, res, next) {
+router.put('/:id',
+    /* #swagger.tags = ['Reviews'] */
+ checkLogin, async function (req, res, next) {
     try {
         let result = await reviewController.updateReview(req.params.id, req.userId, req.body);
         if (result && result.error) {
@@ -90,7 +102,9 @@ router.put('/:id', checkLogin, async function (req, res, next) {
 });
 
 // DELETE /api/v1/reviews/:id - Soft delete own review
-router.delete('/:id', checkLogin, async function (req, res, next) {
+router.delete('/:id',
+    /* #swagger.tags = ['Reviews'] */
+ checkLogin, async function (req, res, next) {
     try {
         let result = await reviewController.deleteReview(req.params.id, req.userId);
         if (result && result.error) {
@@ -104,7 +118,9 @@ router.delete('/:id', checkLogin, async function (req, res, next) {
 });
 
 // POST /api/v1/reviews/:id/approve - Approve review
-router.post('/:id/approve', checkLogin, checkRole('ADMIN', 'MODERATOR'), async function (req, res, next) {
+router.post('/:id/approve',
+    /* #swagger.tags = ['Reviews'] */
+ checkLogin, checkRole('ADMIN', 'MODERATOR'), async function (req, res, next) {
     try {
         let review = await reviewController.approveReview(req.params.id);
         if (review && review.error) {
@@ -117,7 +133,9 @@ router.post('/:id/approve', checkLogin, checkRole('ADMIN', 'MODERATOR'), async f
 });
 
 // POST /api/v1/reviews/:id/reject - Reject review
-router.post('/:id/reject', checkLogin, checkRole('ADMIN', 'MODERATOR'), async function (req, res, next) {
+router.post('/:id/reject',
+    /* #swagger.tags = ['Reviews'] */
+ checkLogin, checkRole('ADMIN', 'MODERATOR'), async function (req, res, next) {
     try {
         let review = await reviewController.rejectReview(req.params.id);
         if (review && review.error) {

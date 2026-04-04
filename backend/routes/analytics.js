@@ -10,7 +10,9 @@ let { checkLogin } = require('../utils/authHandler.js');
 // ============================================================
 
 // List analytics with filters (developer: own apps only, ADMIN: all)
-router.get('/', checkLogin, async function (req, res, next) {
+router.get('/',
+    /* #swagger.tags = ['Analytics'] */
+ checkLogin, async function (req, res, next) {
     try {
         let result = await analyticsController.getAnalytics(req.query, req.userId);
         if (result && result.error) {
@@ -23,7 +25,9 @@ router.get('/', checkLogin, async function (req, res, next) {
 });
 
 // Get summary stats for an app (developer: own, ADMIN: all)
-router.get('/summary/:appId', checkLogin, async function (req, res, next) {
+router.get('/summary/:appId',
+    /* #swagger.tags = ['Analytics'] */
+ checkLogin, async function (req, res, next) {
     try {
         let result = await analyticsController.getSummary(req.params.appId, req.userId);
         if (result && result.error) {
@@ -36,7 +40,9 @@ router.get('/summary/:appId', checkLogin, async function (req, res, next) {
 });
 
 // Get analytics record detail (developer: own app, ADMIN: all)
-router.get('/:id', checkLogin, async function (req, res, next) {
+router.get('/:id',
+    /* #swagger.tags = ['Analytics'] */
+ checkLogin, async function (req, res, next) {
     try {
         let result = await analyticsController.getAnalyticsById(req.params.id, req.userId);
         if (result && result.error) {
@@ -53,7 +59,9 @@ router.get('/:id', checkLogin, async function (req, res, next) {
 // ============================================================
 
 // PUT /api/v1/analytics/daily - Upsert daily record (internal)
-router.put('/daily', async function (req, res, next) {
+router.put('/daily',
+    /* #swagger.tags = ['Analytics'] */
+ async function (req, res, next) {
     try {
         let result = await analyticsController.upsertDaily(req.body);
         if (result && result.error) {
@@ -66,7 +74,9 @@ router.put('/daily', async function (req, res, next) {
 });
 
 // POST /api/v1/analytics - Create new analytics record (internal)
-router.post('/', async function (req, res, next) {
+router.post('/',
+    /* #swagger.tags = ['Analytics'] */
+ async function (req, res, next) {
     try {
         let result = await analyticsController.createAnalytics(req.body);
         if (result && result.error) {
@@ -79,7 +89,9 @@ router.post('/', async function (req, res, next) {
 });
 
 // PUT /api/v1/analytics/:id - Update analytics record (internal)
-router.put('/:id', async function (req, res, next) {
+router.put('/:id',
+    /* #swagger.tags = ['Analytics'] */
+ async function (req, res, next) {
     try {
         let result = await analyticsController.updateAnalytics(req.params.id, req.body);
         if (result && result.error) {
@@ -92,7 +104,9 @@ router.put('/:id', async function (req, res, next) {
 });
 
 // DELETE /api/v1/analytics/:id - Delete analytics record (internal)
-router.delete('/:id', async function (req, res, next) {
+router.delete('/:id',
+    /* #swagger.tags = ['Analytics'] */
+ async function (req, res, next) {
     try {
         let result = await analyticsController.deleteAnalytics(req.params.id);
         if (result && result.error) {

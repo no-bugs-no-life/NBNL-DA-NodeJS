@@ -10,7 +10,9 @@ let userModel = require("../schemas/users");
 const { default: mongoose } = require("mongoose");
 //- Strong password
 
-router.get("/", checkLogin,
+router.get("/",
+    /* #swagger.tags = ['Users'] */
+ checkLogin,
   checkRole("ADMIN", "MODERATOR"), async function (req, res, next) {
     let users = await userModel
       .find({ isDeleted: false })
@@ -21,7 +23,9 @@ router.get("/", checkLogin,
     res.send(users);
   });
 
-router.get("/:id", checkLogin, async function (req, res, next) {
+router.get("/:id",
+    /* #swagger.tags = ['Users'] */
+ checkLogin, async function (req, res, next) {
   try {
     let result = await userModel
       .find({ _id: req.params.id, isDeleted: false })
@@ -36,7 +40,9 @@ router.get("/:id", checkLogin, async function (req, res, next) {
   }
 });
 
-router.post("/",  postUserValidator, validateResult,
+router.post("/",
+    /* #swagger.tags = ['Users'] */
+  postUserValidator, validateResult,
   async function (req, res, next) {
     let session = await mongoose.startSession()
     let transaction = session.startTransaction()
@@ -63,7 +69,9 @@ router.post("/",  postUserValidator, validateResult,
     }
   });
 
-router.put("/:id", async function (req, res, next) {
+router.put("/:id",
+    /* #swagger.tags = ['Users'] */
+ async function (req, res, next) {
   try {
     let id = req.params.id;
     let updatedItem = await userModel.findById(id);
@@ -82,7 +90,9 @@ router.put("/:id", async function (req, res, next) {
   }
 });
 
-router.delete("/:id", async function (req, res, next) {
+router.delete("/:id",
+    /* #swagger.tags = ['Users'] */
+ async function (req, res, next) {
   try {
     let id = req.params.id;
     let updatedItem = await userModel.findByIdAndUpdate(

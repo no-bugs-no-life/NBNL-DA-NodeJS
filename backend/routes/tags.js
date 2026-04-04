@@ -9,27 +9,43 @@ let tagsController = require('../controllers/tags');
 
 // GET /api/v1/tags
 // Lấy toàn bộ tags, hỗ trợ: ?search=&page=&limit=&sortBy=&order=
-router.get('/', tagsController.getAllTags);
+router.get('/',
+    /* #swagger.tags = ['Tags'] */
+ tagsController.getAllTags);
 
 
-router.get('/name/:name', tagsController.getAppsByTagName);
+router.get('/name/:name',
+    /* #swagger.tags = ['Tags'] */
+ tagsController.getAppsByTagName);
 
 
-router.get('/:id', tagsController.getTagById);
+router.get('/:id',
+    /* #swagger.tags = ['Tags'] */
+ tagsController.getTagById);
 
 
-router.post('/', checkLogin, checkRole('ADMIN', 'MODERATOR'), tagsController.createTag);
+router.post('/',
+    /* #swagger.tags = ['Tags'] */
+ checkLogin, checkRole('ADMIN', 'MODERATOR'), tagsController.createTag);
 
 
-router.put('/:id', checkLogin, checkRole('ADMIN', 'MODERATOR'), tagsController.updateTag);
+router.put('/:id',
+    /* #swagger.tags = ['Tags'] */
+ checkLogin, checkRole('ADMIN', 'MODERATOR'), tagsController.updateTag);
 
 
-router.delete('/:id', checkLogin, checkRole('ADMIN'), tagsController.deleteTag);
+router.delete('/:id',
+    /* #swagger.tags = ['Tags'] */
+ checkLogin, checkRole('ADMIN'), tagsController.deleteTag);
 
 
-router.post('/:id/apps', checkLogin, tagsController.addTagToApp);
+router.post('/:id/apps',
+    /* #swagger.tags = ['Tags'] */
+ checkLogin, tagsController.addTagToApp);
 
 
-router.delete('/:id/apps', checkLogin, tagsController.removeTagFromApp);
+router.delete('/:id/apps',
+    /* #swagger.tags = ['Tags'] */
+ checkLogin, tagsController.removeTagFromApp);
 
 module.exports = router;
