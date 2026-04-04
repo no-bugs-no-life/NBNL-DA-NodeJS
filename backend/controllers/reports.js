@@ -1,0 +1,126 @@
+let reportModel = require('../schemas/reports');
+let appModel = require('../schemas/apps');
+let reviewModel = require('../schemas/reviews');
+
+// Lay role cua user
+async function getUserRole(userId) {
+    let userController = require('./users');
+    let user = await userController.FindUserById(userId);
+    if (!user) return null;
+    return user.role ? user.role.name : null;
+}
+
+module.exports = {
+    // GET - List all reports
+    getAllReports: async function (queries) {
+        let { limit = 20, page = 1, status, targetType } = queries;
+        let filter = { isDeleted: false };
+        if (status) filter.status = status;
+        if (targetType) filter.targetType = targetType;
+
+        return await reportModel.find(filter)
+            .populate('reporterId', 'fullName email avatarUrl')
+            .sort({ createdAt: -1 })
+            .skip(parseInt(limit) * (parseInt(page) - 1))
+            .limit(parseInt(limit));
+    },
+
+    // GET - Reports by current user
+    getMyReports: async function (userId, queries) {
+        let { limit = 20, page = 1 } = queries;
+        return await reportModel.find({ reporterId: userId, isDeleted: false })
+            .sort({ createdAt: -1 })
+            .skip(parseInt(limit) * (parseInt(page) - 1))
+            .limit(parseInt(limit));
+    },
+
+    // GET - Pending reports
+    getPendingReports: async function () {
+        return await reportModel.find({ status: "pending", isDeleted: false })
+            .populate('reporterId', 'fullName email avatarUrl')
+            .sort({ createdAt: 1 });
+    },
+
+    // GET - Report detail
+    getReportById: async function (id, userId) {
+        let report = await reportModel.findOne({ _id: id, isDeleted: false })
+            .populate('reporterId', 'fullName email avatarUrl');
+        if (!report) return { error: "Report not found", code: 404 };
+
+        let role = await getUserRole(userId);
+        let isAdminOrMod = role && ['ADMIN', 'MODERATOR'].includes(role);
+        if (report.reporterId._id.toString() !== userId && !isAdminOrMod) {
+            return { error: "Ban khong co quyen xem report nay", code: 403 };
+        }
+        return report;
+    },
+
+    // POST - Create report
+    createReport: async function (userId, data) {
+        let { targetType, targetId, reason } = data;
+        if (!targetType || !targetId || !reason) {
+            return { error: "targetType, targetId va reason la bat buoc", code: 400 };
+        }
+
+        // Kiem tra target ton tai
+        if (targetType === 'app') {
+            let app = await appModel.findOne({ _id: targetId, isDeleted: false });
+            if (!app) return { error: "App khong ton tai", code: 404 };
+            if (app.developerId.toString() === userId) return { error: "Khong the bao cao app cua chinh minh", code: 400 };
+        } else if (targetType === 'review') {
+            let review = await reviewModel.findOne({ _id: targetId, isDeleted: false });
+            if (!review) return { error: "Review khong ton tai", code: 404 };
+            if (review.userId.toString() === userId) return { error: "Khong the bao cao review cua chinh minh", code: 400 };
+        } else {
+            return { error: "targetType khong hop le", code: 400 };
+        }
+
+        let newReport = new reportModel({
+            reporterId: userId,
+            targetType,
+            targetId,
+            reason,
+            status: "pending"
+        });
+        await newReport.save();
+        await newReport.populate('reporterId', 'fullName email avatarUrl');
+        return newReport;
+    },
+
+    // PUT - Update report
+    updateReport: async function (id, data) {
+        let report = await reportModel.findOne({ _id: id, isDeleted: false });
+        if (!report) return { error: "Report not found", code: 404 };
+
+        let allowedFields = ['reason', 'status'];
+        allowedFields.forEach(field => {
+            if (data[field] !== undefined) report[field] = data[field];
+        });
+        await report.save();
+        await report.populate('reporterId', 'fullName email avatarUrl');
+        return report;
+    },
+
+    // PUT - Update report status
+    updateReportStatus: async function (id, status) {
+        let report = await reportModel.findOne({ _id: id, isDeleted: false });
+        if (!report) return { error: "Report not found", code: 404 };
+
+        let validStatuses = ["pending", "reviewed", "resolved", "dismissed"];
+        if (!validStatuses.includes(status)) {
+            return { error: "status khong hop le", code: 400 };
+        }
+
+        report.status = status;
+        await report.save();
+        await report.populate('reporterId', 'fullName email avatarUrl');
+        return report;
+    },
+
+    // DELETE - Soft delete report
+    deleteReport: async function (id) {
+        let report = await reportModel.findByIdAndUpdate(id, { isDeleted: true }, { new: true });
+        if (!report) return { error: "Report not found", code: 404 };
+        return report;
+    }
+};

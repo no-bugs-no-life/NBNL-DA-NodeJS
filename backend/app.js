@@ -32,8 +32,14 @@ app.use('/api/v1/inventories', require('./routes/inventories'));
 app.use('/api/v1/carts', require('./routes/carts'));
 app.use('/api/v1/upload', require('./routes/upload'));
 app.use('/api/v1/apps', require('./routes/apps'));
-app.use('/api/v1/tags', require('./routes/tags'));
-app.use('/api/v1/reviews', require('./routes/reviews'));
+app.use('/api/v1/developers', require('./routes/developers'));
+app.use('/api/v1/notifications', require('./routes/notifications'));
+app.use('/api/v1/analytics', require('./routes/analytics'));
+app.use('/api/v1/reports', require('./routes/reports'));
+app.use('/api/v1/subscriptions', require('./routes/subscriptions'));
+app.use('/api/v1/coupons', require('./routes/coupons'));
+app.use('/api/v1/files', require('./routes/files'));
+app.use('/api/v1/wishlists', require('./routes/wishlists'));
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
   next(createError(404));
