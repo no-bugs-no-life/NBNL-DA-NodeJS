@@ -1,16 +1,13 @@
 let tagModel = require('../schemas/tags');
 let appModel = require('../schemas/apps');
 
-// ============================================================
-// Lấy tất cả tags (public) - hỗ trợ search, filter, phân trang
-// ============================================================
+
 async function getAllTags(req, res) {
     try {
         let { search, page, limit, sortBy, order } = req.query;
 
         let filter = { isDeleted: false };
 
-        // Tìm kiếm theo tên tag (SEO-like: lowercase, trim)
         if (search) {
             filter.name = { $regex: search.trim().toLowerCase(), $options: 'i' };
         }
@@ -40,15 +37,12 @@ async function getAllTags(req, res) {
     }
 }
 
-// ============================================================
-// Lấy chi tiết tag theo ID, kèm danh sách app thuộc tag
-// ============================================================
+
 async function getTagById(req, res) {
     try {
         let tag = await tagModel.findOne({ _id: req.params.id, isDeleted: false });
         if (!tag) return res.status(404).send({ message: 'Tag not found' });
 
-        // Lấy các app thuộc tag, kèm category
         let apps = await appModel.find({
             _id: { $in: tag.appIds },
             isDeleted: false,
@@ -64,9 +58,7 @@ async function getTagById(req, res) {
     }
 }
 
-// ============================================================
-// Tạo tag mới (ADMIN / MODERATOR)
-// ============================================================
+
 async function createTag(req, res) {
     try {
         let { name } = req.body;
@@ -83,9 +75,7 @@ async function createTag(req, res) {
     }
 }
 
-// ============================================================
-// Cập nhật tên tag (ADMIN / MODERATOR)
-// ============================================================
+
 async function updateTag(req, res) {
     try {
         let tag = await tagModel.findOne({ _id: req.params.id, isDeleted: false });
@@ -102,9 +92,7 @@ async function updateTag(req, res) {
     }
 }
 
-// ============================================================
-// Soft delete tag (ADMIN only)
-// ============================================================
+
 async function deleteTag(req, res) {
     try {
         let tag = await tagModel.findOne({ _id: req.params.id, isDeleted: false });
@@ -118,9 +106,7 @@ async function deleteTag(req, res) {
     }
 }
 
-// ============================================================
-// Gắn tag vào app (developer - chủ app / ADMIN)
-// ============================================================
+
 async function addTagToApp(req, res) {
     try {
         let { appId } = req.body;
@@ -134,7 +120,6 @@ async function addTagToApp(req, res) {
         if (!tag) return res.status(404).send({ message: 'Tag not found' });
         if (!app)  return res.status(404).send({ message: 'App not found' });
 
-        // Kiểm tra quyền: chủ app hoặc ADMIN
         let userController = require('./users');
         let user = await userController.FindUserById(req.userId);
         let isAdmin = user && user.role && user.role.name === 'ADMIN';
@@ -142,7 +127,6 @@ async function addTagToApp(req, res) {
             return res.status(403).send({ message: 'Bạn không có quyền gắn tag cho app này' });
         }
 
-        // Thêm appId vào tag nếu chưa có
         if (!tag.appIds.map(id => id.toString()).includes(appId)) {
             tag.appIds.push(appId);
             await tag.save();
@@ -154,9 +138,7 @@ async function addTagToApp(req, res) {
     }
 }
 
-// ============================================================
-// Gỡ tag khỏi app (developer - chủ app / ADMIN)
-// ============================================================
+
 async function removeTagFromApp(req, res) {
     try {
         let { appId } = req.body;
@@ -186,9 +168,6 @@ async function removeTagFromApp(req, res) {
     }
 }
 
-// ============================================================
-// Lấy danh sách app theo tag slug/name (SEO-friendly)
-// ============================================================
 async function getAppsByTagName(req, res) {
     try {
         let name = req.params.name.trim().toLowerCase();
