@@ -2,7 +2,9 @@ var express = require('express');
 var router = express.Router();
 let inventoryController = require('../controllers/inventories');
 
-router.get('/', async function (req, res, next) {
+router.get('/',
+    /* #swagger.tags = ['Inventories'] */
+ async function (req, res, next) {
     try {
         let inventories = await inventoryController.getAllInventories();
         res.send(inventories);
@@ -11,7 +13,9 @@ router.get('/', async function (req, res, next) {
     }
 });
 
-router.post('/increase-stock', async function (req, res, next) {
+router.post('/increase-stock',
+    /* #swagger.tags = ['Inventories'] */
+ async function (req, res, next) {
     try {
         let { product, quantity } = req.body;
         if (!product || quantity === undefined) {
@@ -27,7 +31,9 @@ router.post('/increase-stock', async function (req, res, next) {
     }
 });
 
-router.post('/decrease-stock', async function (req, res, next) {
+router.post('/decrease-stock',
+    /* #swagger.tags = ['Inventories'] */
+ async function (req, res, next) {
     try {
         let { product, quantity } = req.body;
         if (!product || quantity === undefined) {

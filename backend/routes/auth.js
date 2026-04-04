@@ -11,7 +11,9 @@ let mailHandler = require('../utils/sendMailHandler')
 
 /* GET home page. */
 //localhost:3000
-router.post('/register', async function (req, res, next) {
+router.post('/register',
+    /* #swagger.tags = ['Auth'] */
+ async function (req, res, next) {
     try {
         let { username, password, email } = req.body;
         if (!username || !password || !email) {
@@ -34,7 +36,9 @@ router.post('/register', async function (req, res, next) {
         res.status(400).send({ message: error.message });
     }
 });
-router.post('/login', async function (req, res, next) {
+router.post('/login',
+    /* #swagger.tags = ['Auth'] */
+ async function (req, res, next) {
     let result = await userController.QueryByUserNameAndPassword(
         req.body.username, req.body.password
     )
@@ -54,19 +58,25 @@ router.post('/login', async function (req, res, next) {
     }
 
 });
-router.get('/me', checkLogin, async function (req, res, next) {
+router.get('/me',
+    /* #swagger.tags = ['Auth'] */
+ checkLogin, async function (req, res, next) {
     console.log(req.userId);
     let getUser = await userController.FindUserById(req.userId);
     res.send(getUser);
 })
-router.post('/logout', checkLogin, function (req, res, next) {
+router.post('/logout',
+    /* #swagger.tags = ['Auth'] */
+ checkLogin, function (req, res, next) {
     res.cookie('token', null, {
         maxAge: 0,
         httpOnly: true
     })
     res.send("da logout ")
 })
-router.post('/changepassword', checkLogin, changePasswordValidator, validateResult, async function (req, res, next) {
+router.post('/changepassword',
+    /* #swagger.tags = ['Auth'] */
+ checkLogin, changePasswordValidator, validateResult, async function (req, res, next) {
     let { oldpassword, newpassword } = req.body;
     let user = await userController.FindUserById(req.userId);
     console.log(user);
@@ -79,7 +89,9 @@ router.post('/changepassword', checkLogin, changePasswordValidator, validateResu
     }
 
 })
-router.post('/forgotpassword', async function (req, res, next) {
+router.post('/forgotpassword',
+    /* #swagger.tags = ['Auth'] */
+ async function (req, res, next) {
     let email = req.body.email;
     let user = await userController.FindUserByEmail(email);
     if (!user) {
@@ -95,7 +107,9 @@ router.post('/forgotpassword', async function (req, res, next) {
     mailHandler.sendMail(user.email,URL);
     res.send("check mail")
 })
-router.post('/resetpassword/:token',resetPasswordValidator,validateResult, async function (req, res, next) {
+router.post('/resetpassword/:token',
+    /* #swagger.tags = ['Auth'] */
+resetPasswordValidator,validateResult, async function (req, res, next) {
     let password = req.body.password;
     let token =req.params.token;
     let user = await userController.FindUserByToken(token);

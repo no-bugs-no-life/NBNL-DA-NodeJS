@@ -12,7 +12,9 @@ let { checkLogin, checkRole } = require('../utils/authHandler.js');
 // ============================================================
 
 // List all subscriptions (ADMIN / MODERATOR only)
-router.get('/', checkLogin, checkRole('ADMIN', 'MODERATOR'), async function (req, res, next) {
+router.get('/',
+    /* #swagger.tags = ['Subscriptions'] */
+ checkLogin, checkRole('ADMIN', 'MODERATOR'), async function (req, res, next) {
     try {
         let subscriptions = await subscriptionController.getAllSubscriptions(req.query);
         res.send(subscriptions);
@@ -22,7 +24,9 @@ router.get('/', checkLogin, checkRole('ADMIN', 'MODERATOR'), async function (req
 });
 
 // My subscriptions (login required)
-router.get('/my', checkLogin, async function (req, res, next) {
+router.get('/my',
+    /* #swagger.tags = ['Subscriptions'] */
+ checkLogin, async function (req, res, next) {
     try {
         let subscriptions = await subscriptionController.getMySubscriptions(req.userId);
         res.send(subscriptions);
@@ -32,7 +36,9 @@ router.get('/my', checkLogin, async function (req, res, next) {
 });
 
 // My subscription for specific app (login required)
-router.get('/my/:appId', checkLogin, async function (req, res, next) {
+router.get('/my/:appId',
+    /* #swagger.tags = ['Subscriptions'] */
+ checkLogin, async function (req, res, next) {
     try {
         let subscription = await subscriptionController.getSubscriptionByApp(req.userId, req.params.appId);
         if (!subscription) {
@@ -45,7 +51,9 @@ router.get('/my/:appId', checkLogin, async function (req, res, next) {
 });
 
 // Get subscription detail (ADMIN/MOD or owner)
-router.get('/:id', checkLogin, async function (req, res, next) {
+router.get('/:id',
+    /* #swagger.tags = ['Subscriptions'] */
+ checkLogin, async function (req, res, next) {
     try {
         let subscription = await subscriptionController.getSubscriptionById(req.params.id);
         if (!subscription) {
@@ -68,7 +76,9 @@ router.get('/:id', checkLogin, async function (req, res, next) {
 // POST /api/v1/subscriptions                        - Create subscription (ADMIN/MOD)
 // ============================================================
 
-router.post('/', checkLogin, checkRole('ADMIN', 'MODERATOR'), async function (req, res, next) {
+router.post('/',
+    /* #swagger.tags = ['Subscriptions'] */
+ checkLogin, checkRole('ADMIN', 'MODERATOR'), async function (req, res, next) {
     try {
         let { userId, appId, type } = req.body;
         if (!userId || !appId || !type) {
@@ -89,7 +99,9 @@ router.post('/', checkLogin, checkRole('ADMIN', 'MODERATOR'), async function (re
 // PUT /api/v1/subscriptions/:id/cancel   - Cancel subscription (owner or ADMIN)
 // ============================================================
 
-router.put('/:id/renew', checkLogin, checkRole('ADMIN', 'MODERATOR'), async function (req, res, next) {
+router.put('/:id/renew',
+    /* #swagger.tags = ['Subscriptions'] */
+ checkLogin, checkRole('ADMIN', 'MODERATOR'), async function (req, res, next) {
     try {
         let { type } = req.body;
         if (!type) {
@@ -105,7 +117,9 @@ router.put('/:id/renew', checkLogin, checkRole('ADMIN', 'MODERATOR'), async func
     }
 });
 
-router.put('/:id/cancel', checkLogin, async function (req, res, next) {
+router.put('/:id/cancel',
+    /* #swagger.tags = ['Subscriptions'] */
+ checkLogin, async function (req, res, next) {
     try {
         let user = await userController.FindUserById(req.userId);
         let isAdmin = user && user.role && user.role.name === 'ADMIN';
@@ -123,7 +137,9 @@ router.put('/:id/cancel', checkLogin, async function (req, res, next) {
 // DELETE /api/v1/subscriptions/:id       - Soft delete (ADMIN/MOD only)
 // ============================================================
 
-router.delete('/:id', checkLogin, checkRole('ADMIN', 'MODERATOR'), async function (req, res, next) {
+router.delete('/:id',
+    /* #swagger.tags = ['Subscriptions'] */
+ checkLogin, checkRole('ADMIN', 'MODERATOR'), async function (req, res, next) {
     try {
         let result = await subscriptionController.deleteSubscription(req.params.id);
         if (result && result.error) {

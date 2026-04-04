@@ -3,7 +3,9 @@ var router = express.Router();
 let productController = require('../controllers/products');
 let mongoose = require('mongoose');
 
-router.get('/', async function (req, res, next) {
+router.get('/',
+    /* #swagger.tags = ['Products'] */
+ async function (req, res, next) {
     try {
         let products = await productController.getAllProducts(req.query);
         res.send(products);
@@ -12,7 +14,9 @@ router.get('/', async function (req, res, next) {
     }
 });
 
-router.get('/:id', async function (req, res, next) {
+router.get('/:id',
+    /* #swagger.tags = ['Products'] */
+ async function (req, res, next) {
     try {
         let product = await productController.getProductById(req.params.id);
         if (!product) {
@@ -24,7 +28,9 @@ router.get('/:id', async function (req, res, next) {
     }
 });
 
-router.post('/', async function (req, res, next) {
+router.post('/',
+    /* #swagger.tags = ['Products'] */
+ async function (req, res, next) {
     let session = await mongoose.startSession();
     session.startTransaction();
     try {
@@ -39,7 +45,9 @@ router.post('/', async function (req, res, next) {
     }
 });
 
-router.put('/:id', async function (req, res, next) {
+router.put('/:id',
+    /* #swagger.tags = ['Products'] */
+ async function (req, res, next) {
     try {
         let product = await productController.updateProduct(req.params.id, req.body);
         if (!product) {
@@ -51,7 +59,9 @@ router.put('/:id', async function (req, res, next) {
     }
 });
 
-router.delete('/:id', async function (req, res, next) {
+router.delete('/:id',
+    /* #swagger.tags = ['Products'] */
+ async function (req, res, next) {
     try {
         let product = await productController.deleteProduct(req.params.id);
         if (!product) {

@@ -6,7 +6,9 @@ let cartController = require('../controllers/carts');
 // ============================================================
 // GET /api/v1/carts                    - Get current user's cart
 // ============================================================
-router.get('/', checkLogin, async function (req, res) {
+router.get('/',
+    /* #swagger.tags = ['Carts'] */
+ checkLogin, async function (req, res) {
     try {
         let cart = await cartController.getCart(req.userId);
         if (!cart) {
@@ -21,7 +23,9 @@ router.get('/', checkLogin, async function (req, res) {
 // ============================================================
 // POST /api/v1/carts/items                      - Add app to cart
 // ============================================================
-router.post('/items', checkLogin, async function (req, res) {
+router.post('/items',
+    /* #swagger.tags = ['Carts'] */
+ checkLogin, async function (req, res) {
     try {
         let { appId, itemType, plan, quantity } = req.body;
         if (!appId) {
@@ -40,7 +44,9 @@ router.post('/items', checkLogin, async function (req, res) {
 // ============================================================
 // PUT /api/v1/carts/items/:appId          - Update item in cart
 // ============================================================
-router.put('/items/:appId', checkLogin, async function (req, res) {
+router.put('/items/:appId',
+    /* #swagger.tags = ['Carts'] */
+ checkLogin, async function (req, res) {
     try {
         let { quantity, plan } = req.body;
         let result = await cartController.updateItem(req.userId, req.params.appId, { quantity, plan });
@@ -56,7 +62,9 @@ router.put('/items/:appId', checkLogin, async function (req, res) {
 // ============================================================
 // DELETE /api/v1/carts/items/:appId    - Remove item from cart
 // ============================================================
-router.delete('/items/:appId', checkLogin, async function (req, res) {
+router.delete('/items/:appId',
+    /* #swagger.tags = ['Carts'] */
+ checkLogin, async function (req, res) {
     try {
         let result = await cartController.removeItem(req.userId, req.params.appId);
         if (result && result.error) {
@@ -71,7 +79,9 @@ router.delete('/items/:appId', checkLogin, async function (req, res) {
 // ============================================================
 // DELETE /api/v1/carts             - Clear entire cart
 // ============================================================
-router.delete('/', checkLogin, async function (req, res) {
+router.delete('/',
+    /* #swagger.tags = ['Carts'] */
+ checkLogin, async function (req, res) {
     try {
         let cart = await cartController.clearCart(req.userId);
         if (!cart) {

@@ -9,7 +9,9 @@ let InventoryModel = require('../schemas/inventories')
 let mongoose = require('mongoose')
 let slugify = require('slugify')
 
-router.post('/single', uploadImage.single('file'), function (req, res, next) {
+router.post('/single',
+    /* #swagger.tags = ['Upload'] */
+ uploadImage.single('file'), function (req, res, next) {
     if (!req.file) {
         res.status(404).send({
             message: "file upload rong"
@@ -18,7 +20,9 @@ router.post('/single', uploadImage.single('file'), function (req, res, next) {
         res.send(req.file.path)
     }
 })
-router.post('/multiple', uploadImage.array('files'), function (req, res, next) {
+router.post('/multiple',
+    /* #swagger.tags = ['Upload'] */
+ uploadImage.array('files'), function (req, res, next) {
     if (!req.files) {
         res.status(404).send({
             message: "file upload rong"
@@ -36,14 +40,18 @@ router.post('/multiple', uploadImage.array('files'), function (req, res, next) {
         res.send(result)
     }
 })
-router.get('/:filename', function (req, res, next) {
+router.get('/:filename',
+    /* #swagger.tags = ['Upload'] */
+ function (req, res, next) {
     let fileName = req.params.filename;
     let pathFile = path.join(__dirname, '../uploads', fileName)
     res.sendFile(pathFile)
 
 })
 
-router.post('/excel', uploadExcel.single('file'), async function (req, res, next) {
+router.post('/excel',
+    /* #swagger.tags = ['Upload'] */
+ uploadExcel.single('file'), async function (req, res, next) {
     if (!req.file) {
         res.status(404).send({
             message: "file upload rong"

@@ -9,7 +9,9 @@ let { checkLogin, checkRole } = require('../utils/authHandler.js');
 // GET /api/v1/notifications/:id                - Get detail
 // ============================================================
 
-router.get('/', checkLogin, async function (req, res, next) {
+router.get('/',
+    /* #swagger.tags = ['Notifications'] */
+ checkLogin, async function (req, res, next) {
     try {
         let notifications = await notificationController.getNotifications(req.userId, req.query);
         res.send(notifications);
@@ -18,7 +20,9 @@ router.get('/', checkLogin, async function (req, res, next) {
     }
 });
 
-router.get('/unread', checkLogin, async function (req, res, next) {
+router.get('/unread',
+    /* #swagger.tags = ['Notifications'] */
+ checkLogin, async function (req, res, next) {
     try {
         let count = await notificationController.getUnreadCount(req.userId);
         res.send({ unreadCount: count });
@@ -27,7 +31,9 @@ router.get('/unread', checkLogin, async function (req, res, next) {
     }
 });
 
-router.get('/:id', checkLogin, async function (req, res, next) {
+router.get('/:id',
+    /* #swagger.tags = ['Notifications'] */
+ checkLogin, async function (req, res, next) {
     try {
         let result = await notificationController.getNotificationById(req.params.id, req.userId);
         if (result && result.error) return res.status(result.code || 400).send({ message: result.error });
@@ -41,7 +47,9 @@ router.get('/:id', checkLogin, async function (req, res, next) {
 // POST /api/v1/notifications                          - Create notification (ADMIN/MOD)
 // ============================================================
 
-router.post('/', checkLogin, checkRole('ADMIN', 'MODERATOR'), async function (req, res, next) {
+router.post('/',
+    /* #swagger.tags = ['Notifications'] */
+ checkLogin, checkRole('ADMIN', 'MODERATOR'), async function (req, res, next) {
     try {
         let { userId, type, message } = req.body;
         if (!userId || !type || !message) {
@@ -59,7 +67,9 @@ router.post('/', checkLogin, checkRole('ADMIN', 'MODERATOR'), async function (re
 // PUT /api/v1/notifications/:id/read         - Mark as read (owner only)
 // ============================================================
 
-router.put('/:id', checkLogin, async function (req, res, next) {
+router.put('/:id',
+    /* #swagger.tags = ['Notifications'] */
+ checkLogin, async function (req, res, next) {
     try {
         let result = await notificationController.updateNotification(req.params.id, req.userId, req.body);
         if (result && result.error) return res.status(result.code || 400).send({ message: result.error });
@@ -69,7 +79,9 @@ router.put('/:id', checkLogin, async function (req, res, next) {
     }
 });
 
-router.put('/:id/read', checkLogin, async function (req, res, next) {
+router.put('/:id/read',
+    /* #swagger.tags = ['Notifications'] */
+ checkLogin, async function (req, res, next) {
     try {
         let result = await notificationController.markAsRead(req.params.id, req.userId);
         if (result && result.error) return res.status(result.code || 400).send({ message: result.error });
@@ -83,7 +95,9 @@ router.put('/:id/read', checkLogin, async function (req, res, next) {
 // DELETE /api/v1/notifications/:id     - Soft delete (owner / ADMIN)
 // ============================================================
 
-router.delete('/:id', checkLogin, async function (req, res, next) {
+router.delete('/:id',
+    /* #swagger.tags = ['Notifications'] */
+ checkLogin, async function (req, res, next) {
     try {
         let result = await notificationController.deleteNotification(req.params.id, req.userId);
         if (result && result.error) return res.status(result.code || 400).send({ message: result.error });

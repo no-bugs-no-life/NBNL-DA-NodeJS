@@ -10,7 +10,9 @@ let { checkLogin, checkRole } = require('../utils/authHandler.js');
 // ============================================================
 
 // Get current user's wishlist (login required)
-router.get('/', checkLogin, async function (req, res, next) {
+router.get('/',
+    /* #swagger.tags = ['Wishlists'] */
+ checkLogin, async function (req, res, next) {
     try {
         let wishlist = await wishlistController.getMyWishlist(req.userId);
         if (!wishlist) {
@@ -23,7 +25,9 @@ router.get('/', checkLogin, async function (req, res, next) {
 });
 
 // List all wishlists (ADMIN / MODERATOR only)
-router.get('/all', checkLogin, checkRole('ADMIN', 'MODERATOR'), async function (req, res, next) {
+router.get('/all',
+    /* #swagger.tags = ['Wishlists'] */
+ checkLogin, checkRole('ADMIN', 'MODERATOR'), async function (req, res, next) {
     try {
         let { limit = 20, page = 1 } = req.query;
         let wishlists = await wishlistModel.find({ isDeleted: false })
@@ -42,7 +46,9 @@ router.get('/all', checkLogin, checkRole('ADMIN', 'MODERATOR'), async function (
 // POST /api/v1/wishlists          - Add app to wishlist
 // ============================================================
 
-router.post('/', checkLogin, async function (req, res, next) {
+router.post('/',
+    /* #swagger.tags = ['Wishlists'] */
+ checkLogin, async function (req, res, next) {
     try {
         let { appId } = req.body;
         if (!appId) {
@@ -63,7 +69,9 @@ router.post('/', checkLogin, async function (req, res, next) {
 // DELETE /api/v1/wishlists             - Clear wishlist
 // ============================================================
 
-router.delete('/:appId', checkLogin, async function (req, res, next) {
+router.delete('/:appId',
+    /* #swagger.tags = ['Wishlists'] */
+ checkLogin, async function (req, res, next) {
     try {
         let result = await wishlistController.removeApp(req.userId, req.params.appId);
         if (result && result.error) {
@@ -75,7 +83,9 @@ router.delete('/:appId', checkLogin, async function (req, res, next) {
     }
 });
 
-router.delete('/', checkLogin, async function (req, res, next) {
+router.delete('/',
+    /* #swagger.tags = ['Wishlists'] */
+ checkLogin, async function (req, res, next) {
     try {
         let wishlist = await wishlistController.clearWishlist(req.userId);
         res.send({ message: "Wishlist da duoc xoa", wishlist });

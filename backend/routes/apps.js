@@ -11,7 +11,9 @@ let { uploadApk, uploadIpa } = require('../utils/uploadHandler');
 // GET /api/v1/apps/:id          - Get app detail (public)
 // ============================================================
 
-router.get('/', async function (req, res, next) {
+router.get('/',
+    /* #swagger.tags = ['Apps'] */
+ async function (req, res, next) {
     try {
         let apps = await appController.getAllApps(req.query);
         res.send(apps);
@@ -20,7 +22,9 @@ router.get('/', async function (req, res, next) {
     }
 });
 
-router.get('/my', checkLogin, async function (req, res, next) {
+router.get('/my',
+    /* #swagger.tags = ['Apps'] */
+ checkLogin, async function (req, res, next) {
     try {
         let apps = await appController.getMyApps(req.userId);
         res.send(apps);
@@ -29,7 +33,9 @@ router.get('/my', checkLogin, async function (req, res, next) {
     }
 });
 
-router.get('/pending', checkLogin, checkRole('ADMIN', 'MODERATOR'), async function (req, res, next) {
+router.get('/pending',
+    /* #swagger.tags = ['Apps'] */
+ checkLogin, checkRole('ADMIN', 'MODERATOR'), async function (req, res, next) {
     try {
         let apps = await appController.getPendingApps();
         res.send(apps);
@@ -38,7 +44,9 @@ router.get('/pending', checkLogin, checkRole('ADMIN', 'MODERATOR'), async functi
     }
 });
 
-router.get('/:id', async function (req, res, next) {
+router.get('/:id',
+    /* #swagger.tags = ['Apps'] */
+ async function (req, res, next) {
     try {
         let app = await appController.getAppById(req.params.id);
         if (!app) return res.status(404).send({ message: "App not found" });
@@ -57,7 +65,9 @@ router.get('/:id', async function (req, res, next) {
 // POST /api/v1/apps/publish/:id             - Publish
 // ============================================================
 
-router.post('/', checkLogin, async function (req, res, next) {
+router.post('/',
+    /* #swagger.tags = ['Apps'] */
+ checkLogin, async function (req, res, next) {
     try {
         let app = await appController.createApp(req.body, req.userId);
         res.status(201).send(app);
@@ -66,7 +76,9 @@ router.post('/', checkLogin, async function (req, res, next) {
     }
 });
 
-router.post('/upload-apk/:id', checkLogin, uploadApk.single('file'), async function (req, res, next) {
+router.post('/upload-apk/:id',
+    /* #swagger.tags = ['Apps'] */
+ checkLogin, uploadApk.single('file'), async function (req, res, next) {
     try {
         if (!req.file) return res.status(400).send({ message: "Chua co file apk duoc gui len" });
         let result = await appController.uploadApk(req.params.id, req.userId, req.file);
@@ -77,7 +89,9 @@ router.post('/upload-apk/:id', checkLogin, uploadApk.single('file'), async funct
     }
 });
 
-router.post('/upload-ipa/:id', checkLogin, uploadIpa.single('file'), async function (req, res, next) {
+router.post('/upload-ipa/:id',
+    /* #swagger.tags = ['Apps'] */
+ checkLogin, uploadIpa.single('file'), async function (req, res, next) {
     try {
         if (!req.file) return res.status(400).send({ message: "Chua co file ipa duoc gui len" });
         let result = await appController.uploadIpa(req.params.id, req.userId, req.file);
@@ -88,7 +102,9 @@ router.post('/upload-ipa/:id', checkLogin, uploadIpa.single('file'), async funct
     }
 });
 
-router.post('/approve/:id', checkLogin, checkRole('ADMIN', 'MODERATOR'), async function (req, res, next) {
+router.post('/approve/:id',
+    /* #swagger.tags = ['Apps'] */
+ checkLogin, checkRole('ADMIN', 'MODERATOR'), async function (req, res, next) {
     try {
         let result = await appController.approveApp(req.params.id);
         if (result && result.error) return res.status(result.code || 400).send({ message: result.error });
@@ -98,7 +114,9 @@ router.post('/approve/:id', checkLogin, checkRole('ADMIN', 'MODERATOR'), async f
     }
 });
 
-router.post('/reject/:id', checkLogin, checkRole('ADMIN', 'MODERATOR'), async function (req, res, next) {
+router.post('/reject/:id',
+    /* #swagger.tags = ['Apps'] */
+ checkLogin, checkRole('ADMIN', 'MODERATOR'), async function (req, res, next) {
     try {
         let result = await appController.rejectApp(req.params.id);
         if (result && result.error) return res.status(result.code || 400).send({ message: result.error });
@@ -108,7 +126,9 @@ router.post('/reject/:id', checkLogin, checkRole('ADMIN', 'MODERATOR'), async fu
     }
 });
 
-router.post('/publish/:id', checkLogin, checkRole('ADMIN', 'MODERATOR'), async function (req, res, next) {
+router.post('/publish/:id',
+    /* #swagger.tags = ['Apps'] */
+ checkLogin, checkRole('ADMIN', 'MODERATOR'), async function (req, res, next) {
     try {
         let result = await appController.publishApp(req.params.id);
         if (result && result.error) return res.status(result.code || 400).send({ message: result.error });
@@ -122,7 +142,9 @@ router.post('/publish/:id', checkLogin, checkRole('ADMIN', 'MODERATOR'), async f
 // PUT /api/v1/apps/:id            - Update app (owner only)
 // ============================================================
 
-router.put('/:id', checkLogin, async function (req, res, next) {
+router.put('/:id',
+    /* #swagger.tags = ['Apps'] */
+ checkLogin, async function (req, res, next) {
     try {
         let result = await appController.updateApp(req.params.id, req.userId, req.body);
         if (result && result.error) return res.status(result.code || 400).send({ message: result.error });
@@ -136,7 +158,9 @@ router.put('/:id', checkLogin, async function (req, res, next) {
 // DELETE /api/v1/apps/:id         - Soft delete app (owner / ADMIN)
 // ============================================================
 
-router.delete('/:id', checkLogin, async function (req, res, next) {
+router.delete('/:id',
+    /* #swagger.tags = ['Apps'] */
+ checkLogin, async function (req, res, next) {
     try {
         let result = await appController.deleteApp(req.params.id, req.userId);
         if (result && result.error) return res.status(result.code || 400).send({ message: result.error });
