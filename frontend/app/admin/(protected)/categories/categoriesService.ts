@@ -1,12 +1,19 @@
 import axios from "axios";
 import { CategoryItem } from "@/hooks/useCategories";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+import { API_URL } from "@/configs/api";
 
 const getHeaders = (token: string | null) => (token ? { Authorization: `Bearer ${token}` } : {});
 
-export const fetchCategories = async (): Promise<CategoryItem[]> => {
-    const res = await axios.get(`${API_URL}/api/v1/categories`);
+export interface PaginatedResult<T> {
+    docs: T[];
+    totalDocs: number;
+    limit: number;
+    totalPages: number;
+    page: number;
+}
+
+export const fetchCategories = async (page = 1, limit = 20): Promise<PaginatedResult<CategoryItem>> => {
+    const res = await axios.get(`${API_URL}/api/v1/categories?page=${page}&limit=${limit}`);
     return res.data;
 };
 

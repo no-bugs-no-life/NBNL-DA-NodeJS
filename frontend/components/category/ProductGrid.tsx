@@ -6,6 +6,7 @@ import axios from "axios";
 import Link from "next/link";
 import ProductCard from "./ProductCard";
 import { AppItem } from "./types";
+import { API_URL } from "@/configs/api";
 
 export default function ProductGrid() {
   const [displayedCount, setDisplayedCount] = useState(8);
@@ -13,8 +14,8 @@ export default function ProductGrid() {
   const { data: apps = [], isLoading } = useQuery({
     queryKey: ["apps", "all"],
     queryFn: async () => {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
-      const response = await axios.get(`${apiUrl}/api/v1/apps?limit=50`);
+      
+      const response = await axios.get(`${API_URL}/api/v1/apps?limit=50`);
       interface ApiApp {
         _id: string;
         slug: string;

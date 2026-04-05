@@ -3,13 +3,14 @@ import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { AppItem } from "@/store/useHomeStore";
+import { API_URL } from "@/configs/api";
 
 export default function HomeTrending() {
   const { data: trendingApps = [], isLoading } = useQuery({
     queryKey: ["apps", "trending"],
     queryFn: async () => {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
-      const response = await axios.get(`${apiUrl}/api/v1/apps?limit=5`);
+      
+      const response = await axios.get(`${API_URL}/api/v1/apps?limit=5`);
       return response.data;
     },
   });

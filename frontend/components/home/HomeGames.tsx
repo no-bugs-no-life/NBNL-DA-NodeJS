@@ -3,13 +3,14 @@ import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { GameItem } from "@/components/games/types";
+import { API_URL } from "@/configs/api";
 
 export default function HomeGames() {
   const { data: bestSellingGames = [], isLoading } = useQuery({
     queryKey: ["apps", "bestselling-games"],
     queryFn: async () => {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
-      const response = await axios.get(`${apiUrl}/api/v1/apps?type=game&flag=bestseller&limit=6`);
+      
+      const response = await axios.get(`${API_URL}/api/v1/apps?type=game&flag=bestseller&limit=6`);
       return response.data;
     },
   });

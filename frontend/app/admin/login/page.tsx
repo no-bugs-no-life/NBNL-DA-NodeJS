@@ -3,8 +3,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import useAuthStore from "@/store/useAuthStore";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+import { API_URL } from "@/configs/api";
 
 export default function AdminLoginPage() {
   const [username, setUsername] = useState("");

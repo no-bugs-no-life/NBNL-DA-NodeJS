@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
+import { API_URL } from "@/configs/api";
 
 export default function HomeHero() {
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -11,8 +12,8 @@ export default function HomeHero() {
   const { data: heroApps = [] } = useQuery({
     queryKey: ["home", "hero"],
     queryFn: async () => {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
-      const response = await axios.get(`${apiUrl}/api/v1/apps?limit=3`);
+      
+      const response = await axios.get(`${API_URL}/api/v1/apps?limit=3`);
       return response.data;
     }
   });

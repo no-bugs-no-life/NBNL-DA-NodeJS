@@ -2,6 +2,7 @@ import { useState } from "react";
 import axios from "axios";
 import { useAppDetailStore } from "../../store/useAppDetailStore";
 import AppStats from "./AppStats";
+import { API_URL } from "@/configs/api";
 
 export default function AppDetailHeader() {
   const { appInfo } = useAppDetailStore();
@@ -12,15 +13,15 @@ export default function AppDetailHeader() {
   const handleDownload = async () => {
     try {
       setIsDownloading(true);
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
-      const response = await axios.get(`${apiUrl}/api/v1/apps/download/${appInfo._id}`, {
+      
+      const response = await axios.get(`${API_URL}/api/v1/apps/download/${appInfo._id}`, {
         withCredentials: true
       });
       const data = response.data;
       if (data.fileUrl) {
         // Build the full URL if necessary depending on environment, but typically it returns a relative path from the backend
         // Assume fileUrl can be an absolute path or relative depending on upload handler
-        const downloadUrl = data.fileUrl.startsWith("http") ? data.fileUrl : `${apiUrl}/${data.fileUrl}`;
+        const downloadUrl = data.fileUrl.startsWith("http") ? data.fileUrl : `${API_URL}/${data.fileUrl}`;
         window.open(downloadUrl, '_blank');
       } else {
         alert("Có lỗi xảy ra khi tải xuống.");

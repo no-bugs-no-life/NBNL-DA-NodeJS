@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import axios from "axios";
+import { API_URL } from "@/configs/api";
 
 export interface User {
   _id: string;
@@ -39,7 +40,7 @@ interface AuthState {
 }
 
 const apiClient = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000",
+  baseURL: API_URL,
 });
 
 // Interceptor to attach Bearer token automatically if available

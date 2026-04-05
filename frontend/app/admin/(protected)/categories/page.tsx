@@ -47,7 +47,15 @@ export default function AdminCategoriesPage() {
   return (
     <>
       <TopBar count={s.categories.length} onAdd={() => s.setShowCreate(true)} />
-      <CategoryTable categories={s.categories} isLoading={s.isLoading} onEdit={s.setEditTarget} onDelete={s.setDeleteTarget} />
+      <CategoryTable
+        categories={s.categories}
+        isLoading={s.isLoading}
+        onEdit={s.setEditTarget}
+        onDelete={s.setDeleteTarget}
+        page={s.page}
+        totalPages={s.totalPages}
+        onPageChange={s.setPage}
+      />
       <ToastAlert toast={s.toast} />
 
       {s.showCreate && <CategoryModal title="Tạo mới" onClose={() => s.setShowCreate(false)} onSubmit={(name: string, iconUrl?: string) => s.mCreate.mutate({ name, iconUrl })} loading={s.mCreate.isPending} />}

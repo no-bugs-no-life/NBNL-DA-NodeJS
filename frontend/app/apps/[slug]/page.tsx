@@ -15,6 +15,7 @@ import AppSystemReqs from "../../../components/app-details/AppSystemReqs";
 import AppExtraInfo from "../../../components/app-details/AppExtraInfo";
 import AppDeveloperInfo from "../../../components/app-details/AppDeveloperInfo";
 import AppTags from "../../../components/app-details/AppTags";
+import { API_URL } from "@/configs/api";
 
 export default function AppDetailsPage() {
   const { slug } = useParams();
@@ -23,8 +24,8 @@ export default function AppDetailsPage() {
   const { data, isLoading } = useQuery({
     queryKey: ["app-detail", slug],
     queryFn: async () => {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
-      const response = await axios.get(`${apiUrl}/api/v1/apps/detail/${slug}`);
+      
+      const response = await axios.get(`${API_URL}/api/v1/apps/detail/${slug}`);
       return response.data;
     },
     enabled: !!slug

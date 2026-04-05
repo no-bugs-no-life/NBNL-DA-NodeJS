@@ -12,6 +12,7 @@ function SidebarLogo() {
 const MENUS = [
     { name: 'Dashboard', icon: 'dashboard', path: '/admin/dashboard' },
     { name: 'Quản lý Danh mục', icon: 'category', path: '/admin/categories' },
+    { name: 'Quản lý App', icon: 'apps', path: '/admin/apps' },
 ];
 
 function SidebarItem({ menu }: { menu: { name: string; icon: string; path: string } }) {

@@ -19,10 +19,16 @@ export function useAdminCategories() {
         setTimeout(() => setToast(null), 3000);
     };
 
-    const { data: categories = [], isLoading } = useQuery<CategoryItem[]>({
-        queryKey: ["categories"],
-        queryFn: fetchCategories,
+    const [page, setPage] = useState(1);
+    const [limit] = useState(10);
+
+    const { data: categoriesData, isLoading } = useQuery({
+        queryKey: ["categories", page, limit],
+        queryFn: () => fetchCategories(page, limit),
     });
+
+    const categories = categoriesData?.docs || [];
+    const totalPages = categoriesData?.totalPages || 1;
 
     const mCreate = useMutation({
         mutationFn: (data: { name: string; iconUrl?: string }) => createCategory(data, token),
@@ -45,6 +51,7 @@ export function useAdminCategories() {
     return {
         isAdmin, isAuthLoading, categories, isLoading,
         showCreate, setShowCreate, editTarget, setEditTarget, deleteTarget, setDeleteTarget,
-        toast, mCreate, mUpdate, mDelete
+        toast, mCreate, mUpdate, mDelete,
+        page, setPage, totalPages
     };
 }

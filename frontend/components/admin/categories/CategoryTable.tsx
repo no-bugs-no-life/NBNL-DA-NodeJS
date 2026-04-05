@@ -6,9 +6,12 @@ interface Props {
     isLoading: boolean;
     onEdit: (cat: CategoryItem) => void;
     onDelete: (cat: CategoryItem) => void;
+    page: number;
+    totalPages: number;
+    onPageChange: (p: number) => void;
 }
 
-export function CategoryTable({ categories, isLoading, onEdit, onDelete }: Props) {
+export function CategoryTable({ categories, isLoading, onEdit, onDelete, page, totalPages, onPageChange }: Props) {
     return (
         <div className="bg-white rounded-2xl overflow-hidden">
             <table className="w-full text-sm">
@@ -24,6 +27,24 @@ export function CategoryTable({ categories, isLoading, onEdit, onDelete }: Props
                     {isLoading ? <LoadingRows /> : <DataRows categories={categories} onEdit={onEdit} onDelete={onDelete} />}
                 </tbody>
             </table>
+
+            {!isLoading && totalPages > 1 && (
+                <div className="flex items-center justify-between px-6 py-4 border-t border-slate-100">
+                    <span className="text-sm text-slate-500">Trang {page} / {totalPages}</span>
+                    <div className="flex items-center gap-2">
+                        <button
+                            disabled={page <= 1}
+                            onClick={() => onPageChange(page - 1)}
+                            className="px-3 py-1.5 text-sm rounded-lg border border-slate-200 hover:bg-slate-50 disabled:opacity-50 disabled:pointer-events-none transition-colors"
+                        >Trang trước</button>
+                        <button
+                            disabled={page >= totalPages}
+                            onClick={() => onPageChange(page + 1)}
+                            className="px-3 py-1.5 text-sm rounded-lg border border-slate-200 hover:bg-slate-50 disabled:opacity-50 disabled:pointer-events-none transition-colors"
+                        >Trang sau</button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

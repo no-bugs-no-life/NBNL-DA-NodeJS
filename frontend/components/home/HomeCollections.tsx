@@ -3,13 +3,14 @@ import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { CategoryItem } from "@/store/useHomeStore";
+import { API_URL } from "@/configs/api";
 
 export default function HomeCollections() {
   const { data: collections = [], isLoading } = useQuery({
     queryKey: ["categories", "home"],
     queryFn: async () => {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
-      const response = await axios.get(`${apiUrl}/api/v1/categories`);
+      
+      const response = await axios.get(`${API_URL}/api/v1/categories`);
       return response.data.filter((c: CategoryItem) => c.parentId == null).slice(0, 2);
     },
   });
