@@ -1,0 +1,143 @@
+ 
+Thứ 
+tự 
+Module 
+Lý do nên làm ở vị trí 
+này 
+Phụ thuộc 
+chính 
+Ghi chú quan trọng 
+1 
+App 
+Đây là module cốt lõi 
+nhất (sản phẩm chính 
+của chợ). Cần có 
+trước để các module 
+khác hoạt động. 
+User (đã 
+có) 
+CRUD app, upload file cơ 
+bản, version, status 
+(pending/approved/rejected) 
+2 
+Category 
+Giúp phân loại App, 
+hỗ trợ search/filter sau 
+này. Rất cơ bản. 
+App 
+Tree category nếu cần 
+(parent-child) 
+3 
+Tag / 
+Metadata 
+Hỗ trợ tìm kiếm, lọc 
+nâng cao, SEO-like 
+cho app. Thường đi 
+kèm Category. 
+App, 
+Category 
+Tags, keywords, screenshots 
+description... 
+4 
+Developer 
+Quản lý developer 
+profile, dashboard 
+developer, liên kết với 
+App. 
+App 
+(developer 
+sở hữu 
+app) 
+Profile, verification, earnings 
+overview 
+5 
+File / 
+Upload 
+Cần xử lý upload 
+APK/IPA, screenshots, 
+icons, videos... Dùng 
+chung cho nhiều 
+module. 
+App 
+Storage (local/S3), virus 
+scan, resize image 
+6 
+Review 
+User đánh giá app sau 
+khi có app. Rất quan 
+trọng cho lòng tin. 
+App, User 
+Rating, comment, moderation 
+(admin approve) 
+7 
+Wishlist 
+Tính năng "yêu thích" 
+đơn giản, không liên 
+quan đến tiền. 
+App, User 
+Dễ làm, tăng engagement 
+8 
+Cart 
+Giỏ hàng → chuẩn bị 
+cho mua hàng. 
+App, 
+Wishlist 
+(có thể 
+import) 
+Add/remove, quantity (nếu 
+mua nhiều license) 
+9 
+Coupon / 
+Promotion 
+Mã giảm giá, khuyến 
+mãi. Thường áp dụng 
+khi có Cart. 
+Cart, App 
+Discount type (%, fixed), 
+expiry, usage limit 
+10 
+Subscriptio
+n 
+Mua theo gói 
+(monthly/yearly) hoặc 
+in-app subscription. 
+Phức tạp hơn mua 1 
+lần. 
+Cart, App 
+Recurring payment, plan 
+management 
+11 
+Notification 
+Gửi thông báo (upload 
+thành công, app 
+approved, new review, 
+promotion...). 
+Hầu hết 
+các 
+module 
+khác 
+In-app + Push 
+(FCM/OneSignal), email 
+12 
+Report 
+Báo cáo vi phạm, 
+abuse, DMCA... Cần 
+sau khi có nội dung & 
+tương tác. 
+App, 
+Review, 
+User 
+Admin review report 
+13 
+Analytics 
+Thống kê lượt tải, 
+doanh thu, user 
+behavior... Làm sau 
+cùng vì cần dữ liệu từ 
+nhiều nơi. 
+Tất cả 
+module 
+Dashboard cho Admin & 
+Developer 
+ 
+ 
