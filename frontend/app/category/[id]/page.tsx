@@ -7,6 +7,9 @@ import ProductGrid from "../../../components/category/ProductGrid";
 import { mockApps, mockCategories } from "../../../components/category/data";
 import Link from "next/link";
 
+import Sidebar from "../../../components/category/Sidebar";
+import FeaturedArea from "../../../components/category/FeaturedArea";
+
 interface CategoryDetailPageProps {
     params: Promise<{
         id: string;
@@ -22,29 +25,34 @@ export default function CategoryDetailPage(props: CategoryDetailPageProps) {
     return (
         <>
             <Navbar />
-            <main className="pt-24 pb-24 px-6 max-w-[1920px] mx-auto min-h-screen">
-                <div className="mb-12">
-                    <Link href="/category" className="text-sm font-medium text-on-surface-variant hover:text-primary mb-6 inline-flex items-center gap-2 px-3 py-1.5 rounded-full hover:bg-surface-container-high transition-colors">
-                        <span className="material-symbols-outlined text-sm">arrow_back</span>
-                        Tất cả danh mục
-                    </Link>
-                    <div className="flex items-center gap-4 mt-4">
-                        <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center">
-                            <span className="material-symbols-outlined text-3xl text-primary">
-                                {category?.iconUrl || "category"}
-                            </span>
+            <main className="pt-24 pb-16 px-6 max-w-[1920px] mx-auto flex flex-col md:flex-row gap-12">
+                <Sidebar />
+                <div className="flex-1 min-w-0">
+                    <div className="mb-12">
+                        <Link href="/category" className="text-sm font-medium text-on-surface-variant hover:text-primary mb-6 inline-flex items-center gap-2 px-3 py-1.5 rounded-full hover:bg-surface-container-high transition-colors">
+                            <span className="material-symbols-outlined text-sm">arrow_back</span>
+                            Tất cả danh mục
+                        </Link>
+                        <div className="flex items-center gap-4 mt-4">
+                            <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center">
+                                <span className="material-symbols-outlined text-3xl text-primary">
+                                    {category?.iconUrl || "category"}
+                                </span>
+                            </div>
+                            <h1 className="text-4xl font-bold tracking-tight">
+                                {title}
+                            </h1>
                         </div>
-                        <h1 className="text-4xl font-bold tracking-tight">
-                            {title}
-                        </h1>
+                        <p className="mt-4 text-on-surface-variant text-lg max-w-2xl">
+                            Hiển thị các ứng dụng phổ biến và tốt nhất thuộc danh mục {title}.
+                        </p>
                     </div>
-                    <p className="mt-4 text-on-surface-variant text-lg max-w-2xl">
-                        Hiển thị các ứng dụng phổ biến và tốt nhất thuộc danh mục {title}.
-                    </p>
-                </div>
 
-                <div className="border-t border-outline/10 pt-12">
-                    {category ? <ProductGrid apps={mockApps} /> : <p className="text-on-surface-variant">Không tìm thấy nội dung cho danh mục này.</p>}
+                    <FeaturedArea />
+
+                    <div className="border-t border-outline/10 pt-12 mt-12">
+                        {category ? <ProductGrid apps={mockApps} /> : <p className="text-on-surface-variant">Không tìm thấy nội dung cho danh mục này.</p>}
+                    </div>
                 </div>
             </main>
             <Footer />
