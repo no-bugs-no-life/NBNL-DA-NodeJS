@@ -91,14 +91,3 @@ export const mockApps: AppItem[] = [
   },
 ];
 
-import { CategoryItem } from "../../store/useHomeStore";
-
-export const mockCategories: CategoryItem[] = [
-  { _id: "office", name: "Văn phòng & Năng suất", iconUrl: "check_circle" },
-  { _id: "design", name: "Đồ họa & Thiết kế", iconUrl: "brush" },
-  { _id: "development", name: "Lập trình", iconUrl: "code" },
-  { _id: "video", name: "Video & Hoạt hình", iconUrl: "movie" },
-  { _id: "education", name: "Giáo dục & Tìm kiếm", iconUrl: "school" },
-  { _id: "utilities", name: "Công cụ hệ thống", iconUrl: "build" },
-  { _id: "entertainment", name: "Giải trí", iconUrl: "joystick" },
-];
