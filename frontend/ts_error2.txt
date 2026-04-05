@@ -1,0 +1,1 @@
+hooks/useCategories.ts(18,29): error TS2339: Property 'docs' does not exist on type 'CategoryItem[]'.

@@ -55,4 +55,6 @@ analyticsSchema.index({ date: -1 });
 // Mỗi app chỉ có 1 record mỗi ngày
 analyticsSchema.index({ appId: 1, date: 1 }, { unique: true });
 
+const mongoosePaginate = require('mongoose-paginate-v2');
+analyticsSchema.plugin(mongoosePaginate);
 module.exports = mongoose.model("analytics", analyticsSchema);

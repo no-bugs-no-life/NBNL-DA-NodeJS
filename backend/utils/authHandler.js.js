@@ -8,24 +8,32 @@ module.exports = {
         } else {
             token = req.headers.authorization;
             if (!token || !token.startsWith("Bearer")) {
-                res.status(403).send("ban chua dang nhap")
+                res.status(401).send({ message: "ban chua dang nhap" })
                 return;
             }
             token = token.split(' ')[1];
         }
-        let result = jwt.verify(token, 'secret');
-        if (result && result.exp * 1000 > Date.now()) {
+        try {
+            let result = jwt.verify(token, 'secret');
             req.userId = result.id;
             next();
-        } else {
-            res.status(403).send("ban chua dang nhap")
+        } catch (err) {
+            if (err.name === 'TokenExpiredError') {
+                res.status(401).send({ message: "token da het han, vui long dang nhap lai" })
+            } else {
+                res.status(401).send({ message: "token khong hop le" })
+            }
         }
     },
     checkRole: function (...requiredRole) {
         return async function (req, res, next) {
             let userId = req.userId;
             let user = await userController.FindUserById(userId);
-            let currentRole = user.role.name;
+            if (!user) {
+                res.status(401).send({ message: "user khong ton tai" });
+                return;
+            }
+            let currentRole = user.role && user.role.name;
             if (requiredRole.includes(currentRole)) {
                 next();
             } else {

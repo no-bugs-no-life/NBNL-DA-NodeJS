@@ -18,27 +18,43 @@ module.exports = {
         if (status) filter.status = status;
         if (targetType) filter.targetType = targetType;
 
-        return await reportModel.find(filter)
-            .populate('reporterId', 'fullName email avatarUrl')
-            .sort({ createdAt: -1 })
-            .skip(parseInt(limit) * (parseInt(page) - 1))
-            .limit(parseInt(limit));
+        let options = {
+            page: parseInt(page) || 1,
+            limit: parseInt(limit) || 20,
+            sort: { createdAt: -1 },
+            populate: [
+                { path: 'reporterId', select: 'fullName email avatarUrl' },
+                {
+                    path: 'targetId',
+                    select: 'name appId rating comment',
+                    populate: { path: 'appId', select: 'name iconUrl slug' }
+                }
+            ]
+        };
+        return await reportModel.paginate(filter, options);
     },
 
     // GET - Reports by current user
-    getMyReports: async function (userId, queries) {
+    getMyReports: async function (userId, queries = {}) {
         let { limit = 20, page = 1 } = queries;
-        return await reportModel.find({ reporterId: userId, isDeleted: false })
-            .sort({ createdAt: -1 })
-            .skip(parseInt(limit) * (parseInt(page) - 1))
-            .limit(parseInt(limit));
+        let options = {
+            page: parseInt(page) || 1,
+            limit: parseInt(limit) || 20,
+            sort: { createdAt: -1 }
+        };
+        return await reportModel.paginate({ reporterId: userId, isDeleted: false }, options);
     },
 
     // GET - Pending reports
-    getPendingReports: async function () {
-        return await reportModel.find({ status: "pending", isDeleted: false })
-            .populate('reporterId', 'fullName email avatarUrl')
-            .sort({ createdAt: 1 });
+    getPendingReports: async function (queries = {}) {
+        let { limit = 20, page = 1 } = queries;
+        let options = {
+            page: parseInt(page) || 1,
+            limit: parseInt(limit) || 20,
+            sort: { createdAt: 1 },
+            populate: { path: 'reporterId', select: 'fullName email avatarUrl' }
+        };
+        return await reportModel.paginate({ status: "pending", isDeleted: false }, options);
     },
 
     // GET - Report detail
@@ -92,17 +108,18 @@ module.exports = {
         let report = await reportModel.findOne({ _id: id, isDeleted: false });
         if (!report) return { error: "Report not found", code: 404 };
 
-        let allowedFields = ['reason', 'status'];
+        let allowedFields = ['reason', 'status', 'adminNote'];
         allowedFields.forEach(field => {
             if (data[field] !== undefined) report[field] = data[field];
         });
+        report.updatedFieldsAt = new Date();
         await report.save();
         await report.populate('reporterId', 'fullName email avatarUrl');
         return report;
     },
 
     // PUT - Update report status
-    updateReportStatus: async function (id, status) {
+    updateReportStatus: async function (id, status, adminNote = "") {
         let report = await reportModel.findOne({ _id: id, isDeleted: false });
         if (!report) return { error: "Report not found", code: 404 };
 
@@ -112,6 +129,8 @@ module.exports = {
         }
 
         report.status = status;
+        if (adminNote) report.adminNote = adminNote;
+        report.updatedFieldsAt = new Date();
         await report.save();
         await report.populate('reporterId', 'fullName email avatarUrl');
         return report;

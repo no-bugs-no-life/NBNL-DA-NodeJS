@@ -40,4 +40,6 @@ const fileSchema = new mongoose.Schema(
 fileSchema.index({ ownerType: 1, ownerId: 1 });
 fileSchema.index({ fileType: 1 });
 
+const mongoosePaginate = require('mongoose-paginate-v2');
+fileSchema.plugin(mongoosePaginate);
 module.exports = mongoose.model("file", fileSchema);

@@ -27,9 +27,10 @@ const userSchema = new mongoose.Schema(
             default: ""
         },
 
-        avatarUrl: {
-            type: String,
-            default: "https://i.sstatic.net/l60Hf.png"
+        avatar: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "file",
+            default: null
         },
 
         status: {
@@ -41,6 +42,46 @@ const userSchema = new mongoose.Schema(
             type: mongoose.Schema.Types.ObjectId,
             ref: "role",
             required: true
+        },
+
+        cover: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "file",
+            default: null
+        },
+
+        level: {
+            type: Number,
+            default: 1
+        },
+
+        xp: {
+            type: Number,
+            default: 0
+        },
+
+        maxXp: {
+            type: Number,
+            default: 1000
+        },
+
+        bio: {
+            type: String,
+            default: ""
+        },
+
+        socialLinks: {
+            facebook: { type: String, default: "" },
+            twitter: { type: String, default: "" },
+            github: { type: String, default: "" },
+            linkedin: { type: String, default: "" },
+            website: { type: String, default: "" }
+        },
+
+        coin: {
+            type: Number,
+            default: 0,
+            min: [0, "Coin balance cannot be negative"]
         },
 
         loginCount: {
@@ -72,4 +113,6 @@ userSchema.pre('save', function (next) {
     )
 })
 
+const mongoosePaginate = require('mongoose-paginate-v2');
+userSchema.plugin(mongoosePaginate);
 module.exports = mongoose.model("user", userSchema);

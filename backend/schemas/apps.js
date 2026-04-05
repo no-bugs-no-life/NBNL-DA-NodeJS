@@ -7,6 +7,11 @@ const appSchema = new mongoose.Schema(
             required: [true, "App name is required"],
             trim: true
         },
+        slug: {
+            type: String,
+            unique: true,
+            sparse: true
+        },
         description: {
             type: String,
             default: ""
@@ -30,9 +35,10 @@ const appSchema = new mongoose.Schema(
             enum: ["pending", "approved", "rejected", "published"],
             default: "pending"
         },
-        fileUrl: {
-            type: String,
-            default: ""
+        fileId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "file",
+            default: null
         },
         iconUrl: {
             type: String,
@@ -51,6 +57,34 @@ const appSchema = new mongoose.Schema(
         isDeleted: {
             type: Boolean,
             default: false
+        },
+        isDisabled: {
+            type: Boolean,
+            default: false
+        },
+        screenshots: { type: [String], default: [] },
+        ratingScore: { type: Number, default: 0 },
+        ratingCount: { type: Number, default: 0 },
+        size: { type: String, default: "" },
+        platforms: { type: [String], default: [] },
+        tags: { type: [String], default: [] },
+        systemRequirements: {
+            min: { os: String, cpu: String, ram: String, graphics: String },
+            recommended: { os: String, cpu: String, ram: String, graphics: String }
+        },
+        features: { type: [{ icon: String, desc: String }], default: [] },
+        languageSupportCount: { type: Number, default: 0 },
+        securityVerified: { type: Boolean, default: false },
+        inAppPurchases: { type: Boolean, default: false },
+        type: {
+            type: String,
+            enum: ["app", "game"],
+            default: "app"
+        },
+        flags: {
+            type: [String],
+            enum: ["bestseller", "trending", "featured", "editors_choice"],
+            default: []
         }
     },
     {
@@ -63,4 +97,6 @@ appSchema.index({ developerId: 1 });
 appSchema.index({ categoryId: 1 });
 appSchema.index({ status: 1 });
 
+const mongoosePaginate = require('mongoose-paginate-v2');
+appSchema.plugin(mongoosePaginate);
 module.exports = mongoose.model("app", appSchema);

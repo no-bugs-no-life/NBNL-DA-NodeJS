@@ -40,11 +40,14 @@ module.exports = {
             filter.date.$lte = new Date(endDate);
         }
 
-        return await analyticsModel.find(filter)
-            .populate('appId', 'name iconUrl')
-            .sort({ date: -1 })
-            .skip(parseInt(limit) * (parseInt(page) - 1))
-            .limit(parseInt(limit));
+        let options = {
+            page: parseInt(page) || 1,
+            limit: parseInt(limit) || 30,
+            sort: { date: -1 },
+            populate: { path: 'appId', select: 'name iconUrl' }
+        };
+
+        return await analyticsModel.paginate(filter, options);
     },
 
     // GET - Summary stats for an app

@@ -17,8 +17,15 @@ const notificationSchema = new mongoose.Schema(
                 "new_download",
                 "system",
                 "promotion",
-                "update"
+                "update",
+                "sendmail"
             ]
+        },
+        channel: {
+            type: String,
+            required: true,
+            default: "inapp",
+            enum: ["inapp", "email", "firebase"]
         },
         message: {
             type: String,
@@ -31,6 +38,10 @@ const notificationSchema = new mongoose.Schema(
         isDeleted: {
             type: Boolean,
             default: false
+        },
+        sentAt: {
+            type: Date,
+            default: null
         }
     },
     {
@@ -42,4 +53,6 @@ notificationSchema.index({ userId: 1 });
 notificationSchema.index({ isRead: 1 });
 notificationSchema.index({ createdAt: -1 });
 
+const mongoosePaginate = require('mongoose-paginate-v2');
+notificationSchema.plugin(mongoosePaginate);
 module.exports = mongoose.model("notification", notificationSchema);

@@ -47,4 +47,6 @@ let reservationSchema = mongoose.Schema({
 }, {
     timestamps: true
 })
-module.exports = new mongoose.model('reservation',reservationSchema)
+const mongoosePaginate = require('mongoose-paginate-v2');
+reservationSchema.plugin(mongoosePaginate);
+module.exports = new mongoose.model('reservation', reservationSchema)

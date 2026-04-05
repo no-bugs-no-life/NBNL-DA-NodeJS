@@ -5,19 +5,26 @@ let mongoose = require('mongoose');
 
 module.exports = {
     getAllProducts: async function (queries) {
-        let titleQ = queries.title ? queries.title : '';
+        let titleQ = queries.title ? queries.title.toLowerCase() : '';
         let maxPrice = queries.maxPrice ? parseFloat(queries.maxPrice) : 1e4;
         let minPrice = queries.minPrice ? parseFloat(queries.minPrice) : 0;
         let limit = queries.limit ? parseInt(queries.limit) : 5;
         let page = queries.page ? parseInt(queries.page) : 1;
 
-        let allProducts = await productModel.find({ isDeleted: false });
+        let filter = {
+            isDeleted: false,
+            price: { $gte: minPrice, $lte: maxPrice }
+        };
+        if (titleQ) {
+            filter.title = { $regex: titleQ, $options: 'i' };
+        }
 
-        let result = allProducts.filter(e =>
-            e.price >= minPrice && e.price <= maxPrice && e.title.toLowerCase().includes(titleQ)
-        );
+        let options = {
+            page: page,
+            limit: limit
+        };
 
-        return result.slice(limit * (page - 1), limit * page);
+        return await productModel.paginate(filter, options);
     },
 
     getProductById: async function (id) {

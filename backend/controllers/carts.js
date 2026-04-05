@@ -111,6 +111,33 @@ module.exports = {
         return cart;
     },
 
+    // GET - List all carts with pagination (ADMIN)
+    getAllCarts: async function (queries) {
+        let { limit = 20, page = 1 } = queries;
+        let options = {
+            page: parseInt(page) || 1,
+            limit: parseInt(limit) || 20,
+            sort: { updatedAt: -1 }
+        };
+        return await cartModel.paginate(
+            { isDeleted: false },
+            {
+                ...options,
+                populate: [
+                    { path: 'user', select: 'fullName email avatarUrl' },
+                    { path: 'items.appId', select: 'name iconUrl price subscriptionPrice' }
+                ]
+            }
+        );
+    },
+
+    // DELETE - Soft delete cart (ADMIN)
+    deleteCart: async function (id) {
+        let cart = await cartModel.findByIdAndUpdate(id, { isDeleted: true }, { new: true });
+        if (!cart) return { error: "Cart not found", code: 404 };
+        return cart;
+    },
+
     // DELETE - Xoa toan bo gio hang
     clearCart: async function (userId) {
         let cart = await cartModel.findOne({ user: userId, isDeleted: false });

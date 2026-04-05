@@ -3,7 +3,7 @@ let productSchema = mongoose.Schema({
     title: {
         type: String,
         required: true,
-        unique:true
+        unique: true
     },
     sku: {
         type: String,
@@ -36,4 +36,6 @@ let productSchema = mongoose.Schema({
 }, {
     timestamps: true
 })
+const mongoosePaginate = require('mongoose-paginate-v2');
+productSchema.plugin(mongoosePaginate);
 module.exports = mongoose.model('product', productSchema);
