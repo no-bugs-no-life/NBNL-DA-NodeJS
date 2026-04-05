@@ -80,7 +80,9 @@ module.exports = {
     updateDeveloper: async function (id, userId, data) {
         let developer = await developerModel.findOne({ _id: id, isDeleted: false });
         if (!developer) return { error: "Developer not found", code: 404 };
-        if (developer.userId.toString() !== userId) return { error: "Ban khong co quyen chinh sua profile nay", code: 403 };
+
+        let isAdmin = (await getUserRole(userId)) === 'ADMIN';
+        if (developer.userId.toString() !== userId && !isAdmin) return { error: "Ban khong co quyen chinh sua profile nay", code: 403 };
 
         let allowedFields = ['name', 'bio', 'website', 'avatarUrl'];
         allowedFields.forEach(field => {

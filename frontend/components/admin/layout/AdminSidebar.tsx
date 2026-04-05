@@ -5,7 +5,8 @@ import {
     Squares2X2Icon,
     FolderOpenIcon,
     DevicePhoneMobileIcon,
-    TagIcon
+    TagIcon,
+    CodeBracketIcon
 } from '@heroicons/react/24/outline';
 import React from 'react';
 
@@ -22,6 +23,7 @@ const MENU_GROUPS = [
             { name: 'Quản lý Danh mục', icon: FolderOpenIcon, path: '/admin/categories' },
             { name: 'Quản lý App', icon: DevicePhoneMobileIcon, path: '/admin/apps' },
             { name: 'Quản lý Tag', icon: TagIcon, path: '/admin/tags' },
+            { name: 'Quản lý Developer', icon: CodeBracketIcon, path: '/admin/developers' },
         ]
     }
 ];
