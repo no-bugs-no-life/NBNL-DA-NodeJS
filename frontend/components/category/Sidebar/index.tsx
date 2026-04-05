@@ -1,29 +1,32 @@
-import { SidebarOSFilter } from "./SidebarOSFilter";
-import { SidebarPriceFilter } from "./SidebarPriceFilter";
-import { SidebarRatingFilter } from "./SidebarRatingFilter";
+import Link from "next/link";
+import { mockCategories } from "../data";
 
 export default function Sidebar() {
   return (
-    <aside className="w-full md:w-72 flex-shrink-0 space-y-10">
+    <aside className="w-full md:w-72 flex-shrink-0 space-y-8">
       <div>
-        <h1 className="text-3xl font-extrabold tracking-tight mb-2 text-on-surface">
-          Năng suất
+        <h1 className="text-2xl font-extrabold tracking-tight mb-2 text-on-surface">
+          Danh mục
         </h1>
         <p className="text-on-surface-variant text-sm leading-relaxed">
-          Nâng cao hiệu quả làm việc của bạn với những công cụ hàng đầu.
+          Khám phá các ứng dụng và trò chơi theo chủ đề.
         </p>
       </div>
-      <div className="space-y-8">
-        <SidebarOSFilter />
-        <SidebarPriceFilter />
-        <SidebarRatingFilter />
-      </div>
 
-      <div className="pt-6">
-        <button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-xl transition-colors shadow-lg shadow-blue-500/30">
-          Áp dụng bộ lọc
-        </button>
-      </div>
+      <nav className="flex flex-col gap-2">
+        {mockCategories.map((c) => (
+          <Link
+            key={c._id}
+            href={`/category/${c._id}`}
+            className="flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-surface-container-high transition-colors text-on-surface-variant hover:text-on-surface group"
+          >
+            <span className="material-symbols-outlined text-primary group-hover:scale-110 transition-transform">
+              {c.iconUrl}
+            </span>
+            <span className="font-semibold">{c.name}</span>
+          </Link>
+        ))}
+      </nav>
     </aside>
   );
 }
