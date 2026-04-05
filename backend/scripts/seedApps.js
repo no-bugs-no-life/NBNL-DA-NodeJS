@@ -12,7 +12,7 @@ const trendingAppsData = [
     { name: "CloudDrive X", description: "Utilities cloud storage", price: 12.00, status: "published" },
     { name: "WriteNow Editor", description: "Focus-driven word processor", price: 0, status: "published" },
     { name: "DataScope Pro", description: "Advanced visualization & stats", price: 14.99, status: "published" },
-    { name: "Luminous Mail", description: "Intelligent inbox management", price: 0, status: "published" },
+    { name: "APKBugs Mail", description: "Intelligent inbox management", price: 0, status: "published" },
     { name: "RenderMax 3D", description: "Công cụ dựng hình 3D chuyên nghiệp với hiệu năng cao.", price: 89.99, status: "published" },
     { name: "BeatMaker Studio", description: "Phần mềm sáng tác và mix nhạc dành cho nhà sản xuất.", price: 15.00, status: "published" },
     { name: "CodeCraft IDE", description: "Môi trường lập trình mượt mà, hỗ trợ đa ngôn ngữ.", price: 0, status: "published" },

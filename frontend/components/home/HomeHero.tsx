@@ -24,8 +24,8 @@ export default function HomeHero() {
       subtitle: "Featured Experience",
       title: "The Future of Creative Workflows",
       description:
-        "Elevate your productivity with the all-new Luminous Suite. AI-powered tools designed for modern professionals.",
-      slug: "luminous-suite"
+        "Khám phá đỉnh cao giải trí với gói APKBugs Suite. Tất cả những công cụ hỗ trợ trải nghiệm game một cách hoàn hảo nhất.",
+      slug: "apkbugs-suite"
     }
   ];
 

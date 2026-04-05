@@ -9,7 +9,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Luminous Store",
+  title: "APKBugs",
   description: "The Future of Creative Workflows",
 };
 
