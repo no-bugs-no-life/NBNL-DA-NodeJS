@@ -41,7 +41,7 @@ export default function HomeCollections() {
                 <div className="absolute bottom-6 left-6">
                   <h3 className="text-white text-2xl font-bold">{col.name}</h3>
                   <p className="text-white/80 text-sm">
-                    {idx === 0 ? "Top-rated simulation and arcade racing" : "Personalize your desktop experience"}
+                    {idx === 0 ? "Trò chơi mô phỏng và đua xe đỉnh cao" : "Cá nhân hóa màn hình của bạn"}
                   </p>
                 </div>
               </div>
@@ -52,7 +52,7 @@ export default function HomeCollections() {
                       {col.iconUrl || "category"}
                     </span>
                   </div>
-                  <span className="text-xs font-bold truncate">Explore</span>
+                  <span className="text-xs font-bold truncate">Khám phá</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-surface-container rounded-lg flex items-center justify-center">
@@ -60,7 +60,7 @@ export default function HomeCollections() {
                       api
                     </span>
                   </div>
-                  <span className="text-xs font-bold truncate">Discover</span>
+                  <span className="text-xs font-bold truncate">Tìm hiểu</span>
                 </div>
               </div>
             </Link>

@@ -23,13 +23,13 @@ export default function NavLinks() {
   return (
     <div className="hidden md:flex items-center gap-6 text-sm font-medium tracking-tight">
       <Link className={getLinkClasses("/")} href="/">
-        Home
+        Trang chủ
       </Link>
       <Link className={getLinkClasses("/apps")} href="/apps">
-        Apps
+        Ứng dụng
       </Link>
       <Link className={getLinkClasses("/games")} href="/games">
-        Games
+        Trò chơi
       </Link>
 
       {/* Category Mega Menu */}
@@ -38,7 +38,7 @@ export default function NavLinks() {
           className={`${getLinkClasses("/category")} flex items-center gap-1 cursor-pointer`}
           href="/category"
         >
-          Category
+          Danh mục
           <span className="material-symbols-outlined text-sm">expand_more</span>
         </Link>
 
@@ -78,7 +78,7 @@ export default function NavLinks() {
       </div>
 
       <Link className={getLinkClasses("/deals")} href="/deals">
-        Deals
+        Khuyến mãi
       </Link>
     </div>
   );

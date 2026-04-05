@@ -22,12 +22,12 @@ export default function HomeTrending() {
   return (
     <section className="px-8 max-w-screen-2xl mx-auto mb-20">
       <div className="flex items-center justify-between mb-8">
-        <h2 className="text-3xl font-bold tracking-tight">Trending Apps</h2>
+        <h2 className="text-3xl font-bold tracking-tight">Ứng dụng thịnh hành</h2>
         <Link
           href="/apps"
           className="text-primary font-semibold text-sm flex items-center gap-1 hover:underline"
         >
-          See all{" "}
+          Xem tất cả{" "}
           <span className="material-symbols-outlined text-sm">
             chevron_right
           </span>
@@ -65,11 +65,11 @@ export default function HomeTrending() {
                   </span>
                 </div>
                 <span className="text-sm text-on-surface-variant">
-                  {firstApp.price === 0 ? "Free" : `$${firstApp.price}`}
+                  {firstApp.price === 0 ? "Miễn phí" : `$${firstApp.price}`}
                 </span>
               </div>
               <button className="bg-primary-container text-on-primary-container px-6 py-2 rounded-full text-sm font-bold hover:opacity-90 transition-opacity">
-                Install
+                Cài đặt
               </button>
             </div>
           </Link>
@@ -95,7 +95,7 @@ export default function HomeTrending() {
               <p className="text-xs text-on-surface-variant mb-3 truncate block">{app.description}</p>
               <div className="flex items-center justify-between mt-2">
                 <span className={`text-xs font-bold ${app.price === 0 ? 'text-tertiary' : 'text-on-surface'}`}>
-                  {app.price === 0 ? "Free" : `$${app.price}`}
+                  {app.price === 0 ? "Miễn phí" : `$${app.price}`}
                 </span>
                 <div className="flex items-center text-amber-500 text-[10px]">
                   <span

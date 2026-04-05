@@ -59,7 +59,7 @@ export default function LoginPage() {
               href="/"
               className="inline-flex items-center gap-2 text-4xl font-extrabold tracking-tighter text-on-surface mb-3 group"
             >
-              <img src="/logo.png" alt="APKBugs Logo" className="h-12 object-contain drop-shadow-md group-hover:scale-105 transition-transform" />
+              <img src="/logo.png" alt="APKBugs Logo" className="h-12 rounded-xl object-contain drop-shadow-md group-hover:scale-105 transition-transform" />
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">APKBugs</span>
             </Link>
             <p className="text-on-surface-variant text-base font-medium mt-2">
@@ -172,7 +172,7 @@ export default function LoginPage() {
               <div className="w-32 h-32 bg-secondary/30 rounded-full blur-2xl absolute bottom-10 right-10 animate-[pulse_3s_ease-in-out_infinite]" />
 
               <div className="relative z-20 flex flex-col items-center animate-[bounce_4s_ease-in-out_infinite]">
-                <img src="/logo.png" alt="Logo" className="w-36 h-auto object-contain drop-shadow-2xl" />
+                <img src="/logo.png" alt="Logo" className="w-36 h-auto rounded-3xl object-contain drop-shadow-2xl" />
                 <div className="mt-4 px-6 py-2 bg-surface/50 backdrop-blur-lg rounded-full border border-outline-variant/30 text-on-surface font-bold tracking-widest text-sm shadow-lg">
                   GAMING HUB
                 </div>

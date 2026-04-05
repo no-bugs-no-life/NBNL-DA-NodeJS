@@ -21,8 +21,8 @@ export default function HomeHero() {
     {
       image:
         "https://lh3.googleusercontent.com/aida-public/AB6AXuCvjgcGTThU-5hkonzGghyOtGc7x5MKa_AWqh-O42zfi2ol-cb5m1of9Bpu_WH_9aAIg2hXC7oVloI6jyEc7R_XGnkn6rRkPFxxThOMFFR1SU16NwM6Tr2nnfvFFNBAYBOIR0q2nM8dTArVJBU8QKalHEIxLO9yI9E3YYFdXF2_raBp4QaANIt1uIAhpIuC2Q-xVA97-GUauGmUrJlp0j7qtTZ2prSsV95DwGit3uTfCt2oFYQDsmfD3ufzrjhwAklWRXRac96VdGI",
-      subtitle: "Featured Experience",
-      title: "The Future of Creative Workflows",
+      subtitle: "Trải nghiệm nổi bật",
+      title: "Tương lai của công việc sáng tạo",
       description:
         "Khám phá đỉnh cao giải trí với gói APKBugs Suite. Tất cả những công cụ hỗ trợ trải nghiệm game một cách hoàn hảo nhất.",
       slug: "apkbugs-suite"
