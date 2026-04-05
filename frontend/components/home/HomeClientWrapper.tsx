@@ -11,10 +11,8 @@ export default function HomeClientWrapper() {
     const { data, isLoading } = useQuery<Partial<HomeStoreState>>({
         queryKey: ["homeLayout"],
         queryFn: async () => {
-            // Fetching from your Backend API endpoint
-            const response = await axios.get("http://localhost:3000/api/v1/home");
-            // Replace with your actual backend port (usually 3000, 3001, or 8080)
-            // I'll assume standard setup or API rewriting.
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+            const response = await axios.get(`${apiUrl}/api/v1/home`);
             return response.data;
         },
     });
