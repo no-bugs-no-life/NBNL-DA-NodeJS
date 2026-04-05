@@ -95,7 +95,15 @@ router.get('/:id/download',
 // Upload image
 router.post('/upload-image',
     /* #swagger.tags = ['Files'] */
-    checkLogin, uploadImage.single('file'), async function (req, res, next) {
+    checkLogin, uploadImage.single('file'),
+    // Multer error handler
+    function (err, req, res, next) {
+        if (err) {
+            return res.status(400).send({ message: err.message });
+        }
+        next();
+    },
+    async function (req, res, next) {
         try {
             let { ownerType, ownerId, fileType } = req.body;
             if (!req.file) {
@@ -149,6 +157,31 @@ router.post('/upload-app-file',
                 size: req.file.size
             });
             res.status(201).send(file);
+        } catch (error) {
+            res.status(500).send({ message: error.message });
+        }
+    });
+
+// ============================================================
+// POST /api/v1/files/create     - Tạo file metadata (url thủ công, admin)
+// ============================================================
+router.post('/create',
+    /* #swagger.tags = ['Files'] */
+    checkLogin, async function (req, res, next) {
+        try {
+            let user = await userController.FindUserById(req.userId);
+            let isAdminOrMod = user && ['ADMIN', 'MODERATOR'].includes(user.role.name);
+            if (!isAdminOrMod) {
+                return res.status(403).send({ message: "Chi ADMIN/MODERATOR moi co the tao file" });
+            }
+
+            let { ownerType, ownerId, fileType, url, size } = req.body;
+            if (!ownerType || !fileType || !url) {
+                return res.status(400).send({ message: "ownerType, fileType, url la bat buoc" });
+            }
+
+            let newFile = await fileController.saveFileMetadata({ ownerType, ownerId, fileType, url, size });
+            res.status(201).send(newFile);
         } catch (error) {
             res.status(500).send({ message: error.message });
         }

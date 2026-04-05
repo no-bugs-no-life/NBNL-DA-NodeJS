@@ -64,7 +64,7 @@ router.get('/:id',
         }
     });
 
-// POST /api/v1/reviews - Create new review
+// POST /api/v1/reviews - Create new review (user)
 router.post('/',
     /* #swagger.tags = ['Reviews'] */
     checkLogin, async function (req, res, next) {
@@ -72,6 +72,27 @@ router.post('/',
             let { appId, rating, comment } = req.body;
             let result = await reviewController.createReview({
                 appId, userId: req.userId, rating, comment
+            });
+            if (result.error) {
+                return res.status(400).send({ message: result.error });
+            }
+            res.status(201).send(result);
+        } catch (error) {
+            res.status(400).send({ message: error.message });
+        }
+    });
+
+// POST /api/v1/reviews/admin - Create review on behalf of a user (ADMIN/MODERATOR)
+router.post('/admin',
+    /* #swagger.tags = ['Reviews'] */
+    checkLogin, checkRole('ADMIN', 'MODERATOR'), async function (req, res, next) {
+        try {
+            let { appId, userId, rating, comment, status } = req.body;
+            if (!appId || !userId || !rating) {
+                return res.status(400).send({ message: "appId, userId, and rating are required" });
+            }
+            let result = await reviewController.createReviewAdmin({
+                appId, userId, rating, comment, status
             });
             if (result.error) {
                 return res.status(400).send({ message: result.error });
@@ -142,6 +163,21 @@ router.post('/:id/reject',
                 return res.status(404).send({ message: review.error });
             }
             res.send({ message: "Review rejected", review });
+        } catch (error) {
+            res.status(500).send({ message: error.message });
+        }
+    });
+
+// POST /api/v1/reviews/:id/reset - Reset review back to pending
+router.post('/:id/reset',
+    /* #swagger.tags = ['Reviews'] */
+    checkLogin, checkRole('ADMIN', 'MODERATOR'), async function (req, res, next) {
+        try {
+            let review = await reviewController.resetReview(req.params.id);
+            if (review && review.error) {
+                return res.status(404).send({ message: review.error });
+            }
+            res.send({ message: "Review reset to pending", review });
         } catch (error) {
             res.status(500).send({ message: error.message });
         }

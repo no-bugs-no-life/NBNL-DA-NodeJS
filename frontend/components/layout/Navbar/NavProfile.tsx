@@ -10,7 +10,8 @@ import { useRouter } from "next/navigation";
 export default function NavProfile() {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const { user, isAuthenticated, isLoading, checkAuth, logout } = useAuthStore();
+  const { user, isAuthenticated, isLoading, checkAuth, logout } =
+    useAuthStore();
   const router = useRouter();
 
   useEffect(() => {
@@ -100,7 +101,9 @@ export default function NavProfile() {
                   <span className="text-slate-600 flex items-center gap-1.5">
                     <Coins className="w-4 h-4 text-yellow-500" /> APKBugs Coin
                   </span>
-                  <span className="text-blue-600 font-bold">{user.coin ? user.coin.toLocaleString() : 0}</span>
+                  <span className="text-blue-600 font-bold">
+                    {user.coin ? user.coin.toLocaleString() : 0}
+                  </span>
                 </div>
               </div>
 

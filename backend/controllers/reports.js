@@ -22,7 +22,14 @@ module.exports = {
             page: parseInt(page) || 1,
             limit: parseInt(limit) || 20,
             sort: { createdAt: -1 },
-            populate: { path: 'reporterId', select: 'fullName email avatarUrl' }
+            populate: [
+                { path: 'reporterId', select: 'fullName email avatarUrl' },
+                {
+                    path: 'targetId',
+                    select: 'name appId rating comment',
+                    populate: { path: 'appId', select: 'name iconUrl slug' }
+                }
+            ]
         };
         return await reportModel.paginate(filter, options);
     },
@@ -101,17 +108,18 @@ module.exports = {
         let report = await reportModel.findOne({ _id: id, isDeleted: false });
         if (!report) return { error: "Report not found", code: 404 };
 
-        let allowedFields = ['reason', 'status'];
+        let allowedFields = ['reason', 'status', 'adminNote'];
         allowedFields.forEach(field => {
             if (data[field] !== undefined) report[field] = data[field];
         });
+        report.updatedFieldsAt = new Date();
         await report.save();
         await report.populate('reporterId', 'fullName email avatarUrl');
         return report;
     },
 
     // PUT - Update report status
-    updateReportStatus: async function (id, status) {
+    updateReportStatus: async function (id, status, adminNote = "") {
         let report = await reportModel.findOne({ _id: id, isDeleted: false });
         if (!report) return { error: "Report not found", code: 404 };
 
@@ -121,6 +129,8 @@ module.exports = {
         }
 
         report.status = status;
+        if (adminNote) report.adminNote = adminNote;
+        report.updatedFieldsAt = new Date();
         await report.save();
         await report.populate('reporterId', 'fullName email avatarUrl');
         return report;

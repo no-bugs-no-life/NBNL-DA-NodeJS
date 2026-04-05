@@ -9,8 +9,9 @@ export default function HomeGames() {
   const { data: bestSellingGames = [], isLoading } = useQuery({
     queryKey: ["apps", "bestselling-games"],
     queryFn: async () => {
-      
-      const response = await axios.get(`${API_URL}/api/v1/apps?type=game&flag=bestseller&limit=6`);
+      const response = await axios.get(
+        `${API_URL}/api/v1/apps?type=game&flag=bestseller&limit=6`,
+      );
       return response.data?.docs || response.data;
     },
   });
@@ -59,7 +60,9 @@ export default function HomeGames() {
             <div>
               <h4 className="font-bold text-sm truncate">{game.name}</h4>
               <div className="flex items-center justify-between mt-1">
-                <span className={`text-xs ${game.price === 0 ? 'text-tertiary font-bold' : 'text-on-surface-variant'}`}>
+                <span
+                  className={`text-xs ${game.price === 0 ? "text-tertiary font-bold" : "text-on-surface-variant"}`}
+                >
                   {game.price === 0 ? "Miễn phí" : `$${game.price}`}
                 </span>
                 <div className="flex items-center text-amber-500 text-[10px]">
@@ -69,7 +72,9 @@ export default function HomeGames() {
                   >
                     star
                   </span>
-                  <span className="ml-0.5">{game.ratingScore ? game.ratingScore.toFixed(1) : "0.0"}</span>
+                  <span className="ml-0.5">
+                    {game.ratingScore ? game.ratingScore.toFixed(1) : "0.0"}
+                  </span>
                 </div>
               </div>
             </div>

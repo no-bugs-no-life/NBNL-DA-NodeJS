@@ -80,11 +80,11 @@ router.post('/',
     /* #swagger.tags = ['Subscriptions'] */
     checkLogin, checkRole('ADMIN', 'MODERATOR'), async function (req, res, next) {
         try {
-            let { userId, appId, type } = req.body;
-            if (!userId || !appId || !type) {
-                return res.status(400).send({ message: "userId, appId va type la bat buoc" });
+            let { userId, appId, packageId } = req.body;
+            if (!userId || !appId || !packageId) {
+                return res.status(400).send({ message: "userId, appId va packageId la bat buoc" });
             }
-            let result = await subscriptionController.createSubscription({ userId, appId, type });
+            let result = await subscriptionController.createSubscription({ userId, appId, packageId });
             if (result && result.error) {
                 return res.status(result.code || 400).send({ message: result.error });
             }
@@ -103,11 +103,11 @@ router.put('/:id/renew',
     /* #swagger.tags = ['Subscriptions'] */
     checkLogin, checkRole('ADMIN', 'MODERATOR'), async function (req, res, next) {
         try {
-            let { type } = req.body;
-            if (!type) {
-                return res.status(400).send({ message: "type la bat buoc" });
+            let { packageId } = req.body;
+            if (!packageId) {
+                return res.status(400).send({ message: "packageId la bat buoc" });
             }
-            let result = await subscriptionController.renewSubscription(req.params.id, type);
+            let result = await subscriptionController.renewSubscription(req.params.id, packageId);
             if (result && result.error) {
                 return res.status(result.code || 400).send({ message: result.error });
             }

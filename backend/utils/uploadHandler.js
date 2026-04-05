@@ -16,7 +16,7 @@ let filterImage = function (req, file, cb) {
     if (file.mimetype.includes("image")) {
         cb(null, true)
     } else {
-        cb(new Error("file sai dinh dang"), false)
+        cb(new Error("file sai định dạng"), false)
     }
 }
 let filterExcel = function (req, file, cb) {

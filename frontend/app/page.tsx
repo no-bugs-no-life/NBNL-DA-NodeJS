@@ -6,7 +6,6 @@ import HomeGames from "../components/home/HomeGames";
 import HomeCollections from "../components/home/HomeCollections";
 import HomeProductivity from "../components/home/HomeProductivity";
 
-
 export default function Home() {
   return (
     <>

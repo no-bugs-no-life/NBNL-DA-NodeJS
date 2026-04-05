@@ -9,7 +9,6 @@ export default function HomeTrending() {
   const { data: trendingApps = [], isLoading } = useQuery({
     queryKey: ["apps", "trending"],
     queryFn: async () => {
-      
       const response = await axios.get(`${API_URL}/api/v1/apps?limit=5`);
       return response.data?.docs || response.data;
     },
@@ -23,7 +22,9 @@ export default function HomeTrending() {
   return (
     <section className="px-8 max-w-screen-2xl mx-auto mb-20">
       <div className="flex items-center justify-between mb-8">
-        <h2 className="text-3xl font-bold tracking-tight">Ứng dụng thịnh hành</h2>
+        <h2 className="text-3xl font-bold tracking-tight">
+          Ứng dụng thịnh hành
+        </h2>
         <Link
           href="/apps"
           className="text-primary font-semibold text-sm flex items-center gap-1 hover:underline"
@@ -93,9 +94,13 @@ export default function HomeTrending() {
               <h4 className="font-bold text-sm mb-1 group-hover:text-primary transition-colors truncate">
                 {app.name}
               </h4>
-              <p className="text-xs text-on-surface-variant mb-3 truncate block">{app.description}</p>
+              <p className="text-xs text-on-surface-variant mb-3 truncate block">
+                {app.description}
+              </p>
               <div className="flex items-center justify-between mt-2">
-                <span className={`text-xs font-bold ${app.price === 0 ? 'text-tertiary' : 'text-on-surface'}`}>
+                <span
+                  className={`text-xs font-bold ${app.price === 0 ? "text-tertiary" : "text-on-surface"}`}
+                >
                   {app.price === 0 ? "Miễn phí" : `$${app.price}`}
                 </span>
                 <div className="flex items-center text-amber-500 text-[10px]">
@@ -105,7 +110,7 @@ export default function HomeTrending() {
                   >
                     star
                   </span>
-                  <span className="ml-0.5">{(4.0 + (idx * 0.2)).toFixed(1)}</span>
+                  <span className="ml-0.5">{(4.0 + idx * 0.2).toFixed(1)}</span>
                 </div>
               </div>
             </div>

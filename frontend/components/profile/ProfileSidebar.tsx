@@ -43,10 +43,11 @@ export default function ProfileSidebar() {
             <Link
               key={item.id}
               href={item.id}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all duration-200 ${isActive
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all duration-200 ${
+                isActive
                   ? "bg-blue-50 text-blue-600"
                   : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
-                }`}
+              }`}
             >
               <Icon
                 className={`w-5 h-5 flex-shrink-0 ${isActive ? "text-blue-600" : ""}`}

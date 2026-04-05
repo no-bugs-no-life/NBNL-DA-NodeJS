@@ -16,11 +16,15 @@ export default function AppDeveloperInfo() {
               className="w-full h-full object-cover rounded-full"
             />
           ) : (
-            <span className="material-symbols-outlined text-on-surface-variant">person</span>
+            <span className="material-symbols-outlined text-on-surface-variant">
+              person
+            </span>
           )}
         </div>
         <div>
-          <p className="font-bold">{appInfo?.developerId?.fullName || "Developer"}</p>
+          <p className="font-bold">
+            {appInfo?.developerId?.fullName || "Developer"}
+          </p>
           <a
             className="text-primary text-sm font-medium hover:underline"
             href="#"

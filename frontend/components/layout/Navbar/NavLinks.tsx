@@ -73,7 +73,9 @@ export default function NavLinks() {
               className="col-span-2 flex items-center justify-center gap-2 p-3 mt-2 rounded-xl bg-surface-container-low hover:bg-surface-container-high transition-colors font-semibold text-primary"
             >
               Xem tất cả danh mục
-              <span className="material-symbols-outlined text-sm">arrow_forward</span>
+              <span className="material-symbols-outlined text-sm">
+                arrow_forward
+              </span>
             </Link>
           </div>
         </div>
@@ -88,7 +90,9 @@ export default function NavLinks() {
           href="/admin/dashboard"
           className="ml-2 flex items-center gap-1.5 px-4 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-600 hover:text-white rounded-full font-bold transition-all border border-blue-200 hover:border-blue-600 shadow-sm"
         >
-          <span className="material-symbols-outlined text-[18px]">admin_panel_settings</span>
+          <span className="material-symbols-outlined text-[18px]">
+            admin_panel_settings
+          </span>
           Quản lý
         </Link>
       )}

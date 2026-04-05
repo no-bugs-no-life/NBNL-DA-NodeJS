@@ -13,8 +13,9 @@ export default function GameGrid() {
   const { data: games = [], isLoading } = useQuery({
     queryKey: ["apps", "games"],
     queryFn: async () => {
-      
-      const response = await axios.get(`${API_URL}/api/v1/apps?type=game&limit=50`);
+      const response = await axios.get(
+        `${API_URL}/api/v1/apps?type=game&limit=50`,
+      );
       return response.data?.docs || response.data;
     },
   });
@@ -24,7 +25,11 @@ export default function GameGrid() {
   };
 
   if (isLoading) {
-    return <div className="text-center py-12 text-on-surface-variant">Đang tải trò chơi...</div>;
+    return (
+      <div className="text-center py-12 text-on-surface-variant">
+        Đang tải trò chơi...
+      </div>
+    );
   }
 
   return (

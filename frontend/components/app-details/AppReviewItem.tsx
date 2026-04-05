@@ -12,19 +12,20 @@ export default function AppReviewItem({
   rating = 5,
 }: AppReviewItemProps) {
   const name = userId?.fullName || "Người dùng Khách";
-  const initials = name
-    .split(" ")
-    .filter(Boolean)
-    .map((n) => n[0])
-    .join("")
-    .substring(0, 2)
-    .toUpperCase() || "NK";
+  const initials =
+    name
+      .split(" ")
+      .filter(Boolean)
+      .map((n) => n[0])
+      .join("")
+      .substring(0, 2)
+      .toUpperCase() || "NK";
 
   const dateObj = createdAt ? new Date(createdAt) : new Date();
   const time = dateObj.toLocaleDateString("vi-VN", {
     day: "numeric",
     month: "long",
-    year: "numeric"
+    year: "numeric",
   });
 
   return (
@@ -33,7 +34,11 @@ export default function AppReviewItem({
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center font-bold text-primary overflow-hidden">
             {userId?.avatarUrl ? (
-              <img src={userId.avatarUrl} alt={name} className="w-full h-full object-cover" />
+              <img
+                src={userId.avatarUrl}
+                alt={name}
+                className="w-full h-full object-cover"
+              />
             ) : (
               initials
             )}
@@ -57,7 +62,9 @@ export default function AppReviewItem({
         </div>
         <span className="text-sm text-on-surface-variant">{time}</span>
       </div>
-      <p className="text-on-surface-variant leading-relaxed">{comment || "Không có bình luận"}</p>
+      <p className="text-on-surface-variant leading-relaxed">
+        {comment || "Không có bình luận"}
+      </p>
     </div>
   );
 }

@@ -2,12 +2,15 @@ import { useAppDetailStore } from "../../store/useAppDetailStore";
 
 export default function AppOverview() {
   const { appInfo } = useAppDetailStore();
-  const features = appInfo?.features && appInfo.features.length > 0 ? appInfo.features : [
-    {
-      icon: "auto_fix_high",
-      desc: "Công cụ thông minh đã tích hợp.",
-    }
-  ];
+  const features =
+    appInfo?.features && appInfo.features.length > 0
+      ? appInfo.features
+      : [
+          {
+            icon: "auto_fix_high",
+            desc: "Công cụ thông minh đã tích hợp.",
+          },
+        ];
   return (
     <section>
       <h2 className="text-3xl font-bold tracking-tight mb-8">Tổng quan</h2>

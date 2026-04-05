@@ -12,10 +12,9 @@ export default function HomeHero() {
   const { data: heroApps = [] } = useQuery({
     queryKey: ["home", "hero"],
     queryFn: async () => {
-      
       const response = await axios.get(`${API_URL}/api/v1/apps?limit=3`);
       return response.data?.docs || response.data;
-    }
+    },
   });
 
   const fallbackSlides = [
@@ -26,8 +25,8 @@ export default function HomeHero() {
       title: "Tương lai của công việc sáng tạo",
       description:
         "Khám phá đỉnh cao giải trí với gói APKBugs Suite. Tất cả những công cụ hỗ trợ trải nghiệm game một cách hoàn hảo nhất.",
-      slug: "apkbugs-suite"
-    }
+      slug: "apkbugs-suite",
+    },
   ];
 
   interface HeroAppPayload {
@@ -39,13 +38,19 @@ export default function HomeHero() {
     categoryId?: { name: string };
   }
 
-  const slides = heroApps.length > 0 ? heroApps.map((app: HeroAppPayload) => ({
-    image: app.screenshots && app.screenshots.length > 0 ? app.screenshots[0] : (app.iconUrl || ""),
-    subtitle: app.categoryId?.name || "Nổi Bật",
-    title: app.name,
-    description: app.description,
-    slug: app.slug
-  })) : fallbackSlides;
+  const slides =
+    heroApps.length > 0
+      ? heroApps.map((app: HeroAppPayload) => ({
+          image:
+            app.screenshots && app.screenshots.length > 0
+              ? app.screenshots[0]
+              : app.iconUrl || "",
+          subtitle: app.categoryId?.name || "Nổi Bật",
+          title: app.name,
+          description: app.description,
+          slug: app.slug,
+        }))
+      : fallbackSlides;
 
   useEffect(() => {
     if (slides.length <= 1) return;

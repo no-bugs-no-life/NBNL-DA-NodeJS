@@ -4,19 +4,23 @@ export default function AppSystemReqs() {
   const { appInfo } = useAppDetailStore();
   const reqs = appInfo?.systemRequirements;
 
-  const min = reqs?.min ? [
-    { l: "HĐH", v: reqs.min.os || "Không rõ" },
-    { l: "Bộ xử lý", v: reqs.min.cpu || "Không rõ" },
-    { l: "RAM", v: reqs.min.ram || "Không rõ" },
-    { l: "Đồ họa", v: reqs.min.graphics || "Không rõ" },
-  ] : [];
+  const min = reqs?.min
+    ? [
+        { l: "HĐH", v: reqs.min.os || "Không rõ" },
+        { l: "Bộ xử lý", v: reqs.min.cpu || "Không rõ" },
+        { l: "RAM", v: reqs.min.ram || "Không rõ" },
+        { l: "Đồ họa", v: reqs.min.graphics || "Không rõ" },
+      ]
+    : [];
 
-  const rec = reqs?.recommended ? [
-    { l: "HĐH", v: reqs.recommended.os || "Không rõ" },
-    { l: "Bộ xử lý", v: reqs.recommended.cpu || "Không rõ" },
-    { l: "RAM", v: reqs.recommended.ram || "Không rõ" },
-    { l: "Đồ họa", v: reqs.recommended.graphics || "Không rõ" },
-  ] : [];
+  const rec = reqs?.recommended
+    ? [
+        { l: "HĐH", v: reqs.recommended.os || "Không rõ" },
+        { l: "Bộ xử lý", v: reqs.recommended.cpu || "Không rõ" },
+        { l: "RAM", v: reqs.recommended.ram || "Không rõ" },
+        { l: "Đồ họa", v: reqs.recommended.graphics || "Không rõ" },
+      ]
+    : [];
   return (
     <section className="bg-surface-container-low p-8 rounded-3xl">
       <h3 className="text-2xl font-bold mb-6">Yêu cầu hệ thống</h3>
@@ -51,7 +55,11 @@ export default function AppSystemReqs() {
             </ul>
           </div>
         )}
-        {!reqs && <p className="text-sm text-on-surface-variant">Chưa có thông tin cấu hình hệ thống.</p>}
+        {!reqs && (
+          <p className="text-sm text-on-surface-variant">
+            Chưa có thông tin cấu hình hệ thống.
+          </p>
+        )}
       </div>
     </section>
   );

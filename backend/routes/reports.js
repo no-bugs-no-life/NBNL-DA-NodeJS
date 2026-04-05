@@ -92,9 +92,9 @@ router.put('/:id/status',
     /* #swagger.tags = ['Reports'] */
     checkLogin, checkRole('ADMIN', 'MODERATOR'), async function (req, res, next) {
         try {
-            let { status } = req.body;
+            let { status, adminNote } = req.body;
             if (!status) return res.status(400).send({ message: "status la bat buoc" });
-            let result = await reportController.updateReportStatus(req.params.id, status);
+            let result = await reportController.updateReportStatus(req.params.id, status, adminNote);
             if (result && result.error) return res.status(result.code || 400).send({ message: result.error });
             res.send({ message: "Cap nhat trang thai thanh cong", report: result });
         } catch (error) {

@@ -26,6 +26,10 @@ const reportSchema = new mongoose.Schema(
             enum: ["pending", "reviewed", "resolved", "dismissed"],
             default: "pending"
         },
+        adminNote: {
+            type: String,
+            default: ""
+        },
         isDeleted: {
             type: Boolean,
             default: false
@@ -35,6 +39,13 @@ const reportSchema = new mongoose.Schema(
         timestamps: true
     }
 );
+
+reportSchema.add({
+    updatedFieldsAt: {
+        type: Date,
+        default: null
+    }
+});
 
 reportSchema.index({ reporterId: 1 });
 reportSchema.index({ targetType: 1, targetId: 1 });

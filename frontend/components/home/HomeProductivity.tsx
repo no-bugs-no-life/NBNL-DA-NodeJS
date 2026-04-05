@@ -9,7 +9,6 @@ export default function HomeProductivity() {
   const { data: productivityApps = [], isLoading } = useQuery({
     queryKey: ["apps", "productivity"],
     queryFn: async () => {
-      
       const response = await axios.get(`${API_URL}/api/v1/apps?limit=3`);
       return response.data?.docs || response.data;
     },
@@ -21,7 +20,9 @@ export default function HomeProductivity() {
     <section className="px-4 sm:px-8 max-w-screen-2xl mx-auto mb-20">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-0 mb-6 sm:mb-8">
         <div>
-          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">Duy trì hiệu suất</h2>
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">
+            Duy trì hiệu suất
+          </h2>
           <p className="text-on-surface-variant text-sm mt-1">
             Công cụ giúp bạn làm được nhiều việc hơn, dễ dàng hơn.
           </p>
@@ -51,7 +52,9 @@ export default function HomeProductivity() {
                 {app.description}
               </p>
               <div className="mt-2 flex items-center gap-3">
-                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${app.price === 0 ? "bg-tertiary-container/10 text-tertiary" : "bg-surface-container-highest text-on-surface"}`}>
+                <span
+                  className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${app.price === 0 ? "bg-tertiary-container/10 text-tertiary" : "bg-surface-container-highest text-on-surface"}`}
+                >
                   {app.price === 0 ? "Miễn phí" : `$${app.price}`}
                 </span>
                 <div className="flex items-center text-amber-500 text-[10px]">
@@ -61,7 +64,7 @@ export default function HomeProductivity() {
                   >
                     star
                   </span>
-                  <span className="ml-0.5">{(4.9 - (idx * 0.1)).toFixed(1)}</span>
+                  <span className="ml-0.5">{(4.9 - idx * 0.1).toFixed(1)}</span>
                 </div>
               </div>
             </div>

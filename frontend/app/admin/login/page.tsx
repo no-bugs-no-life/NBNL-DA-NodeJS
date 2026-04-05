@@ -19,7 +19,10 @@ export default function AdminLoginPage() {
     setLoading(true);
     try {
       // Step 1: Login → get raw JWT token string
-      const loginRes = await axios.post(`${API_URL}/api/v1/auth/login`, { username, password });
+      const loginRes = await axios.post(`${API_URL}/api/v1/auth/login`, {
+        username,
+        password,
+      });
       const token: string = loginRes.data;
 
       // Step 2: Get user info with role via /me
@@ -43,7 +46,7 @@ export default function AdminLoginPage() {
           role: roleName,
           avatarUrl: user.avatarUrl || user.avatar || "",
         },
-        token
+        token,
       );
       router.push("/admin/categories");
     } catch {
@@ -59,15 +62,23 @@ export default function AdminLoginPage() {
       <div className="relative w-full max-w-md p-8 md:p-10 bg-slate-900 border border-white/5 rounded-3xl shadow-2xl flex flex-col">
         <div className="mb-8 text-center">
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-blue-600/20 mb-4">
-            <span className="material-symbols-outlined text-3xl text-blue-400">admin_panel_settings</span>
+            <span className="material-symbols-outlined text-3xl text-blue-400">
+              admin_panel_settings
+            </span>
           </div>
-          <h1 className="text-2xl font-extrabold text-white tracking-tight">Admin Portal</h1>
-          <p className="text-slate-400 text-sm mt-1">Đăng nhập với tài khoản ADMIN</p>
+          <h1 className="text-2xl font-extrabold text-white tracking-tight">
+            Admin Portal
+          </h1>
+          <p className="text-slate-400 text-sm mt-1">
+            Đăng nhập với tài khoản ADMIN
+          </p>
         </div>
 
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
-            <label className="block text-sm font-semibold text-slate-400 mb-1.5">Tên đăng nhập</label>
+            <label className="block text-sm font-semibold text-slate-400 mb-1.5">
+              Tên đăng nhập
+            </label>
             <input
               id="admin-username"
               type="text"
@@ -79,7 +90,9 @@ export default function AdminLoginPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-semibold text-slate-400 mb-1.5">Mật khẩu</label>
+            <label className="block text-sm font-semibold text-slate-400 mb-1.5">
+              Mật khẩu
+            </label>
             <input
               id="admin-password"
               type="password"

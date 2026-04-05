@@ -9,7 +9,6 @@ export default function HomeCollections() {
   const { data: collections = [], isLoading } = useQuery({
     queryKey: ["categories", "home"],
     queryFn: async () => {
-
       const response = await axios.get(`${API_URL}/api/v1/categories`);
       const arr = response.data?.docs || response.data || [];
       return arr.filter((c: CategoryItem) => c.parentId == null).slice(0, 2);
@@ -43,7 +42,9 @@ export default function HomeCollections() {
                 <div className="absolute bottom-6 left-6">
                   <h3 className="text-white text-2xl font-bold">{col.name}</h3>
                   <p className="text-white/80 text-sm">
-                    {idx === 0 ? "Trò chơi mô phỏng và đua xe đỉnh cao" : "Cá nhân hóa màn hình của bạn"}
+                    {idx === 0
+                      ? "Trò chơi mô phỏng và đua xe đỉnh cao"
+                      : "Cá nhân hóa màn hình của bạn"}
                   </p>
                 </div>
               </div>

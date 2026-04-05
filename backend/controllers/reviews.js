@@ -67,6 +67,25 @@ module.exports = {
         return newReview;
     },
 
+    createReviewAdmin: async function (data) {
+        let { appId, userId, rating, comment, status } = data;
+
+        let existing = await reviewModel.findOne({ appId, userId, isDeleted: false });
+        if (existing) return { error: "User has already reviewed this app" };
+
+        let newReview = new reviewModel({
+            appId,
+            userId,
+            rating,
+            comment: comment || "",
+            status: status || "approved" // admin-created reviews auto-approved
+        });
+        await newReview.save();
+        await newReview.populate('userId', 'fullName avatarUrl');
+        await newReview.populate('appId', 'name');
+        return newReview;
+    },
+
     updateReview: async function (id, userId, data) {
         let review = await reviewModel.findOne({ _id: id, isDeleted: false });
         if (!review) return { error: "Review not found" };
@@ -102,6 +121,14 @@ module.exports = {
         let review = await reviewModel.findOne({ _id: id, isDeleted: false });
         if (!review) return { error: "Review not found" };
         review.status = "rejected";
+        await review.save();
+        return review;
+    },
+
+    resetReview: async function (id) {
+        let review = await reviewModel.findOne({ _id: id, isDeleted: false });
+        if (!review) return { error: "Review not found" };
+        review.status = "pending";
         await review.save();
         return review;
     }

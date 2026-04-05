@@ -58,6 +58,10 @@ const appSchema = new mongoose.Schema(
             type: Boolean,
             default: false
         },
+        isDisabled: {
+            type: Boolean,
+            default: false
+        },
         screenshots: { type: [String], default: [] },
         ratingScore: { type: Number, default: 0 },
         ratingCount: { type: Number, default: 0 },

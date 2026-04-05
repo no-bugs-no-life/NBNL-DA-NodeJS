@@ -1,14 +1,13 @@
 import { create } from "zustand";
-import axios from "axios";
-import { API_URL } from "@/configs/api";
+import api from "@/lib/axios";
 
 export interface User {
   _id: string;
   username: string;
   email: string;
   fullName?: string;
-  avatarUrl?: string; // Kept for retro compatibility or fallback
-  avatar?: { _id: string; url: string; } | string;
+  avatarUrl?: string;
+  avatar?: { _id: string; url: string } | string;
   role?: string;
   coin?: number;
   level?: number;
@@ -16,8 +15,8 @@ export interface User {
   maxXp?: number;
   bio?: string;
   createdAt?: string;
-  coverUrl?: string; // Kept for retro compatibility
-  cover?: { _id: string; url: string; } | string;
+  coverUrl?: string;
+  cover?: { _id: string; url: string } | string;
   socialLinks?: {
     facebook?: string;
     twitter?: string;
@@ -38,21 +37,6 @@ interface AuthState {
   isAdmin: () => boolean;
   setAuth: (user: User, token: string) => void;
 }
-
-const apiClient = axios.create({
-  baseURL: API_URL,
-});
-
-// Interceptor to attach Bearer token automatically if available
-apiClient.interceptors.request.use((config) => {
-  if (typeof window !== "undefined") {
-    const token = localStorage.getItem("token");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-  }
-  return config;
-});
 
 const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
@@ -83,21 +67,31 @@ const useAuthStore = create<AuthState>((set, get) => ({
 
     const token = localStorage.getItem("token");
     if (!token) {
-      set({ user: null, token: null, isAuthenticated: false, isLoading: false });
+      set({
+        user: null,
+        token: null,
+        isAuthenticated: false,
+        isLoading: false,
+      });
       return;
     }
 
     try {
       set({ isLoading: true });
-      const { data } = await apiClient.get(`/api/v1/auth/me`);
+      const { data } = await api.get(`/api/v1/auth/me`);
       set({ user: data, token, isAuthenticated: true, isLoading: false });
     } catch (error) {
       console.error("Auth check failed:", error);
       localStorage.removeItem("token");
-      set({ user: null, token: null, isAuthenticated: false, isLoading: false });
+      set({
+        user: null,
+        token: null,
+        isAuthenticated: false,
+        isLoading: false,
+      });
     }
   },
 }));
 
 export default useAuthStore;
-export { apiClient };
+export { api as apiClient };

@@ -167,6 +167,22 @@ router.put('/:id',
     });
 
 // ============================================================
+// PATCH /api/v1/apps/:id/disable    - Toggle disable/enable app (ADMIN)
+// ============================================================
+
+router.patch('/:id/disable',
+    /* #swagger.tags = ['Apps'] */
+ checkLogin, checkRole('ADMIN'), async function (req, res, next) {
+    try {
+        let result = await appController.toggleDisableApp(req.params.id);
+        if (result && result.error) return res.status(result.code || 400).send({ message: result.error });
+        res.send(result);
+    } catch (error) {
+        res.status(500).send({ message: error.message });
+    }
+});
+
+// ============================================================
 // DELETE /api/v1/apps/:id         - Soft delete app (owner / ADMIN)
 // ============================================================
 

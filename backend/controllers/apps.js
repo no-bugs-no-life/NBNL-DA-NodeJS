@@ -221,7 +221,10 @@ module.exports = {
     updateApp: async function (id, userId, data) {
         let app = await appModel.findOne({ _id: id, isDeleted: false });
         if (!app) return { error: "App not found", code: 404 };
-        if (app.developerId.toString() !== userId) return { error: "Ban khong co quyen chinh sua app nay", code: 403 };
+        let isAdmin = (await getUserRole(userId)) === 'ADMIN';
+        if (app.developerId.toString() !== userId && !isAdmin) {
+            return { error: "Ban khong co quyen chinh sua app nay", code: 403 };
+        }
 
         let allowedFields = ['name', 'description', 'categoryId', 'version', 'iconUrl', 'price', 'subscriptionPrice'];
         allowedFields.forEach(field => {
@@ -255,6 +258,15 @@ module.exports = {
         app.isDeleted = true;
         await app.save();
         return app;
+    },
+
+    // PATCH - Toggle disable/enable app (ADMIN only)
+    toggleDisableApp: async function (id) {
+        let app = await appModel.findOne({ _id: id, isDeleted: false });
+        if (!app) return { error: "App not found", code: 404 };
+        app.isDisabled = !app.isDisabled;
+        await app.save();
+        return { message: app.isDisabled ? "App da bi vo hieu hoa" : "App da duoc kich hoat", isDisabled: app.isDisabled };
     },
 
     // GET - Download App
