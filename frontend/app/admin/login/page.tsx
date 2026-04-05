@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
-import { useAuthStore } from "@/store/useAuthStore";
+import useAuthStore from "@/store/useAuthStore";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
 
@@ -38,11 +38,11 @@ export default function AdminLoginPage() {
 
       setAuth(
         {
-          id: user._id || user.id,
-          name: user.name || user.username,
+          _id: user._id || user.id,
+          username: user.username || user.name || "admin",
           email: user.email,
           role: roleName,
-          avatar: user.avatar,
+          avatarUrl: user.avatarUrl || user.avatar || "",
         },
         token
       );

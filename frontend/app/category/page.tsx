@@ -3,7 +3,7 @@ import Navbar from "../../components/layout/Navbar";
 import Footer from "../../components/layout/Footer";
 import Link from "next/link";
 import { useCategories } from "@/hooks/useCategories";
-import { useAuthStore } from "@/store/useAuthStore";
+import useAuthStore from "@/store/useAuthStore";
 
 export default function CategoryIndexPage() {
     const { data: categories = [], isLoading } = useCategories();
