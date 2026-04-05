@@ -11,41 +11,41 @@ let tagsController = require('../controllers/tags');
 // Lấy toàn bộ tags, hỗ trợ: ?search=&page=&limit=&sortBy=&order=
 router.get('/',
     /* #swagger.tags = ['Tags'] */
- tagsController.getAllTags);
+    tagsController.getAllTags);
 
 
 router.get('/name/:name',
     /* #swagger.tags = ['Tags'] */
- tagsController.getAppsByTagName);
+    tagsController.getAppsByTagName);
 
 
 router.get('/:id',
     /* #swagger.tags = ['Tags'] */
- tagsController.getTagById);
+    tagsController.getTagById);
 
 
 router.post('/',
     /* #swagger.tags = ['Tags'] */
- checkLogin, checkRole('ADMIN', 'MODERATOR'), tagsController.createTag);
+    tagsController.createTag);
 
 
 router.put('/:id',
     /* #swagger.tags = ['Tags'] */
- checkLogin, checkRole('ADMIN', 'MODERATOR'), tagsController.updateTag);
+    checkLogin, checkRole('ADMIN', 'MODERATOR'), tagsController.updateTag);
 
 
 router.delete('/:id',
     /* #swagger.tags = ['Tags'] */
- checkLogin, checkRole('ADMIN'), tagsController.deleteTag);
+    checkLogin, checkRole('ADMIN'), tagsController.deleteTag);
 
 
 router.post('/:id/apps',
     /* #swagger.tags = ['Tags'] */
- checkLogin, tagsController.addTagToApp);
+    checkLogin, tagsController.addTagToApp);
 
 
 router.delete('/:id/apps',
     /* #swagger.tags = ['Tags'] */
- checkLogin, tagsController.removeTagFromApp);
+    checkLogin, tagsController.removeTagFromApp);
 
 module.exports = router;
