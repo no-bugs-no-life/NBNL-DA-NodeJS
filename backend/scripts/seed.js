@@ -11,6 +11,15 @@ require('../schemas/categories');
 require('../schemas/tags');
 require('../schemas/apps');
 require('../schemas/products');
+require('../schemas/analytics');
+require('../schemas/cart');
+require('../schemas/coupons');
+require('../schemas/developers');
+require('../schemas/files');
+require('../schemas/reports');
+require('../schemas/subPackages');
+require('../schemas/subscriptions');
+require('../schemas/wishlists');
 
 // Import sub-seeders
 const seedUser = require('./seedUser');
@@ -20,6 +29,16 @@ const seedGames = require('./seedGames');
 const seedProducts = require('./seedProducts');
 const seedReviews = require('./seedReviews');
 
+const seedDevelopers = require('./seedDevelopers');
+const seedWishlists = require('./seedWishlists');
+const seedAnalytics = require('./seedAnalytics');
+const seedCart = require('./seedCart');
+const seedFiles = require('./seedFiles');
+const seedCoupons = require('./seedCoupons');
+const seedSubPackages = require('./seedSubPackages');
+const seedSubscriptions = require('./seedSubscriptions');
+const seedReports = require('./seedReports');
+
 async function mainSeed() {
     try {
         await mongoose.connect('mongodb://127.0.0.1:27017/NNPTUD-C2');
@@ -28,11 +47,24 @@ async function mainSeed() {
         console.log('\n--- Running Sub-Seeders ---');
 
         await seedUser();
+        // Create developer profile for users
+        await seedDevelopers();
+
         await seedCategories();
         await seedApps();
         await seedGames();
         await seedProducts();
         await seedReviews();
+
+        // New module seeds
+        await seedWishlists();
+        await seedAnalytics();
+        await seedCart();
+        await seedFiles();
+        await seedCoupons();
+        await seedSubPackages();
+        await seedSubscriptions();
+        await seedReports();
 
         console.log('---------------------------\n');
 
