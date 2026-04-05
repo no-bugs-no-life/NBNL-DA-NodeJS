@@ -23,7 +23,7 @@ export default function CartSummary() {
         Tiến hành thanh toán
       </a>
       <p className="text-xs text-on-surface-variant mt-4 text-center">
-        Bằng việc thanh toán, bạn đồng ý với Điều khoản dịch vụ của Horizon
+        Bằng việc thanh toán, bạn đồng ý với Điều khoản dịch vụ của APKBugs
         Store.
       </p>
     </div>

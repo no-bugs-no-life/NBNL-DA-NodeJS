@@ -65,7 +65,7 @@ const mockDetailData = {
     },
     features: [
         { icon: "sports_esports", desc: "Hỗ trợ tay cầm trọn vẹn" },
-        { icon: "cloud_sync", desc: "Lưu trữ đám mây qua Horizon Cloud" },
+        { icon: "cloud_sync", desc: "Lưu trữ đám mây qua APKBugs Cloud" },
         { icon: "group", desc: "Chế độ nhiều người chơi trực tuyến" }
     ],
     languageSupportCount: 12,
@@ -120,7 +120,8 @@ async function seedGames() {
                         ratingScore: game.ratingScore,
                         ratingCount: Math.floor(Math.random() * 50000) + 1000,
                         developerId: devUser ? devUser._id : null,
-                        categoryId: gameCat._id
+                        categoryId: gameCat._id,
+                        flags: ["bestseller"]
                     }
                 },
                 { upsert: true }

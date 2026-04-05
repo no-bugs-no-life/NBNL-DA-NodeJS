@@ -4,8 +4,8 @@ import { mockUser } from "@/components/profile/data";
 import Navbar from "@/components/layout/Navbar";
 
 export const metadata = {
-  title: "Hồ sơ của tôi | Horizon Store",
-  description: "Trang cá nhân của người dùng trên hệ thống Horizon Store",
+  title: "Hồ sơ của tôi | APKBugs",
+  description: "Trang cá nhân của người dùng trên hệ thống APKBugs",
 };
 
 export default function ProfileLayout({

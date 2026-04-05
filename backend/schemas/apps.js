@@ -75,6 +75,11 @@ const appSchema = new mongoose.Schema(
             type: String,
             enum: ["app", "game"],
             default: "app"
+        },
+        flags: {
+            type: [String],
+            enum: ["bestseller", "trending", "featured", "editors_choice"],
+            default: []
         }
     },
     {

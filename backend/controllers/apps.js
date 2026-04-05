@@ -21,10 +21,11 @@ async function getUserRole(userId) {
 module.exports = {
     // GET - List published apps (public)
     getAllApps: async function (queries) {
-        let { limit = 20, page = 1, categoryId, type } = queries;
+        let { limit = 20, page = 1, categoryId, type, flag } = queries;
         let filter = { status: "published", isDeleted: false };
         if (categoryId) filter.categoryId = categoryId;
         if (type) filter.type = type;
+        if (flag) filter.flags = { $in: [flag] };
 
         return await appModel.find(filter)
             .populate('developerId', 'fullName email avatarUrl')
@@ -107,7 +108,7 @@ module.exports = {
                 iconUrl: (product.images && product.images.length > 0) ? product.images[0] : "",
                 version: "1.0.0",
                 status: "published",
-                developerId: { fullName: "Horizon Games Publisher", email: "", avatarUrl: "" },
+                developerId: { fullName: "APKBugs Games Publisher", email: "", avatarUrl: "" },
                 categoryId: { name: product.category },
                 screenshots: product.images || [],
                 ratingScore: 4.8,
@@ -121,7 +122,7 @@ module.exports = {
                 },
                 features: [
                     { icon: "sports_esports", desc: "Hỗ trợ tay cầm trọn vẹn" },
-                    { icon: "cloud_sync", desc: "Lưu trữ đám mây qua Horizon Cloud" },
+                    { icon: "cloud_sync", desc: "Lưu trữ đám mây qua APKBugs Cloud" },
                     { icon: "group", desc: "Chế độ nhiều người chơi trực tuyến" }
                 ],
                 languageSupportCount: 12,

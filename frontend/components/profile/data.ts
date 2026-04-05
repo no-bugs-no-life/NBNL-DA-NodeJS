@@ -23,8 +23,8 @@ export interface LibraryItem {
 
 export const mockUser: UserProfile = {
   id: "u_1",
-  username: "horizon_gamer",
-  email: "hello@horizon-store.com",
+  username: "apkbugs_gamer",
+  email: "hello@apkbugs.com",
   displayName: "Nghia Trung",
   joinDate: "2023-10-15T00:00:00Z",
   avatarUrl:

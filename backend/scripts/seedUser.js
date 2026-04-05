@@ -27,7 +27,7 @@ const USERS = [
     {
         username: 'system_dev',
         password: 'Dev@123',
-        email: 'dev@horizon.com',
+        email: 'dev@apkbugs.com',
         fullName: 'System Developer',
         roleName: 'DEVELOPER'
     }
