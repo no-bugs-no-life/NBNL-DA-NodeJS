@@ -4,17 +4,23 @@ import { useAppDetailStore } from "../../store/useAppDetailStore";
 export default function AppReviews() {
   const { appInfo } = useAppDetailStore();
 
-  const reviews = appInfo?.reviews && appInfo.reviews.length > 0 ? appInfo.reviews : [
-    {
-      userId: { fullName: "Người dùng Khách" },
-      createdAt: new Date().toISOString(),
-      comment: "Chưa có đánh giá nào. Hãy là người đầu tiên trải nghiệm và đánh giá phần mềm này!",
-      rating: 5,
-    }
-  ];
+  const reviews =
+    appInfo?.reviews && appInfo.reviews.length > 0
+      ? appInfo.reviews
+      : [
+          {
+            userId: { fullName: "Người dùng Khách" },
+            createdAt: new Date().toISOString(),
+            comment:
+              "Chưa có đánh giá nào. Hãy là người đầu tiên trải nghiệm và đánh giá phần mềm này!",
+            rating: 5,
+          },
+        ];
 
   const ratingCountFormatted = appInfo?.ratingCount
-    ? (appInfo.ratingCount >= 1000 ? `${(appInfo.ratingCount / 1000).toFixed(1)}K` : appInfo.ratingCount.toLocaleString())
+    ? appInfo.ratingCount >= 1000
+      ? `${(appInfo.ratingCount / 1000).toFixed(1)}K`
+      : appInfo.ratingCount.toLocaleString()
     : 0;
 
   return (

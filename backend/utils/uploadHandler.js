@@ -16,7 +16,7 @@ let filterImage = function (req, file, cb) {
     if (file.mimetype.includes("image")) {
         cb(null, true)
     } else {
-        cb(new Error("file sai dinh dang"), false)
+        cb(new Error("file sai định dạng"), false)
     }
 }
 let filterExcel = function (req, file, cb) {
@@ -27,21 +27,12 @@ let filterExcel = function (req, file, cb) {
     }
 }
 
-let filterApk = function (req, file, cb) {
+let filterAppFile = function (req, file, cb) {
     let ext = path.extname(file.originalname).toLowerCase();
-    if (ext === ".apk") {
+    if ([".apk", ".ipa", ".exe"].includes(ext)) {
         cb(null, true)
     } else {
-        cb(new Error("Chi chap nhan file .apk"), false)
-    }
-}
-
-let filterIpa = function (req, file, cb) {
-    let ext = path.extname(file.originalname).toLowerCase();
-    if (ext === ".ipa") {
-        cb(null, true)
-    } else {
-        cb(new Error("Chi chap nhan file .ipa"), false)
+        cb(new Error("Chi chap nhan file .apk, .ipa, .exe"), false)
     }
 }
 
@@ -56,15 +47,10 @@ module.exports = {
         limits: 5 * 1024 * 1024,
         fileFilter: filterExcel
     }),
-    uploadApk: multer({
+    uploadAppFile: multer({
         storage: storage,
-        limits: 200 * 1024 * 1024,   // 200MB
-        fileFilter: filterApk
-    }),
-    uploadIpa: multer({
-        storage: storage,
-        limits: 200 * 1024 * 1024,   // 200MB
-        fileFilter: filterIpa
+        limits: 1000 * 1024 * 1024,   // 1GB (exe files can be large)
+        fileFilter: filterAppFile
     })
 }
 

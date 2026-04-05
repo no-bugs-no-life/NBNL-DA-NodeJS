@@ -3,14 +3,16 @@ import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { GameItem } from "@/components/games/types";
+import { API_URL } from "@/configs/api";
 
 export default function HomeGames() {
   const { data: bestSellingGames = [], isLoading } = useQuery({
     queryKey: ["apps", "bestselling-games"],
     queryFn: async () => {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
-      const response = await axios.get(`${apiUrl}/api/v1/apps?type=game&flag=bestseller&limit=6`);
-      return response.data;
+      const response = await axios.get(
+        `${API_URL}/api/v1/apps?type=game&flag=bestseller&limit=6`,
+      );
+      return response.data?.docs || response.data;
     },
   });
 
@@ -20,13 +22,13 @@ export default function HomeGames() {
     <section className="px-8 max-w-screen-2xl mx-auto mb-20">
       <div className="flex items-center justify-between mb-8">
         <h2 className="text-3xl font-bold tracking-tight">
-          Best-selling Games
+          Trò chơi bán chạy nhất
         </h2>
         <Link
           href="/games"
           className="text-primary font-semibold text-sm flex items-center gap-1 hover:underline"
         >
-          See all{" "}
+          Xem tất cả{" "}
           <span className="material-symbols-outlined text-sm">
             chevron_right
           </span>
@@ -58,8 +60,10 @@ export default function HomeGames() {
             <div>
               <h4 className="font-bold text-sm truncate">{game.name}</h4>
               <div className="flex items-center justify-between mt-1">
-                <span className={`text-xs ${game.price === 0 ? 'text-tertiary font-bold' : 'text-on-surface-variant'}`}>
-                  {game.price === 0 ? "Free" : `$${game.price}`}
+                <span
+                  className={`text-xs ${game.price === 0 ? "text-tertiary font-bold" : "text-on-surface-variant"}`}
+                >
+                  {game.price === 0 ? "Miễn phí" : `$${game.price}`}
                 </span>
                 <div className="flex items-center text-amber-500 text-[10px]">
                   <span
@@ -68,7 +72,9 @@ export default function HomeGames() {
                   >
                     star
                   </span>
-                  <span className="ml-0.5">{game.ratingScore ? game.ratingScore.toFixed(1) : "0.0"}</span>
+                  <span className="ml-0.5">
+                    {game.ratingScore ? game.ratingScore.toFixed(1) : "0.0"}
+                  </span>
                 </div>
               </div>
             </div>

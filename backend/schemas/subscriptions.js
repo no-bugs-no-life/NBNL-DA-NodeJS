@@ -12,11 +12,10 @@ const subscriptionSchema = new mongoose.Schema(
             ref: "app",
             required: [true, "App ID is required"]
         },
-        type: {
-            type: String,
-            required: [true, "Subscription type is required"],
-            enum: ["monthly", "yearly", "lifetime"],
-            lowercase: true
+        packageId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "subPackage",
+            required: [true, "Package ID is required"]
         },
         startDate: {
             type: Date,
@@ -43,7 +42,10 @@ const subscriptionSchema = new mongoose.Schema(
 
 subscriptionSchema.index({ userId: 1 });
 subscriptionSchema.index({ appId: 1 });
+subscriptionSchema.index({ packageId: 1 });
 subscriptionSchema.index({ status: 1 });
 subscriptionSchema.index({ endDate: 1 });
 
+const mongoosePaginate = require('mongoose-paginate-v2');
+subscriptionSchema.plugin(mongoosePaginate);
 module.exports = mongoose.model("subscription", subscriptionSchema);

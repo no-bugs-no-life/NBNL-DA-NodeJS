@@ -20,7 +20,10 @@ export default function Sidebar() {
         {isLoading ? (
           <div className="flex flex-col gap-2">
             {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="flex items-center gap-4 px-4 py-3 rounded-xl animate-pulse bg-surface-container-high h-12" />
+              <div
+                key={i}
+                className="flex items-center gap-4 px-4 py-3 rounded-xl animate-pulse bg-surface-container-high h-12"
+              />
             ))}
           </div>
         ) : categories.length > 0 ? (
@@ -34,7 +37,9 @@ export default function Sidebar() {
             </Link>
           ))
         ) : (
-          <p className="text-sm text-on-surface-variant px-4">Không có danh mục nào.</p>
+          <p className="text-sm text-on-surface-variant px-4">
+            Không có danh mục nào.
+          </p>
         )}
       </nav>
     </aside>

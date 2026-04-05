@@ -6,6 +6,7 @@ import axios from "axios";
 import Link from "next/link";
 import ProductCard from "./ProductCard";
 import { AppItem } from "./types";
+import { API_URL } from "@/configs/api";
 
 export default function ProductGrid() {
   const [displayedCount, setDisplayedCount] = useState(8);
@@ -13,8 +14,7 @@ export default function ProductGrid() {
   const { data: apps = [], isLoading } = useQuery({
     queryKey: ["apps", "all"],
     queryFn: async () => {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
-      const response = await axios.get(`${apiUrl}/api/v1/apps?limit=50`);
+      const response = await axios.get(`${API_URL}/api/v1/apps?limit=50`);
       interface ApiApp {
         _id: string;
         slug: string;
@@ -23,7 +23,8 @@ export default function ProductGrid() {
         price: number;
         iconUrl?: string;
       }
-      return response.data.map((item: ApiApp) => ({
+      const arr = response.data?.docs || response.data;
+      return arr.map((item: ApiApp) => ({
         id: item._id,
         slug: item.slug,
         title: item.name,
@@ -32,16 +33,21 @@ export default function ProductGrid() {
         reviews: "1K+",
         price: item.price === 0 ? "Miễn phí" : `$${item.price}`,
         action: "Cài đặt",
-        iconSrc: item.iconUrl || "https://lh3.googleusercontent.com/aida-public/AB6AXuCae2BgwTaS1UNAnXhe2rBFaF4xGuLmY_ph14CUhreqQS26LD0iD_V6g1IWuQtXBqRZGyIkj0Gp5ItLGgZ7Rk4LvHmv3KM25nx4tLvudtoCOL_4e4MVoc4kvF0A_ghWRoP6-L5wJFvHV4FJ2e4ZBHNAb36iaIrrK1cLNuJKF26aHVIEdl7Nu_OmSya-KPKnpi02Kv1smpp6l9So71GM53ViB7u3Fwc2-ZgYOaHL77ingE9hNNifTxs-QFa0bsggXc8YeHNzbsk-5JQ"
+        iconSrc:
+          item.iconUrl ||
+          "https://lh3.googleusercontent.com/aida-public/AB6AXuCae2BgwTaS1UNAnXhe2rBFaF4xGuLmY_ph14CUhreqQS26LD0iD_V6g1IWuQtXBqRZGyIkj0Gp5ItLGgZ7Rk4LvHmv3KM25nx4tLvudtoCOL_4e4MVoc4kvF0A_ghWRoP6-L5wJFvHV4FJ2e4ZBHNAb36iaIrrK1cLNuJKF26aHVIEdl7Nu_OmSya-KPKnpi02Kv1smpp6l9So71GM53ViB7u3Fwc2-ZgYOaHL77ingE9hNNifTxs-QFa0bsggXc8YeHNzbsk-5JQ",
       }));
-    }
+    },
   });
 
   const handleLoadMore = () => {
     setDisplayedCount((prev) => prev + 8);
   };
 
-  if (isLoading) return <div className="p-8 text-center">Đang tải danh sách ứng dụng...</div>;
+  if (isLoading)
+    return (
+      <div className="p-8 text-center">Đang tải danh sách ứng dụng...</div>
+    );
 
   return (
     <>

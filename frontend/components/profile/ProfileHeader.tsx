@@ -8,12 +8,16 @@ export default function ProfileHeader() {
   const { user } = useAuthStore();
 
   if (!user) {
-    return <div className="w-full h-80 bg-slate-100 animate-pulse rounded-2xl overflow-hidden mt-2 mb-8 relative" />;
+    return (
+      <div className="w-full h-80 bg-slate-100 animate-pulse rounded-2xl overflow-hidden mt-2 mb-8 relative" />
+    );
   }
 
-  const joinDate = user.createdAt ? new Date(user.createdAt).toLocaleDateString("vi-VN", {
-    dateStyle: "long",
-  }) : "Chưa xác định";
+  const joinDate = user.createdAt
+    ? new Date(user.createdAt).toLocaleDateString("vi-VN", {
+        dateStyle: "long",
+      })
+    : "Chưa xác định";
 
   const level = user.level || 1;
   const xp = user.xp || 0;
@@ -25,7 +29,10 @@ export default function ProfileHeader() {
       {/* Cover Image */}
       <div className="h-48 md:h-64 lg:h-80 relative w-full bg-slate-100">
         <Image
-          src={user.coverUrl || "https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=1920&auto=format&fit=crop"}
+          src={
+            user.coverUrl ||
+            "https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=1920&auto=format&fit=crop"
+          }
           alt="Cover"
           fill
           className="object-cover"

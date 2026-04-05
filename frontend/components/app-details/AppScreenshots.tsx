@@ -7,9 +7,12 @@ export default function AppScreenshots() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const { appInfo } = useAppDetailStore();
 
-  const images = appInfo?.screenshots && appInfo.screenshots.length > 0 ? appInfo.screenshots : [
-    "https://lh3.googleusercontent.com/aida-public/AB6AXuCNs3wmb-h6j36TOpv5cWZAZERQObwgvbkHqBq8Eg2uep3aHl6Yuq68UTAcDihvMgvz9mIVhudx1G-1y3Bu-XPc4SIC7ozlnn_YR5ZZwl-JTZ1M8Mg1TQ0dXZjhD2_AJVewrxkXcCrsWVATzsWprcfLyvYKRCHsPMFpXEdzJmlSJJykUBVrAUwiM7gf0-J-VLQmeeXczj4mVcZPOmXBNP3nrgzYVVg0NhQ1mW2K8CKP1dUi8kERNYKYlgWXovnF_2LmXSeymIM88bs"
-  ];
+  const images =
+    appInfo?.screenshots && appInfo.screenshots.length > 0
+      ? appInfo.screenshots
+      : [
+          "https://lh3.googleusercontent.com/aida-public/AB6AXuCNs3wmb-h6j36TOpv5cWZAZERQObwgvbkHqBq8Eg2uep3aHl6Yuq68UTAcDihvMgvz9mIVhudx1G-1y3Bu-XPc4SIC7ozlnn_YR5ZZwl-JTZ1M8Mg1TQ0dXZjhD2_AJVewrxkXcCrsWVATzsWprcfLyvYKRCHsPMFpXEdzJmlSJJykUBVrAUwiM7gf0-J-VLQmeeXczj4mVcZPOmXBNP3nrgzYVVg0NhQ1mW2K8CKP1dUi8kERNYKYlgWXovnF_2LmXSeymIM88bs",
+        ];
 
   const scroll = (direction: "left" | "right") => {
     if (scrollRef.current) {

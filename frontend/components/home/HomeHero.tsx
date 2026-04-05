@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
+import { API_URL } from "@/configs/api";
 
 export default function HomeHero() {
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -11,22 +12,21 @@ export default function HomeHero() {
   const { data: heroApps = [] } = useQuery({
     queryKey: ["home", "hero"],
     queryFn: async () => {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
-      const response = await axios.get(`${apiUrl}/api/v1/apps?limit=3`);
-      return response.data;
-    }
+      const response = await axios.get(`${API_URL}/api/v1/apps?limit=3`);
+      return response.data?.docs || response.data;
+    },
   });
 
   const fallbackSlides = [
     {
       image:
         "https://lh3.googleusercontent.com/aida-public/AB6AXuCvjgcGTThU-5hkonzGghyOtGc7x5MKa_AWqh-O42zfi2ol-cb5m1of9Bpu_WH_9aAIg2hXC7oVloI6jyEc7R_XGnkn6rRkPFxxThOMFFR1SU16NwM6Tr2nnfvFFNBAYBOIR0q2nM8dTArVJBU8QKalHEIxLO9yI9E3YYFdXF2_raBp4QaANIt1uIAhpIuC2Q-xVA97-GUauGmUrJlp0j7qtTZ2prSsV95DwGit3uTfCt2oFYQDsmfD3ufzrjhwAklWRXRac96VdGI",
-      subtitle: "Featured Experience",
-      title: "The Future of Creative Workflows",
+      subtitle: "Trải nghiệm nổi bật",
+      title: "Tương lai của công việc sáng tạo",
       description:
         "Khám phá đỉnh cao giải trí với gói APKBugs Suite. Tất cả những công cụ hỗ trợ trải nghiệm game một cách hoàn hảo nhất.",
-      slug: "apkbugs-suite"
-    }
+      slug: "apkbugs-suite",
+    },
   ];
 
   interface HeroAppPayload {
@@ -38,13 +38,19 @@ export default function HomeHero() {
     categoryId?: { name: string };
   }
 
-  const slides = heroApps.length > 0 ? heroApps.map((app: HeroAppPayload) => ({
-    image: app.screenshots && app.screenshots.length > 0 ? app.screenshots[0] : (app.iconUrl || ""),
-    subtitle: app.categoryId?.name || "Nổi Bật",
-    title: app.name,
-    description: app.description,
-    slug: app.slug
-  })) : fallbackSlides;
+  const slides =
+    heroApps.length > 0
+      ? heroApps.map((app: HeroAppPayload) => ({
+          image:
+            app.screenshots && app.screenshots.length > 0
+              ? app.screenshots[0]
+              : app.iconUrl || "",
+          subtitle: app.categoryId?.name || "Nổi Bật",
+          title: app.name,
+          description: app.description,
+          slug: app.slug,
+        }))
+      : fallbackSlides;
 
   useEffect(() => {
     if (slides.length <= 1) return;

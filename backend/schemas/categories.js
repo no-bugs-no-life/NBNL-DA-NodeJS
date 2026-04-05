@@ -29,4 +29,6 @@ const categorySchema = new mongoose.Schema(
 categorySchema.index({ name: 1 });
 categorySchema.index({ parentId: 1 });
 
+const mongoosePaginate = require('mongoose-paginate-v2');
+categorySchema.plugin(mongoosePaginate);
 module.exports = mongoose.model("category", categorySchema);

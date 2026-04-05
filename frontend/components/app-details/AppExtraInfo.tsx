@@ -5,7 +5,10 @@ export default function AppExtraInfo() {
 
   const info = [];
   if (appInfo?.languageSupportCount) {
-    info.push({ icon: "language", text: `Hỗ trợ ${appInfo.languageSupportCount} ngôn ngữ` });
+    info.push({
+      icon: "language",
+      text: `Hỗ trợ ${appInfo.languageSupportCount} ngôn ngữ`,
+    });
   }
 
   if (appInfo?.securityVerified) {

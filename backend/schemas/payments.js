@@ -78,4 +78,6 @@ const paymentSchema = new mongoose.Schema(
 
 
 
+const mongoosePaginate = require('mongoose-paginate-v2');
+paymentSchema.plugin(mongoosePaginate);
 module.exports = mongoose.model("Payment", paymentSchema);

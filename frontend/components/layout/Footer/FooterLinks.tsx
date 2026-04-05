@@ -12,13 +12,13 @@ export function FooterLinks() {
             className="text-sm text-slate-500 hover:underline decoration-blue-500 underline-offset-4 transition-opacity"
             href="#"
           >
-            Store Policies
+            Chính sách cửa hàng
           </Link>
           <Link
             className="text-sm text-slate-500 hover:underline decoration-blue-500 underline-offset-4 transition-opacity"
             href="#"
           >
-            Developer Resources
+            Tài nguyên cho nhà phát triển
           </Link>
         </div>
       </div>
@@ -31,13 +31,13 @@ export function FooterLinks() {
             className="text-sm text-slate-500 hover:underline decoration-blue-500 underline-offset-4 transition-opacity"
             href="#"
           >
-            Support
+            Hỗ trợ khách hàng
           </Link>
           <Link
             className="text-sm text-slate-500 hover:underline decoration-blue-500 underline-offset-4 transition-opacity"
             href="#"
           >
-            Legal Information
+            Thông tin pháp lý
           </Link>
         </div>
       </div>

@@ -35,9 +35,10 @@ const appSchema = new mongoose.Schema(
             enum: ["pending", "approved", "rejected", "published"],
             default: "pending"
         },
-        fileUrl: {
-            type: String,
-            default: ""
+        fileId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "file",
+            default: null
         },
         iconUrl: {
             type: String,
@@ -54,6 +55,10 @@ const appSchema = new mongoose.Schema(
             default: 0
         },
         isDeleted: {
+            type: Boolean,
+            default: false
+        },
+        isDisabled: {
             type: Boolean,
             default: false
         },
@@ -92,4 +97,6 @@ appSchema.index({ developerId: 1 });
 appSchema.index({ categoryId: 1 });
 appSchema.index({ status: 1 });
 
+const mongoosePaginate = require('mongoose-paginate-v2');
+appSchema.plugin(mongoosePaginate);
 module.exports = mongoose.model("app", appSchema);

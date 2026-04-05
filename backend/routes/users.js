@@ -11,8 +11,8 @@ const { default: mongoose } = require("mongoose");
 //- Strong password
 
 router.get("/",
-    /* #swagger.tags = ['Users'] */
- checkLogin,
+  /* #swagger.tags = ['Users'] */
+  checkLogin,
   checkRole("ADMIN", "MODERATOR"), async function (req, res, next) {
     let users = await userModel
       .find({ isDeleted: false })
@@ -24,24 +24,24 @@ router.get("/",
   });
 
 router.get("/:id",
-    /* #swagger.tags = ['Users'] */
- checkLogin, async function (req, res, next) {
-  try {
-    let result = await userModel
-      .find({ _id: req.params.id, isDeleted: false })
-    if (result.length > 0) {
-      res.send(result);
-    }
-    else {
+  /* #swagger.tags = ['Users'] */
+  checkLogin, async function (req, res, next) {
+    try {
+      let result = await userModel
+        .find({ _id: req.params.id, isDeleted: false })
+      if (result.length > 0) {
+        res.send(result);
+      }
+      else {
+        res.status(404).send({ message: "id not found" });
+      }
+    } catch (error) {
       res.status(404).send({ message: "id not found" });
     }
-  } catch (error) {
-    res.status(404).send({ message: "id not found" });
-  }
-});
+  });
 
 router.post("/",
-    /* #swagger.tags = ['Users'] */
+  /* #swagger.tags = ['Users'] */
   postUserValidator, validateResult,
   async function (req, res, next) {
     let session = await mongoose.startSession()
@@ -69,44 +69,64 @@ router.post("/",
     }
   });
 
-router.put("/:id",
-    /* #swagger.tags = ['Users'] */
- async function (req, res, next) {
+router.put("/me", checkLogin, async function (req, res, next) {
   try {
-    let id = req.params.id;
+    let id = req.userId;
+    let allowedFields = ['fullName', 'avatar', 'cover', 'bio', 'socialLinks'];
     let updatedItem = await userModel.findById(id);
-    for (const key of Object.keys(req.body)) {
-      updatedItem[key] = req.body[key];
+    if (!updatedItem) return res.status(404).send({ message: "User not found" });
+
+    for (const key of allowedFields) {
+      if (req.body[key] !== undefined) {
+        updatedItem[key] = req.body[key];
+      }
     }
     await updatedItem.save();
-
-    if (!updatedItem) return res.status(404).send({ message: "id not found" });
-
-    let populated = await userModel
-      .findById(updatedItem._id)
+    let populated = await userModel.findById(id).populate('role').populate('avatar').populate('cover');
     res.send(populated);
   } catch (err) {
     res.status(400).send({ message: err.message });
   }
 });
 
-router.delete("/:id",
-    /* #swagger.tags = ['Users'] */
- async function (req, res, next) {
-  try {
-    let id = req.params.id;
-    let updatedItem = await userModel.findByIdAndUpdate(
-      id,
-      { isDeleted: true },
-      { new: true }
-    );
-    if (!updatedItem) {
-      return res.status(404).send({ message: "id not found" });
+router.put("/:id",
+  /* #swagger.tags = ['Users'] */
+  async function (req, res, next) {
+    try {
+      let id = req.params.id;
+      let updatedItem = await userModel.findById(id);
+      for (const key of Object.keys(req.body)) {
+        updatedItem[key] = req.body[key];
+      }
+      await updatedItem.save();
+
+      if (!updatedItem) return res.status(404).send({ message: "id not found" });
+
+      let populated = await userModel
+        .findById(updatedItem._id)
+      res.send(populated);
+    } catch (err) {
+      res.status(400).send({ message: err.message });
     }
-    res.send(updatedItem);
-  } catch (err) {
-    res.status(400).send({ message: err.message });
-  }
-});
+  });
+
+router.delete("/:id",
+  /* #swagger.tags = ['Users'] */
+  async function (req, res, next) {
+    try {
+      let id = req.params.id;
+      let updatedItem = await userModel.findByIdAndUpdate(
+        id,
+        { isDeleted: true },
+        { new: true }
+      );
+      if (!updatedItem) {
+        return res.status(404).send({ message: "id not found" });
+      }
+      res.send(updatedItem);
+    } catch (err) {
+      res.status(400).send({ message: err.message });
+    }
+  });
 
 module.exports = router;

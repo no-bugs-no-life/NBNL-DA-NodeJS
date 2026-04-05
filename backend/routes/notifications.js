@@ -6,6 +6,7 @@ let { checkLogin, checkRole } = require('../utils/authHandler.js');
 // ============================================================
 // GET /api/v1/notifications                    - List notifications
 // GET /api/v1/notifications/unread             - Count unread
+// GET /api/v1/notifications/all               - List ALL notifications (ADMIN)
 // GET /api/v1/notifications/:id                - Get detail
 // ============================================================
 
@@ -31,6 +32,17 @@ router.get('/unread',
     }
 });
 
+router.get('/all',
+    /* #swagger.tags = ['Notifications'] */
+ checkLogin, checkRole('ADMIN'), async function (req, res, next) {
+    try {
+        let notifications = await notificationController.getAllNotificationsAdmin(req.query);
+        res.send(notifications);
+    } catch (error) {
+        res.status(500).send({ message: error.message });
+    }
+});
+
 router.get('/:id',
     /* #swagger.tags = ['Notifications'] */
  checkLogin, async function (req, res, next) {
@@ -51,11 +63,11 @@ router.post('/',
     /* #swagger.tags = ['Notifications'] */
  checkLogin, checkRole('ADMIN', 'MODERATOR'), async function (req, res, next) {
     try {
-        let { userId, type, message } = req.body;
+        let { userId, type, message, channel } = req.body;
         if (!userId || !type || !message) {
             return res.status(400).send({ message: "userId, type va message la bat buoc" });
         }
-        let notification = await notificationController.createNotification({ userId, type, message });
+        let notification = await notificationController.createNotification({ userId, type, message, channel });
         res.status(201).send(notification);
     } catch (error) {
         res.status(400).send({ message: error.message });
@@ -93,6 +105,8 @@ router.put('/:id/read',
 
 // ============================================================
 // DELETE /api/v1/notifications/:id     - Soft delete (owner / ADMIN)
+// PATCH /api/v1/notifications/:id     - Update notification (ADMIN)
+// DELETE /api/v1/notifications/:id/admin - Delete notification (ADMIN)
 // ============================================================
 
 router.delete('/:id',
@@ -100,6 +114,30 @@ router.delete('/:id',
  checkLogin, async function (req, res, next) {
     try {
         let result = await notificationController.deleteNotification(req.params.id, req.userId);
+        if (result && result.error) return res.status(result.code || 400).send({ message: result.error });
+        res.send({ message: "Notification da duoc xoa", notification: result });
+    } catch (error) {
+        res.status(500).send({ message: error.message });
+    }
+});
+
+router.patch('/:id',
+    /* #swagger.tags = ['Notifications'] */
+ checkLogin, checkRole('ADMIN'), async function (req, res, next) {
+    try {
+        let result = await notificationController.updateNotificationAdmin(req.params.id, req.body);
+        if (result && result.error) return res.status(result.code || 400).send({ message: result.error });
+        res.send(result);
+    } catch (error) {
+        res.status(500).send({ message: error.message });
+    }
+});
+
+router.delete('/:id/admin',
+    /* #swagger.tags = ['Notifications'] */
+ checkLogin, checkRole('ADMIN'), async function (req, res, next) {
+    try {
+        let result = await notificationController.deleteNotificationAdmin(req.params.id);
         if (result && result.error) return res.status(result.code || 400).send({ message: result.error });
         res.send({ message: "Notification da duoc xoa", notification: result });
     } catch (error) {

@@ -10,7 +10,8 @@ import { useRouter } from "next/navigation";
 export default function NavProfile() {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const { user, isAuthenticated, isLoading, checkAuth, logout } = useAuthStore();
+  const { user, isAuthenticated, isLoading, checkAuth, logout } =
+    useAuthStore();
   const router = useRouter();
 
   useEffect(() => {
@@ -38,10 +39,10 @@ export default function NavProfile() {
   };
 
   return (
-    <div className="flex items-center gap-4">
+    <div className="flex items-center gap-2 sm:gap-4 shrink-0">
       <Link
         href="/cart"
-        className="p-2 hover:bg-slate-100/50 rounded-full transition-colors relative"
+        className="p-1.5 sm:p-2 hover:bg-slate-100/50 rounded-full transition-colors relative shrink-0"
       >
         <span className="material-symbols-outlined text-slate-600">
           shopping_cart
@@ -51,10 +52,10 @@ export default function NavProfile() {
       {!isLoading && !isAuthenticated && (
         <Link
           href="/login"
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-full transition-colors"
+          className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-semibold rounded-full transition-colors shrink-0 whitespace-nowrap"
         >
           <LogIn className="w-4 h-4" />
-          Đăng nhập
+          <span>Đăng nhập</span>
         </Link>
       )}
 
@@ -62,7 +63,7 @@ export default function NavProfile() {
         <div className="relative" ref={dropdownRef}>
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="h-9 w-9 rounded-full overflow-hidden border-2 border-slate-200 hover:border-blue-500 transition-all relative focus:outline-none"
+            className="h-9 w-9 rounded-full overflow-hidden border-2 border-slate-200 hover:border-blue-500 transition-all relative focus:outline-none shrink-0"
           >
             <Image
               alt={user.fullName || user.username}
@@ -100,7 +101,9 @@ export default function NavProfile() {
                   <span className="text-slate-600 flex items-center gap-1.5">
                     <Coins className="w-4 h-4 text-yellow-500" /> APKBugs Coin
                   </span>
-                  <span className="text-blue-600 font-bold">{user.coin ? user.coin.toLocaleString() : 0}</span>
+                  <span className="text-blue-600 font-bold">
+                    {user.coin ? user.coin.toLocaleString() : 0}
+                  </span>
                 </div>
               </div>
 

@@ -27,4 +27,6 @@ const tagSchema = new mongoose.Schema(
 tagSchema.index({ name: 1 }, { unique: true });
 tagSchema.index({ appIds: 1 });
 
+const mongoosePaginate = require('mongoose-paginate-v2');
+tagSchema.plugin(mongoosePaginate);
 module.exports = mongoose.model("tag", tagSchema);

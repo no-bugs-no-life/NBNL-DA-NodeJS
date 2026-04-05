@@ -1,5 +1,6 @@
 let subscriptionModel = require('../schemas/subscriptions');
 let appModel = require('../schemas/apps');
+let subPackageModel = require('../schemas/subPackages');
 
 module.exports = {
     // GET - Lay tat ca subscriptions (ADMIN/MODERATOR)
@@ -10,57 +11,76 @@ module.exports = {
         if (appId) filter.appId = appId;
         if (status) filter.status = status;
 
-        return await subscriptionModel.find(filter)
-            .populate('userId', 'fullName email avatarUrl')
-            .populate('appId', 'name iconUrl')
-            .sort({ createdAt: -1 })
-            .skip(parseInt(limit) * (parseInt(page) - 1))
-            .limit(parseInt(limit));
+        let options = {
+            page: parseInt(page) || 1,
+            limit: parseInt(limit) || 20,
+            sort: { createdAt: -1 },
+            populate: [
+                { path: 'userId', select: 'fullName email avatarUrl' },
+                { path: 'appId', select: 'name iconUrl' },
+                { path: 'packageId', select: 'name type price durationDays' }
+            ]
+        };
+
+        return await subscriptionModel.paginate(filter, options);
     },
 
     // GET - Lay subscriptions cua user hien tai
-    getMySubscriptions: async function (userId) {
-        return await subscriptionModel.find({ userId, isDeleted: false })
-            .populate('appId', 'name iconUrl')
-            .sort({ createdAt: -1 });
+    getMySubscriptions: async function (userId, queries = {}) {
+        let { page = 1, limit = 20 } = queries;
+        let options = {
+            page: parseInt(page) || 1,
+            limit: parseInt(limit) || 20,
+            sort: { createdAt: -1 },
+            populate: [
+                { path: 'appId', select: 'name iconUrl' },
+                { path: 'packageId', select: 'name type price durationDays' }
+            ]
+        };
+        return await subscriptionModel.paginate({ userId, isDeleted: false }, options);
     },
 
     // GET - Lay subscription cua user cho 1 app cu the
     getSubscriptionByApp: async function (userId, appId) {
         return await subscriptionModel.findOne({ userId, appId, isDeleted: false })
-            .populate('appId', 'name iconUrl');
+            .populate('appId', 'name iconUrl')
+            .populate('packageId', 'name type price durationDays');
     },
 
     // GET - Lay chi tiet subscription
     getSubscriptionById: async function (id) {
         return await subscriptionModel.findOne({ _id: id, isDeleted: false })
             .populate('userId', 'fullName email avatarUrl')
-            .populate('appId', 'name iconUrl');
+            .populate('appId', 'name iconUrl')
+            .populate('packageId', 'name type price durationDays');
     },
 
     // POST - Tao subscription moi (ADMIN/MODERATOR)
     createSubscription: async function (data) {
-        let { userId, appId, type } = data;
+        let { userId, appId, packageId } = data;
 
         // Kiem tra app ton tai
         let app = await appModel.findOne({ _id: appId, isDeleted: false });
         if (!app) return { error: "App not found", code: 404 };
 
+        // Lay package
+        let pkg = await subPackageModel.findOne({ _id: packageId, isDeleted: false });
+        if (!pkg) return { error: "Package not found", code: 404 };
+        if (!pkg.isActive) return { error: "Package is not active", code: 400 };
+
         // Tinh ngay
         let startDate = new Date();
         let endDate = new Date(startDate);
-        if (type === 'monthly') {
-            endDate.setMonth(endDate.getMonth() + 1);
-        } else if (type === 'yearly') {
-            endDate.setFullYear(endDate.getFullYear() + 1);
-        } else if (type === 'lifetime') {
+        if (pkg.durationDays === 0) {
             endDate = new Date('2099-12-31');
+        } else {
+            endDate.setDate(endDate.getDate() + pkg.durationDays);
         }
 
         let newSub = new subscriptionModel({
             userId,
             appId,
-            type,
+            packageId,
             startDate,
             endDate,
             status: 'active'
@@ -68,34 +88,38 @@ module.exports = {
         await newSub.save();
         await newSub.populate('userId', 'fullName email avatarUrl');
         await newSub.populate('appId', 'name iconUrl');
+        await newSub.populate('packageId', 'name type price durationDays');
         return newSub;
     },
 
     // PUT - Gia han subscription (ADMIN/MODERATOR)
-    renewSubscription: async function (id, type) {
+    renewSubscription: async function (id, packageId) {
         let sub = await subscriptionModel.findOne({ _id: id, isDeleted: false });
         if (!sub) return { error: "Subscription not found", code: 404 };
         if (sub.status === 'cancelled') {
             return { error: "Khong the gia han subscription da bi huy", code: 400 };
         }
 
+        // Lay package moi
+        let pkg = await subPackageModel.findOne({ _id: packageId, isDeleted: false });
+        if (!pkg) return { error: "Package not found", code: 404 };
+
         let startDate = sub.endDate > new Date() ? sub.endDate : new Date();
         let endDate = new Date(startDate);
-        if (type === 'monthly') {
-            endDate.setMonth(endDate.getMonth() + 1);
-        } else if (type === 'yearly') {
-            endDate.setFullYear(endDate.getFullYear() + 1);
-        } else if (type === 'lifetime') {
+        if (pkg.durationDays === 0) {
             endDate = new Date('2099-12-31');
+        } else {
+            endDate.setDate(endDate.getDate() + pkg.durationDays);
         }
 
-        sub.type = type;
+        sub.packageId = packageId;
         sub.startDate = startDate;
         sub.endDate = endDate;
         sub.status = 'active';
         await sub.save();
         await sub.populate('userId', 'fullName email avatarUrl');
         await sub.populate('appId', 'name iconUrl');
+        await sub.populate('packageId', 'name type price durationDays');
         return sub;
     },
 
@@ -110,6 +134,7 @@ module.exports = {
         await sub.save();
         await sub.populate('userId', 'fullName email avatarUrl');
         await sub.populate('appId', 'name iconUrl');
+        await sub.populate('packageId', 'name type price durationDays');
         return sub;
     },
 

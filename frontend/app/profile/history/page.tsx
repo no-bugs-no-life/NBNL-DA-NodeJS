@@ -11,8 +11,7 @@ export default function HistoryPage() {
           Lịch sử Mua hàng
         </h2>
         <p className="text-slate-500 text-sm">
-          Ghi nhận các giao dịch và hoá đơn đã thanh toán trên APKBugs của
-          bạn.
+          Ghi nhận các giao dịch và hoá đơn đã thanh toán trên APKBugs của bạn.
         </p>
       </div>
     </div>

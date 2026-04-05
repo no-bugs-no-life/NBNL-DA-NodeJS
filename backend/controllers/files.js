@@ -11,10 +11,13 @@ module.exports = {
         if (ownerId) filter.ownerId = ownerId;
         if (fileType) filter.fileType = fileType;
 
-        return await fileModel.find(filter)
-            .sort({ createdAt: -1 })
-            .skip(parseInt(limit) * (parseInt(page) - 1))
-            .limit(parseInt(limit));
+        let options = {
+            page: parseInt(page) || 1,
+            limit: parseInt(limit) || 20,
+            sort: { createdAt: -1 }
+        };
+
+        return await fileModel.paginate(filter, options);
     },
 
     // GET - Get file by ID

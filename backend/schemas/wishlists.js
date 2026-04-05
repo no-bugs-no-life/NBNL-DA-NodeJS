@@ -26,4 +26,6 @@ const wishlistSchema = new mongoose.Schema(
 
 wishlistSchema.index({ userId: 1 });
 
+const mongoosePaginate = require('mongoose-paginate-v2');
+wishlistSchema.plugin(mongoosePaginate);
 module.exports = mongoose.model("wishlist", wishlistSchema);

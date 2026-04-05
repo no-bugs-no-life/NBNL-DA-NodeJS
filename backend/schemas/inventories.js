@@ -24,4 +24,6 @@ let inventorySchema = mongoose.Schema({
 }, {
     timestamp: true
 })
-module.exports = mongoose.model('inventory',inventorySchema);
+const mongoosePaginate = require('mongoose-paginate-v2');
+inventorySchema.plugin(mongoosePaginate);
+module.exports = mongoose.model('inventory', inventorySchema);

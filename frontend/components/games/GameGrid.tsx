@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import GameCard from "./GameCard";
 import { GameItem } from "./types";
+import { API_URL } from "@/configs/api";
 
 export default function GameGrid() {
   const [displayedCount, setDisplayedCount] = useState(6);
@@ -12,9 +13,10 @@ export default function GameGrid() {
   const { data: games = [], isLoading } = useQuery({
     queryKey: ["apps", "games"],
     queryFn: async () => {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
-      const response = await axios.get(`${apiUrl}/api/v1/apps?type=game&limit=50`);
-      return response.data;
+      const response = await axios.get(
+        `${API_URL}/api/v1/apps?type=game&limit=50`,
+      );
+      return response.data?.docs || response.data;
     },
   });
 
@@ -23,7 +25,11 @@ export default function GameGrid() {
   };
 
   if (isLoading) {
-    return <div className="text-center py-12 text-on-surface-variant">Đang tải trò chơi...</div>;
+    return (
+      <div className="text-center py-12 text-on-surface-variant">
+        Đang tải trò chơi...
+      </div>
+    );
   }
 
   return (

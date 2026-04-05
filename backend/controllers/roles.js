@@ -1,8 +1,13 @@
 let roleModel = require('../schemas/roles');
 
 module.exports = {
-    getAllRoles: async function () {
-        return await roleModel.find({ isDeleted: false });
+    getAllRoles: async function (queries = {}) {
+        let { page = 1, limit = 20 } = queries;
+        let options = {
+            page: parseInt(page) || 1,
+            limit: parseInt(limit) || 20
+        };
+        return await roleModel.paginate({ isDeleted: false }, options);
     },
 
     getRoleById: async function (id) {

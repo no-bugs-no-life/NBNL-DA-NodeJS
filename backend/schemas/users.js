@@ -27,9 +27,10 @@ const userSchema = new mongoose.Schema(
             default: ""
         },
 
-        avatarUrl: {
-            type: String,
-            default: "https://i.sstatic.net/l60Hf.png"
+        avatar: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "file",
+            default: null
         },
 
         status: {
@@ -43,9 +44,10 @@ const userSchema = new mongoose.Schema(
             required: true
         },
 
-        coverUrl: {
-            type: String,
-            default: "https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=1920&auto=format&fit=crop"
+        cover: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "file",
+            default: null
         },
 
         level: {
@@ -66,6 +68,14 @@ const userSchema = new mongoose.Schema(
         bio: {
             type: String,
             default: ""
+        },
+
+        socialLinks: {
+            facebook: { type: String, default: "" },
+            twitter: { type: String, default: "" },
+            github: { type: String, default: "" },
+            linkedin: { type: String, default: "" },
+            website: { type: String, default: "" }
         },
 
         coin: {
@@ -103,4 +113,6 @@ userSchema.pre('save', function (next) {
     )
 })
 
+const mongoosePaginate = require('mongoose-paginate-v2');
+userSchema.plugin(mongoosePaginate);
 module.exports = mongoose.model("user", userSchema);

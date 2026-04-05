@@ -69,15 +69,20 @@ module.exports = {
     getHistory: async function (req, res, next) {
         try {
             let userId = req.userId;
-            let history = await paymentModel.find({ user: userId })
-                .populate({
+            let { page = 1, limit = 20 } = req.query || {};
+            let options = {
+                page: parseInt(page) || 1,
+                limit: parseInt(limit) || 20,
+                sort: { createdAt: -1 },
+                populate: {
                     path: 'reservation',
                     populate: {
                         path: 'items.product',
                         model: 'product'
                     }
-                })
-                .sort({ createdAt: -1 });
+                }
+            };
+            let history = await paymentModel.paginate({ user: userId }, options);
             res.send(history);
         } catch (error) {
             res.status(500).send({ message: error.message });

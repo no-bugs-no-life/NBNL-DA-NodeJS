@@ -2,10 +2,12 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCategories } from "@/hooks/useCategories";
+import useAuthStore from "@/store/useAuthStore";
 
 export default function NavLinks() {
   const pathname = usePathname();
   const { data: categories = [], isLoading } = useCategories();
+  const { isAdmin, isAuthenticated } = useAuthStore();
 
   const isActive = (path: string) => {
     if (path === "/") {
@@ -23,13 +25,13 @@ export default function NavLinks() {
   return (
     <div className="hidden md:flex items-center gap-6 text-sm font-medium tracking-tight">
       <Link className={getLinkClasses("/")} href="/">
-        Home
+        Trang chủ
       </Link>
       <Link className={getLinkClasses("/apps")} href="/apps">
-        Apps
+        Ứng dụng
       </Link>
       <Link className={getLinkClasses("/games")} href="/games">
-        Games
+        Trò chơi
       </Link>
 
       {/* Category Mega Menu */}
@@ -38,7 +40,7 @@ export default function NavLinks() {
           className={`${getLinkClasses("/category")} flex items-center gap-1 cursor-pointer`}
           href="/category"
         >
-          Category
+          Danh mục
           <span className="material-symbols-outlined text-sm">expand_more</span>
         </Link>
 
@@ -71,15 +73,29 @@ export default function NavLinks() {
               className="col-span-2 flex items-center justify-center gap-2 p-3 mt-2 rounded-xl bg-surface-container-low hover:bg-surface-container-high transition-colors font-semibold text-primary"
             >
               Xem tất cả danh mục
-              <span className="material-symbols-outlined text-sm">arrow_forward</span>
+              <span className="material-symbols-outlined text-sm">
+                arrow_forward
+              </span>
             </Link>
           </div>
         </div>
       </div>
 
       <Link className={getLinkClasses("/deals")} href="/deals">
-        Deals
+        Khuyến mãi
       </Link>
+
+      {isAuthenticated && isAdmin() && (
+        <Link
+          href="/admin/dashboard"
+          className="ml-2 flex items-center gap-1.5 px-4 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-600 hover:text-white rounded-full font-bold transition-all border border-blue-200 hover:border-blue-600 shadow-sm"
+        >
+          <span className="material-symbols-outlined text-[18px]">
+            admin_panel_settings
+          </span>
+          Quản lý
+        </Link>
+      )}
     </div>
   );
 }
