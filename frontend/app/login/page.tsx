@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import useAuthStore, { apiClient } from "@/store/useAuthStore";
-import { LogIn } from "lucide-react";
+import { LogIn, ArrowLeft } from "lucide-react";
 
 export default function LoginPage() {
   const [username, setUsername] = useState("");
@@ -42,6 +42,16 @@ export default function LoginPage() {
     <div className="min-h-screen w-full flex bg-surface">
       {/* Cột Trái: Form đăng nhập */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8 md:p-12 relative z-10 min-h-screen">
+        {/* Nút Quay Lại */}
+        <Link
+          href="/"
+          className="absolute top-6 left-6 md:top-10 md:left-10 flex items-center gap-2 text-on-surface-variant hover:text-primary transition-all font-semibold group px-4 py-2 rounded-full hover:bg-surface-container-high"
+          aria-label="Quay lại trang chủ"
+        >
+          <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+          <span className="hidden sm:inline">Trang chủ</span>
+        </Link>
+
         <div className="w-full max-w-md flex flex-col items-center">
           {/* Logo Header */}
           <div className="mb-10 text-center">

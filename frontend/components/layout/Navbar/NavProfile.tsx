@@ -100,7 +100,7 @@ export default function NavProfile() {
                   <span className="text-slate-600 flex items-center gap-1.5">
                     <Coins className="w-4 h-4 text-yellow-500" /> APKBugs Coin
                   </span>
-                  <span className="text-blue-600 font-bold">5,000</span>
+                  <span className="text-blue-600 font-bold">{user.coin ? user.coin.toLocaleString() : 0}</span>
                 </div>
               </div>
 

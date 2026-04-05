@@ -8,6 +8,13 @@ export interface User {
     fullName?: string;
     avatarUrl?: string;
     role?: string;
+    coin?: number;
+    level?: number;
+    xp?: number;
+    maxXp?: number;
+    bio?: string;
+    createdAt?: string;
+    coverUrl?: string;
 }
 
 interface AuthState {
