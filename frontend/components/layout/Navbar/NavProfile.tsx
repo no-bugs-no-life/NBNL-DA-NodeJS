@@ -3,11 +3,13 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
-import { Coins, User, Settings, LogOut } from "lucide-react";
+import { Coins, User, Settings, LogOut, ShieldCheck } from "lucide-react";
+import { useAuthStore } from "@/store/useAuthStore";
 
 export default function NavProfile() {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const { isAdmin } = useAuthStore();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -96,6 +98,16 @@ export default function NavProfile() {
                 <Settings className="w-4 h-4" />
                 Cài đặt tài khoản
               </Link>
+              {isAdmin() && (
+                <Link
+                  href="/admin/categories"
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-50 text-blue-700 transition-colors text-sm font-medium border-t border-slate-100 mt-1 pt-2"
+                >
+                  <ShieldCheck className="w-4 h-4" />
+                  Quản lý Danh mục
+                </Link>
+              )}
             </div>
 
             <div className="p-2 border-t border-slate-100">
