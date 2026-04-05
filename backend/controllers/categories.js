@@ -1,8 +1,14 @@
 let categoryModel = require('../schemas/categories');
 
 module.exports = {
-    getAllCategories: async function () {
-        return await categoryModel.find({ isDeleted: false }).populate('parentId');
+    getAllCategories: async function (queries = {}) {
+        let { page = 1, limit = 20 } = queries;
+        let options = {
+            page: parseInt(page) || 1,
+            limit: parseInt(limit) || 20,
+            populate: 'parentId'
+        };
+        return await categoryModel.paginate({ isDeleted: false }, options);
     },
     getCategoryById: async function (id) {
         return await categoryModel.findOne({ _id: id, isDeleted: false }).populate('parentId');

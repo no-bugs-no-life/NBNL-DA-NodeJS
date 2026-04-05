@@ -17,11 +17,14 @@ module.exports = {
         let sortObj = {};
         sortObj[sortBy] = parseInt(order);
 
-        return await developerModel.find({ isDeleted: false })
-            .populate('userId', 'fullName email avatarUrl')
-            .sort(sortObj)
-            .skip(parseInt(limit) * (parseInt(page) - 1))
-            .limit(parseInt(limit));
+        let options = {
+            page: parseInt(page) || 1,
+            limit: parseInt(limit) || 20,
+            sort: sortObj,
+            populate: { path: 'userId', select: 'fullName email avatarUrl' }
+        };
+
+        return await developerModel.paginate({ isDeleted: false }, options);
     },
 
     // GET - My developer profile

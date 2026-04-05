@@ -14,7 +14,7 @@ module.exports = {
             status: status,
             loginCount: loginCount
         })
-        await newUser.save({session});
+        await newUser.save({ session });
         return newUser;
     },
     QueryByUserNameAndPassword: async function (username, password) {
@@ -32,12 +32,7 @@ module.exports = {
         return await userModel.findOne({
             _id: id,
             isDeleted: false
-        }).populate('role')
-    }, FindUserById: async function (id) {
-        return await userModel.findOne({
-            _id: id,
-            isDeleted: false
-        }).populate('role')
+        }).populate('role').populate('avatar').populate('cover')
     },
     FindUserByEmail: async function (email) {
         return await userModel.findOne({

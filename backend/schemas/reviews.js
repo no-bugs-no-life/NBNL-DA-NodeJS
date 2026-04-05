@@ -45,4 +45,6 @@ reviewSchema.index({ status: 1 });
 // Mỗi user chỉ đánh giá 1 app 1 lần
 reviewSchema.index({ appId: 1, userId: 1 }, { unique: true });
 
+const mongoosePaginate = require('mongoose-paginate-v2');
+reviewSchema.plugin(mongoosePaginate);
 module.exports = mongoose.model("review", reviewSchema);

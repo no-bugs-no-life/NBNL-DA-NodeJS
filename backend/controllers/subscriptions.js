@@ -10,19 +10,29 @@ module.exports = {
         if (appId) filter.appId = appId;
         if (status) filter.status = status;
 
-        return await subscriptionModel.find(filter)
-            .populate('userId', 'fullName email avatarUrl')
-            .populate('appId', 'name iconUrl')
-            .sort({ createdAt: -1 })
-            .skip(parseInt(limit) * (parseInt(page) - 1))
-            .limit(parseInt(limit));
+        let options = {
+            page: parseInt(page) || 1,
+            limit: parseInt(limit) || 20,
+            sort: { createdAt: -1 },
+            populate: [
+                { path: 'userId', select: 'fullName email avatarUrl' },
+                { path: 'appId', select: 'name iconUrl' }
+            ]
+        };
+
+        return await subscriptionModel.paginate(filter, options);
     },
 
     // GET - Lay subscriptions cua user hien tai
-    getMySubscriptions: async function (userId) {
-        return await subscriptionModel.find({ userId, isDeleted: false })
-            .populate('appId', 'name iconUrl')
-            .sort({ createdAt: -1 });
+    getMySubscriptions: async function (userId, queries = {}) {
+        let { page = 1, limit = 20 } = queries;
+        let options = {
+            page: parseInt(page) || 1,
+            limit: parseInt(limit) || 20,
+            sort: { createdAt: -1 },
+            populate: { path: 'appId', select: 'name iconUrl' }
+        };
+        return await subscriptionModel.paginate({ userId, isDeleted: false }, options);
     },
 
     // GET - Lay subscription cua user cho 1 app cu the

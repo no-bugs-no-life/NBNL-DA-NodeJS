@@ -61,4 +61,6 @@ cartSchema.pre('save', function (next) {
     next();
 });
 
+const mongoosePaginate = require('mongoose-paginate-v2');
+cartSchema.plugin(mongoosePaginate);
 module.exports = new mongoose.model('cart', cartSchema);

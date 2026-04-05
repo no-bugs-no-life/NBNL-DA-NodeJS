@@ -42,4 +42,6 @@ notificationSchema.index({ userId: 1 });
 notificationSchema.index({ isRead: 1 });
 notificationSchema.index({ createdAt: -1 });
 
+const mongoosePaginate = require('mongoose-paginate-v2');
+notificationSchema.plugin(mongoosePaginate);
 module.exports = mongoose.model("notification", notificationSchema);

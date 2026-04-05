@@ -46,4 +46,6 @@ subscriptionSchema.index({ appId: 1 });
 subscriptionSchema.index({ status: 1 });
 subscriptionSchema.index({ endDate: 1 });
 
+const mongoosePaginate = require('mongoose-paginate-v2');
+subscriptionSchema.plugin(mongoosePaginate);
 module.exports = mongoose.model("subscription", subscriptionSchema);

@@ -27,27 +27,43 @@ module.exports = {
         if (type) filter.type = type;
         if (flag) filter.flags = { $in: [flag] };
 
-        return await appModel.find(filter)
-            .populate('developerId', 'fullName email avatarUrl')
-            .populate('categoryId', 'name')
-            .sort({ createdAt: -1 })
-            .skip(parseInt(limit) * (parseInt(page) - 1))
-            .limit(parseInt(limit));
+        let options = {
+            page: parseInt(page) || 1,
+            limit: parseInt(limit) || 20,
+            sort: { createdAt: -1 },
+            populate: [
+                { path: 'developerId', select: 'fullName email avatarUrl' },
+                { path: 'categoryId', select: 'name' }
+            ]
+        };
+        return await appModel.paginate(filter, options);
     },
 
     // GET - List apps by current developer
-    getMyApps: async function (userId) {
-        return await appModel.find({ developerId: userId, isDeleted: false })
-            .populate('categoryId', 'name')
-            .sort({ createdAt: -1 });
+    getMyApps: async function (userId, queries = {}) {
+        let { page = 1, limit = 20 } = queries;
+        let options = {
+            page: parseInt(page) || 1,
+            limit: parseInt(limit) || 20,
+            sort: { createdAt: -1 },
+            populate: { path: 'categoryId', select: 'name' }
+        };
+        return await appModel.paginate({ developerId: userId, isDeleted: false }, options);
     },
 
     // GET - List pending apps
-    getPendingApps: async function () {
-        return await appModel.find({ status: "pending", isDeleted: false })
-            .populate('developerId', 'fullName email avatarUrl')
-            .populate('categoryId', 'name')
-            .sort({ createdAt: 1 });
+    getPendingApps: async function (queries = {}) {
+        let { page = 1, limit = 20 } = queries;
+        let options = {
+            page: parseInt(page) || 1,
+            limit: parseInt(limit) || 20,
+            sort: { createdAt: 1 },
+            populate: [
+                { path: 'developerId', select: 'fullName email avatarUrl' },
+                { path: 'categoryId', select: 'name' }
+            ]
+        };
+        return await appModel.paginate({ status: "pending", isDeleted: false }, options);
     },
 
     // GET - App detail
@@ -152,7 +168,7 @@ module.exports = {
             categoryId: data.categoryId || null,
             version: data.version || "1.0.0",
             status: "pending",
-            fileUrl: "",
+            fileId: null,
             iconUrl: data.iconUrl || "",
             price: data.price || 0,
             subscriptionPrice: data.subscriptionPrice || 0
@@ -162,37 +178,15 @@ module.exports = {
         return newApp;
     },
 
-    // POST - Upload APK
-    uploadApk: async function (appId, userId, file) {
+    // POST - Attach App File (APK/IPA/EXE) to App
+    uploadFile: async function (appId, userId, fileId) {
         let app = await appModel.findOne({ _id: appId, isDeleted: false });
         if (!app) return { error: "App not found", code: 404 };
         if (app.developerId.toString() !== userId) return { error: "Ban khong co quyen tai file len app nay", code: 403 };
 
-        // Xoa file cu neu co
-        if (app.fileUrl) {
-            let oldPath = path.join(__dirname, '../', app.fileUrl);
-            if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
-        }
-
-        app.fileUrl = file.path;
+        app.fileId = fileId;
         await app.save();
-        return { message: "Upload APK thanh cong", fileUrl: app.fileUrl, version: app.version };
-    },
-
-    // POST - Upload IPA
-    uploadIpa: async function (appId, userId, file) {
-        let app = await appModel.findOne({ _id: appId, isDeleted: false });
-        if (!app) return { error: "App not found", code: 404 };
-        if (app.developerId.toString() !== userId) return { error: "Ban khong co quyen tai file len app nay", code: 403 };
-
-        if (app.fileUrl) {
-            let oldPath = path.join(__dirname, '../', app.fileUrl);
-            if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
-        }
-
-        app.fileUrl = file.path;
-        await app.save();
-        return { message: "Upload IPA thanh cong", fileUrl: app.fileUrl, version: app.version };
+        return { message: "Gan file chuong trinh vao App thanh cong", fileId: app.fileId, version: app.version };
     },
 
     // POST - Approve app
@@ -258,12 +252,6 @@ module.exports = {
             return { error: "Ban khong co quyen xoa app nay", code: 403 };
         }
 
-        // Xoa file neu co
-        if (app.fileUrl) {
-            let filePath = path.join(__dirname, '../', app.fileUrl);
-            if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
-        }
-
         app.isDeleted = true;
         await app.save();
         return app;
@@ -271,11 +259,13 @@ module.exports = {
 
     // GET - Download App
     downloadApp: async function (id, userId) {
-        let app = await appModel.findOne({ _id: id, isDeleted: false });
+        let app = await appModel.findOne({ _id: id, isDeleted: false }).populate('fileId');
         if (!app) return { error: "App not found", code: 404 };
 
+        let actualUrl = app.fileId && app.fileId.url ? app.fileId.url : "";
+
         if (app.price === 0) {
-            return { fileUrl: app.fileUrl || "" };
+            return { fileUrl: actualUrl };
         }
 
         let subscriptionModel = require('../schemas/subscriptions');
@@ -289,6 +279,6 @@ module.exports = {
             return { error: "Ban can mua app de co the tai xuong", code: 403 };
         }
 
-        return { fileUrl: app.fileUrl || "" };
+        return { fileUrl: actualUrl };
     }
 };

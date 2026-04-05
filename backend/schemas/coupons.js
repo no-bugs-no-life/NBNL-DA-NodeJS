@@ -56,4 +56,6 @@ const couponSchema = new mongoose.Schema(
 couponSchema.index({ code: 1 }, { unique: true });
 couponSchema.index({ startDate: 1, endDate: 1 });
 
+const mongoosePaginate = require('mongoose-paginate-v2');
+couponSchema.plugin(mongoosePaginate);
 module.exports = mongoose.model("coupon", couponSchema);

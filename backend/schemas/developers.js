@@ -44,4 +44,6 @@ const developerSchema = new mongoose.Schema(
 developerSchema.index({ userId: 1 });
 developerSchema.index({ name: 1 });
 
+const mongoosePaginate = require('mongoose-paginate-v2');
+developerSchema.plugin(mongoosePaginate);
 module.exports = mongoose.model("developer", developerSchema);

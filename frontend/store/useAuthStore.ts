@@ -6,7 +6,8 @@ export interface User {
   username: string;
   email: string;
   fullName?: string;
-  avatarUrl?: string;
+  avatarUrl?: string; // Kept for retro compatibility or fallback
+  avatar?: { _id: string; url: string; } | string;
   role?: string;
   coin?: number;
   level?: number;
@@ -14,7 +15,15 @@ export interface User {
   maxXp?: number;
   bio?: string;
   createdAt?: string;
-  coverUrl?: string;
+  coverUrl?: string; // Kept for retro compatibility
+  cover?: { _id: string; url: string; } | string;
+  socialLinks?: {
+    facebook?: string;
+    twitter?: string;
+    github?: string;
+    linkedin?: string;
+    website?: string;
+  };
 }
 
 interface AuthState {

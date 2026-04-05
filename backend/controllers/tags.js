@@ -12,26 +12,14 @@ async function getAllTags(req, res) {
             filter.name = { $regex: search.trim().toLowerCase(), $options: 'i' };
         }
 
-        let pageNum  = parseInt(page)  || 1;
-        let limitNum = parseInt(limit) || 20;
-        let sortField = ['name', 'createdAt'].includes(sortBy) ? sortBy : 'createdAt';
-        let sortOrder = order === 'asc' ? 1 : -1;
+        let options = {
+            page: parseInt(page) || 1,
+            limit: parseInt(limit) || 20,
+            sort: { [sortField]: sortOrder }
+        };
 
-        let [tags, total] = await Promise.all([
-            tagModel.find(filter)
-                .sort({ [sortField]: sortOrder })
-                .skip(limitNum * (pageNum - 1))
-                .limit(limitNum),
-            tagModel.countDocuments(filter)
-        ]);
-
-        res.send({
-            data: tags,
-            page: pageNum,
-            limit: limitNum,
-            total,
-            totalPages: Math.ceil(total / limitNum)
-        });
+        let result = await tagModel.paginate(filter, options);
+        res.send(result);
     } catch (error) {
         res.status(500).send({ message: error.message });
     }
@@ -118,7 +106,7 @@ async function addTagToApp(req, res) {
         ]);
 
         if (!tag) return res.status(404).send({ message: 'Tag not found' });
-        if (!app)  return res.status(404).send({ message: 'App not found' });
+        if (!app) return res.status(404).send({ message: 'App not found' });
 
         let userController = require('./users');
         let user = await userController.FindUserById(req.userId);
@@ -150,7 +138,7 @@ async function removeTagFromApp(req, res) {
         ]);
 
         if (!tag) return res.status(404).send({ message: 'Tag not found' });
-        if (!app)  return res.status(404).send({ message: 'App not found' });
+        if (!app) return res.status(404).send({ message: 'App not found' });
 
         let userController = require('./users');
         let user = await userController.FindUserById(req.userId);
@@ -176,34 +164,18 @@ async function getAppsByTagName(req, res) {
         let tag = await tagModel.findOne({ name, isDeleted: false });
         if (!tag) return res.status(404).send({ message: 'Tag not found' });
 
-        let pageNum  = parseInt(page)  || 1;
-        let limitNum = parseInt(limit) || 20;
-
-        let appFilter = {
-            _id: { $in: tag.appIds },
-            isDeleted: false,
-            status: 'published'
+        let options = {
+            page: parseInt(page) || 1,
+            limit: parseInt(limit) || 20,
+            sort: { createdAt: -1 },
+            populate: [
+                { path: 'developerId', select: 'fullName email avatarUrl' },
+                { path: 'categoryId', select: 'name iconUrl' }
+            ]
         };
-        if (categoryId) appFilter.categoryId = categoryId;
 
-        let [apps, total] = await Promise.all([
-            appModel.find(appFilter)
-                .populate('developerId', 'fullName email avatarUrl')
-                .populate('categoryId', 'name iconUrl')
-                .sort({ createdAt: -1 })
-                .skip(limitNum * (pageNum - 1))
-                .limit(limitNum),
-            appModel.countDocuments(appFilter)
-        ]);
-
-        res.send({
-            tag,
-            data: apps,
-            page: pageNum,
-            limit: limitNum,
-            total,
-            totalPages: Math.ceil(total / limitNum)
-        });
+        let result = await appModel.paginate(appFilter, options);
+        res.send({ tag, ...result });
     } catch (error) {
         res.status(500).send({ message: error.message });
     }

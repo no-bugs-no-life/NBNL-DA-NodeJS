@@ -6,12 +6,16 @@ module.exports = {
         let filter = { status: "approved", isDeleted: false };
         if (appId) filter.appId = appId;
 
-        return await reviewModel.find(filter)
-            .populate('userId', 'fullName avatarUrl')
-            .populate('appId', 'name')
-            .sort({ createdAt: -1 })
-            .skip(parseInt(limit) * (parseInt(page) - 1))
-            .limit(parseInt(limit));
+        let options = {
+            page: parseInt(page) || 1,
+            limit: parseInt(limit) || 20,
+            sort: { createdAt: -1 },
+            populate: [
+                { path: 'userId', select: 'fullName avatarUrl' },
+                { path: 'appId', select: 'name' }
+            ]
+        };
+        return await reviewModel.paginate(filter, options);
     },
 
     getReviewById: async function (id) {
@@ -20,17 +24,29 @@ module.exports = {
             .populate('appId', 'name');
     },
 
-    getMyReviews: async function (userId) {
-        return await reviewModel.find({ userId, isDeleted: false })
-            .populate('appId', 'name')
-            .sort({ createdAt: -1 });
+    getMyReviews: async function (userId, queries = {}) {
+        let { page = 1, limit = 20 } = queries;
+        let options = {
+            page: parseInt(page) || 1,
+            limit: parseInt(limit) || 20,
+            sort: { createdAt: -1 },
+            populate: { path: 'appId', select: 'name' }
+        };
+        return await reviewModel.paginate({ userId, isDeleted: false }, options);
     },
 
-    getPendingReviews: async function () {
-        return await reviewModel.find({ status: "pending", isDeleted: false })
-            .populate('userId', 'fullName email')
-            .populate('appId', 'name')
-            .sort({ createdAt: 1 });
+    getPendingReviews: async function (queries = {}) {
+        let { page = 1, limit = 20 } = queries;
+        let options = {
+            page: parseInt(page) || 1,
+            limit: parseInt(limit) || 20,
+            sort: { createdAt: 1 },
+            populate: [
+                { path: 'userId', select: 'fullName email' },
+                { path: 'appId', select: 'name' }
+            ]
+        };
+        return await reviewModel.paginate({ status: "pending", isDeleted: false }, options);
     },
 
     createReview: async function (data) {

@@ -17,11 +17,14 @@ module.exports = {
             filter.endDate = { $lt: new Date() };
         }
 
-        return await couponModel.find(filter)
-            .populate('appIds', 'name iconUrl')
-            .sort({ createdAt: -1 })
-            .skip(parseInt(limit) * (parseInt(page) - 1))
-            .limit(parseInt(limit));
+        let options = {
+            page: parseInt(page) || 1,
+            limit: parseInt(limit) || 20,
+            sort: { createdAt: -1 },
+            populate: { path: 'appIds', select: 'name iconUrl' }
+        };
+
+        return await couponModel.paginate(filter, options);
     },
 
     // GET - Get coupon by code (validate coupon)

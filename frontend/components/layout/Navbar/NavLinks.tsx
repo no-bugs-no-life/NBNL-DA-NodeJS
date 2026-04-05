@@ -85,7 +85,7 @@ export default function NavLinks() {
 
       {isAuthenticated && isAdmin() && (
         <Link
-          href="/admin"
+          href="/admin/dashboard"
           className="ml-2 flex items-center gap-1.5 px-4 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-600 hover:text-white rounded-full font-bold transition-all border border-blue-200 hover:border-blue-600 shadow-sm"
         >
           <span className="material-symbols-outlined text-[18px]">admin_panel_settings</span>

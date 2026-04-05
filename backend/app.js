@@ -33,7 +33,6 @@ app.use('/api/v1/categories', require('./routes/categories'));
 app.use('/api/v1/auth', require('./routes/auth'));
 app.use('/api/v1/inventories', require('./routes/inventories'));
 app.use('/api/v1/carts', require('./routes/carts'));
-app.use('/api/v1/upload', require('./routes/upload'));
 app.use('/api/v1/apps', require('./routes/apps'));
 app.use('/api/v1/developers', require('./routes/developers'));
 app.use('/api/v1/notifications', require('./routes/notifications'));

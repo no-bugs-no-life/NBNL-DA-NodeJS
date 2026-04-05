@@ -28,7 +28,7 @@ router.get('/my',
     /* #swagger.tags = ['Apps'] */
     checkLogin, async function (req, res, next) {
         try {
-            let apps = await appController.getMyApps(req.userId);
+            let apps = await appController.getMyApps(req.userId, req.query);
             res.send(apps);
         } catch (error) {
             res.status(500).send({ message: error.message });
@@ -39,7 +39,7 @@ router.get('/pending',
     /* #swagger.tags = ['Apps'] */
     checkLogin, checkRole('ADMIN', 'MODERATOR'), async function (req, res, next) {
         try {
-            let apps = await appController.getPendingApps();
+            let apps = await appController.getPendingApps(req.query);
             res.send(apps);
         } catch (error) {
             res.status(500).send({ message: error.message });
@@ -84,8 +84,7 @@ router.get('/download/:id',
 
 // ============================================================
 // POST /api/v1/apps                         - Create app
-// POST /api/v1/apps/upload-apk/:id          - Upload APK
-// POST /api/v1/apps/upload-ipa/:id          - Upload IPA
+// POST /api/v1/apps/upload-file/:id         - Attach File (APK, IPA, EXE)
 // POST /api/v1/apps/approve/:id             - Approve
 // POST /api/v1/apps/reject/:id              - Reject
 // POST /api/v1/apps/publish/:id             - Publish
@@ -102,25 +101,12 @@ router.post('/',
         }
     });
 
-router.post('/upload-apk/:id',
+router.post('/upload-file/:id',
     /* #swagger.tags = ['Apps'] */
-    checkLogin, uploadApk.single('file'), async function (req, res, next) {
+    checkLogin, async function (req, res, next) {
         try {
-            if (!req.file) return res.status(400).send({ message: "Chua co file apk duoc gui len" });
-            let result = await appController.uploadApk(req.params.id, req.userId, req.file);
-            if (result && result.error) return res.status(result.code || 400).send({ message: result.error });
-            res.send(result);
-        } catch (error) {
-            res.status(500).send({ message: error.message });
-        }
-    });
-
-router.post('/upload-ipa/:id',
-    /* #swagger.tags = ['Apps'] */
-    checkLogin, uploadIpa.single('file'), async function (req, res, next) {
-        try {
-            if (!req.file) return res.status(400).send({ message: "Chua co file ipa duoc gui len" });
-            let result = await appController.uploadIpa(req.params.id, req.userId, req.file);
+            if (!req.body.fileId) return res.status(400).send({ message: "Chua co fileId duoc gui len" });
+            let result = await appController.uploadFile(req.params.id, req.userId, req.body.fileId);
             if (result && result.error) return res.status(result.code || 400).send({ message: result.error });
             res.send(result);
         } catch (error) {

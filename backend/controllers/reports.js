@@ -18,27 +18,36 @@ module.exports = {
         if (status) filter.status = status;
         if (targetType) filter.targetType = targetType;
 
-        return await reportModel.find(filter)
-            .populate('reporterId', 'fullName email avatarUrl')
-            .sort({ createdAt: -1 })
-            .skip(parseInt(limit) * (parseInt(page) - 1))
-            .limit(parseInt(limit));
+        let options = {
+            page: parseInt(page) || 1,
+            limit: parseInt(limit) || 20,
+            sort: { createdAt: -1 },
+            populate: { path: 'reporterId', select: 'fullName email avatarUrl' }
+        };
+        return await reportModel.paginate(filter, options);
     },
 
     // GET - Reports by current user
-    getMyReports: async function (userId, queries) {
+    getMyReports: async function (userId, queries = {}) {
         let { limit = 20, page = 1 } = queries;
-        return await reportModel.find({ reporterId: userId, isDeleted: false })
-            .sort({ createdAt: -1 })
-            .skip(parseInt(limit) * (parseInt(page) - 1))
-            .limit(parseInt(limit));
+        let options = {
+            page: parseInt(page) || 1,
+            limit: parseInt(limit) || 20,
+            sort: { createdAt: -1 }
+        };
+        return await reportModel.paginate({ reporterId: userId, isDeleted: false }, options);
     },
 
     // GET - Pending reports
-    getPendingReports: async function () {
-        return await reportModel.find({ status: "pending", isDeleted: false })
-            .populate('reporterId', 'fullName email avatarUrl')
-            .sort({ createdAt: 1 });
+    getPendingReports: async function (queries = {}) {
+        let { limit = 20, page = 1 } = queries;
+        let options = {
+            page: parseInt(page) || 1,
+            limit: parseInt(limit) || 20,
+            sort: { createdAt: 1 },
+            populate: { path: 'reporterId', select: 'fullName email avatarUrl' }
+        };
+        return await reportModel.paginate({ status: "pending", isDeleted: false }, options);
     },
 
     // GET - Report detail
