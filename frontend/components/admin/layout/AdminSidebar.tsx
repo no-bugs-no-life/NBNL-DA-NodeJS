@@ -15,6 +15,7 @@ import {
   FolderIcon,
   FlagIcon,
   CreditCardIcon,
+  ChartBarIcon,
 } from "@heroicons/react/24/outline";
 import React from "react";
 
@@ -23,6 +24,7 @@ const MENU_GROUPS = [
     title: "Tổng quan",
     items: [
       { name: "Dashboard", icon: Squares2X2Icon, path: "/admin/dashboard" },
+      { name: "Quản lý Analytics", icon: ChartBarIcon, path: "/admin/analytics" },
     ],
   },
   {

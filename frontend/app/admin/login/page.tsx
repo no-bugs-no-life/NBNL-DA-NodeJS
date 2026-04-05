@@ -48,7 +48,7 @@ export default function AdminLoginPage() {
         },
         token,
       );
-      router.push("/admin/categories");
+      router.push("/admin/analytics");
     } catch {
       setError("Đăng nhập thất bại. Kiểm tra lại tài khoản / mật khẩu.");
     } finally {
