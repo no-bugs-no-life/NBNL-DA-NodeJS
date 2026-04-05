@@ -1,9 +1,18 @@
 "use client";
 import Link from "next/link";
-import { useHomeStore } from "@/store/useHomeStore";
+import { useQuery } from "@tanstack/react-query";
+import axios from "axios";
+import { ProductItem } from "@/store/useHomeStore";
 
 export default function HomeGames() {
-  const { bestSellingGames, isLoading } = useHomeStore();
+  const { data: bestSellingGames = [], isLoading } = useQuery({
+    queryKey: ["products", "bestselling"],
+    queryFn: async () => {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+      const response = await axios.get(`${apiUrl}/api/v1/products?limit=6`);
+      return response.data;
+    },
+  });
 
   if (isLoading || bestSellingGames.length === 0) return null;
 
@@ -24,7 +33,7 @@ export default function HomeGames() {
         </Link>
       </div>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
-        {bestSellingGames.slice(0, 6).map((game, idx) => (
+        {bestSellingGames.slice(0, 6).map((game: ProductItem, idx: number) => (
           <Link
             key={game._id || idx}
             href={`/apps/${game._id}`}

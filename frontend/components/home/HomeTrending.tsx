@@ -1,9 +1,18 @@
 "use client";
 import Link from "next/link";
-import { useHomeStore } from "@/store/useHomeStore";
+import { useQuery } from "@tanstack/react-query";
+import axios from "axios";
+import { AppItem } from "@/store/useHomeStore";
 
 export default function HomeTrending() {
-  const { trendingApps, isLoading } = useHomeStore();
+  const { data: trendingApps = [], isLoading } = useQuery({
+    queryKey: ["apps", "trending"],
+    queryFn: async () => {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+      const response = await axios.get(`${apiUrl}/api/v1/apps?limit=5`);
+      return response.data;
+    },
+  });
 
   if (isLoading || trendingApps.length === 0) return null;
 
@@ -67,7 +76,7 @@ export default function HomeTrending() {
         )}
 
         {/* Other apps cards */}
-        {otherApps.map((app, idx) => (
+        {otherApps.map((app: AppItem, idx: number) => (
           <Link
             key={app._id || idx}
             href={`/apps/${app._id}`}

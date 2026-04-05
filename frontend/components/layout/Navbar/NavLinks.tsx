@@ -1,23 +1,40 @@
+"use client";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { mockCategories } from "../../category/data";
 
 export default function NavLinks() {
+  const pathname = usePathname();
+
+  const isActive = (path: string) => {
+    if (path === "/") {
+      return pathname === "/";
+    }
+    return pathname.startsWith(path);
+  };
+
+  const getLinkClasses = (path: string) => {
+    return isActive(path)
+      ? "text-blue-700 border-b-2 border-blue-700 pb-1"
+      : "text-slate-600 hover:text-slate-900 transition-colors pb-1 border-b-2 border-transparent";
+  };
+
   return (
     <div className="hidden md:flex items-center gap-6 text-sm font-medium tracking-tight">
       <Link
-        className="text-slate-600 hover:text-slate-900 transition-colors"
+        className={getLinkClasses("/")}
         href="/"
       >
         Home
       </Link>
       <Link
-        className="text-blue-700 border-b-2 border-blue-700 pb-1"
+        className={getLinkClasses("/apps")}
         href="/apps"
       >
         Apps
       </Link>
       <Link
-        className="text-slate-600 hover:text-slate-900 transition-colors"
+        className={getLinkClasses("/games")}
         href="/games"
       >
         Games
@@ -26,7 +43,7 @@ export default function NavLinks() {
       {/* Category Mega Menu */}
       <div className="relative group">
         <Link
-          className="text-slate-600 hover:text-slate-900 transition-colors flex items-center gap-1 cursor-pointer"
+          className={`${getLinkClasses("/category")} flex items-center gap-1 cursor-pointer`}
           href="/category"
         >
           Category
@@ -64,7 +81,7 @@ export default function NavLinks() {
       </div>
 
       <Link
-        className="text-slate-600 hover:text-slate-900 transition-colors"
+        className={getLinkClasses("/deals")}
         href="/deals"
       >
         Deals

@@ -1,9 +1,18 @@
 "use client";
 import Link from "next/link";
-import { useHomeStore } from "@/store/useHomeStore";
+import { useQuery } from "@tanstack/react-query";
+import axios from "axios";
+import { CategoryItem } from "@/store/useHomeStore";
 
 export default function HomeCollections() {
-  const { collections, isLoading } = useHomeStore();
+  const { data: collections = [], isLoading } = useQuery({
+    queryKey: ["categories", "home"],
+    queryFn: async () => {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+      const response = await axios.get(`${apiUrl}/api/v1/categories`);
+      return response.data.filter((c: CategoryItem) => c.parentId == null).slice(0, 2);
+    },
+  });
 
   if (isLoading || collections.length === 0) return null;
 
@@ -11,7 +20,7 @@ export default function HomeCollections() {
     <section className="bg-surface-container-low py-20 mb-20">
       <div className="px-8 max-w-screen-2xl mx-auto">
         <div className="flex flex-col md:flex-row gap-8">
-          {collections.slice(0, 2).map((col, idx) => (
+          {collections.slice(0, 2).map((col: CategoryItem, idx: number) => (
             <Link
               key={col._id || idx}
               href={`/apps?collection=${col._id || ""}`}
