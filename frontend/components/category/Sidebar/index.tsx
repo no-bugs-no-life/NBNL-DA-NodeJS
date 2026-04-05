@@ -18,6 +18,12 @@ export default function Sidebar() {
         <SidebarPriceFilter />
         <SidebarRatingFilter />
       </div>
+
+      <div className="pt-6">
+        <button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-xl transition-colors shadow-lg shadow-blue-500/30">
+          Áp dụng bộ lọc
+        </button>
+      </div>
     </aside>
   );
 }
