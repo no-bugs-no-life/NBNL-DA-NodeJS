@@ -8,12 +8,14 @@ const mongoose = require('mongoose');
 require('../schemas/roles');
 require('../schemas/users');
 require('../schemas/categories');
+require('../schemas/tags');
 require('../schemas/apps');
 require('../schemas/products');
 
 // Import sub-seeders
 const seedUser = require('./seedUser');
 const seedHome = require('./seedHome');
+const seedTags = require('./seedTags');
 
 async function mainSeed() {
     try {
@@ -24,6 +26,7 @@ async function mainSeed() {
 
         await seedUser();
         await seedHome();
+        await seedTags();
 
         console.log('---------------------------\n');
 
