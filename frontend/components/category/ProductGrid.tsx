@@ -15,7 +15,15 @@ export default function ProductGrid() {
     queryFn: async () => {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
       const response = await axios.get(`${apiUrl}/api/v1/apps?limit=50`);
-      return response.data.map((item: any) => ({
+      interface ApiApp {
+        _id: string;
+        slug: string;
+        name: string;
+        developerId?: { fullName: string };
+        price: number;
+        iconUrl?: string;
+      }
+      return response.data.map((item: ApiApp) => ({
         id: item._id,
         slug: item.slug,
         title: item.name,

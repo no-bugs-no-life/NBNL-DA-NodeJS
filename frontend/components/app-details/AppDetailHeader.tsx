@@ -1,9 +1,41 @@
+import { useState } from "react";
+import axios from "axios";
 import { useAppDetailStore } from "../../store/useAppDetailStore";
 import AppStats from "./AppStats";
 
 export default function AppDetailHeader() {
   const { appInfo } = useAppDetailStore();
+  const [isDownloading, setIsDownloading] = useState(false);
+
   if (!appInfo) return null;
+
+  const handleDownload = async () => {
+    try {
+      setIsDownloading(true);
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+      const response = await axios.get(`${apiUrl}/api/v1/apps/download/${appInfo._id}`, {
+        withCredentials: true
+      });
+      const data = response.data;
+      if (data.fileUrl) {
+        // Build the full URL if necessary depending on environment, but typically it returns a relative path from the backend
+        // Assume fileUrl can be an absolute path or relative depending on upload handler
+        const downloadUrl = data.fileUrl.startsWith("http") ? data.fileUrl : `${apiUrl}/${data.fileUrl}`;
+        window.open(downloadUrl, '_blank');
+      } else {
+        alert("Có lỗi xảy ra khi tải xuống.");
+      }
+    } catch (error) {
+      let msg = "Lỗi tải xuống hoặc bạn chưa mua.";
+      if (axios.isAxiosError(error) && error.response?.data?.message) {
+        msg = error.response.data.message;
+      }
+      alert(msg);
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
   return (
     <header className="relative py-12 flex flex-col md:flex-row items-start gap-10">
       <div className="w-48 h-48 rounded-[32px] bg-white shadow-xl flex-shrink-0 flex items-center justify-center p-4">
@@ -24,8 +56,11 @@ export default function AppDetailHeader() {
         </div>
         <AppStats />
         <div className="flex gap-4 items-center">
-          <button className="primary-cta text-on-primary px-10 py-3 rounded-lg font-semibold text-lg shadow-lg hover:brightness-110 transition-all scale-95 duration-150 ease-in-out active:scale-90">
-            {appInfo.price === 0 ? "Tải về ngay" : `Mua ngay: $${appInfo.price}`}
+          <button
+            onClick={handleDownload}
+            disabled={isDownloading}
+            className="primary-cta text-on-primary px-10 py-3 rounded-lg font-semibold text-lg shadow-lg hover:brightness-110 transition-all scale-95 duration-150 ease-in-out active:scale-90 disabled:opacity-70 disabled:cursor-not-allowed">
+            {isDownloading ? "Đang xử lý..." : (appInfo.price === 0 ? "Tải về ngay" : `Tải hoặc Mua: $${appInfo.price}`)}
           </button>
           <button className="bg-surface-container-high text-on-surface px-6 py-3 rounded-lg font-semibold text-lg hover:bg-surface-dim transition-colors">
             Dùng thử miễn phí

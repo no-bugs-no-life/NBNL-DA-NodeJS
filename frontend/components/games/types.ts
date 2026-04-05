@@ -1,8 +1,9 @@
 export interface GameItem {
-  id: string;
-  title: string;
-  price: string | number;
-  rating: number;
-  coverSrc: string;
+  _id: string;
+  slug?: string;
+  name: string;
+  price: number;
+  ratingScore?: number;
+  iconUrl?: string;
   tags?: string[];
 }

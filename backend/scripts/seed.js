@@ -15,7 +15,9 @@ require('../schemas/products');
 const seedUser = require('./seedUser');
 const seedCategories = require('./seedCategories');
 const seedApps = require('./seedApps');
+const seedGames = require('./seedGames');
 const seedProducts = require('./seedProducts');
+const seedReviews = require('./seedReviews');
 
 async function mainSeed() {
     try {
@@ -27,7 +29,9 @@ async function mainSeed() {
         await seedUser();
         await seedCategories();
         await seedApps();
+        await seedGames();
         await seedProducts();
+        await seedReviews();
 
         console.log('---------------------------\n');
 

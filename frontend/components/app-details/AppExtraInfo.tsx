@@ -1,9 +1,20 @@
+import { useAppDetailStore } from "../../store/useAppDetailStore";
+
 export default function AppExtraInfo() {
-  const info = [
-    { icon: "language", text: "Hỗ trợ 26 ngôn ngữ" },
-    { icon: "verified_user", text: "Đã được xác minh bảo mật" },
-    { icon: "share", text: "Bao gồm mua hàng trong ứng dụng" },
-  ];
+  const { appInfo } = useAppDetailStore();
+
+  const info = [];
+  if (appInfo?.languageSupportCount) {
+    info.push({ icon: "language", text: `Hỗ trợ ${appInfo.languageSupportCount} ngôn ngữ` });
+  }
+
+  if (appInfo?.securityVerified) {
+    info.push({ icon: "verified_user", text: "Đã được xác minh bảo mật" });
+  }
+
+  if (appInfo?.inAppPurchases) {
+    info.push({ icon: "share", text: "Bao gồm mua hàng trong ứng dụng" });
+  }
   return (
     <section className="px-2">
       <h3 className="text-xl font-bold mb-6">Thông tin thêm</h3>

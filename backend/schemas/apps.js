@@ -56,6 +56,25 @@ const appSchema = new mongoose.Schema(
         isDeleted: {
             type: Boolean,
             default: false
+        },
+        screenshots: { type: [String], default: [] },
+        ratingScore: { type: Number, default: 0 },
+        ratingCount: { type: Number, default: 0 },
+        size: { type: String, default: "" },
+        platforms: { type: [String], default: [] },
+        tags: { type: [String], default: [] },
+        systemRequirements: {
+            min: { os: String, cpu: String, ram: String, graphics: String },
+            recommended: { os: String, cpu: String, ram: String, graphics: String }
+        },
+        features: { type: [{ icon: String, desc: String }], default: [] },
+        languageSupportCount: { type: Number, default: 0 },
+        securityVerified: { type: Boolean, default: false },
+        inAppPurchases: { type: Boolean, default: false },
+        type: {
+            type: String,
+            enum: ["app", "game"],
+            default: "app"
         }
     },
     {

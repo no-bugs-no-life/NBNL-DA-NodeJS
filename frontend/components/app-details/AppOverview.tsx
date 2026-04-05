@@ -2,23 +2,11 @@ import { useAppDetailStore } from "../../store/useAppDetailStore";
 
 export default function AppOverview() {
   const { appInfo } = useAppDetailStore();
-  const features = [
+  const features = appInfo?.features && appInfo.features.length > 0 ? appInfo.features : [
     {
       icon: "auto_fix_high",
-      desc: "Công cụ AI Firefly tích hợp để tạo và mở rộng hình ảnh thông minh.",
-    },
-    {
-      icon: "layers",
-      desc: "Hệ thống lớp nâng cao cho phép chỉnh sửa không phá hủy và quản lý phức tạp.",
-    },
-    {
-      icon: "brush",
-      desc: "Hàng nghìn bút vẽ kỹ thuật số chuyên nghiệp và tùy chỉnh.",
-    },
-    {
-      icon: "cloud_done",
-      desc: "Đồng bộ hóa đám mây mượt mà giữa các thiết bị máy tính và iPad.",
-    },
+      desc: "Công cụ thông minh đã tích hợp.",
+    }
   ];
   return (
     <section>

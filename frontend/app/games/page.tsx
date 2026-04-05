@@ -2,7 +2,6 @@ import Navbar from "../../components/layout/Navbar";
 import Footer from "../../components/layout/Footer";
 import Sidebar from "../../components/category/Sidebar";
 import GameGrid from "../../components/games/GameGrid";
-import { mockGames } from "../../components/games/data";
 
 export default function GamesPage() {
   return (
@@ -22,7 +21,7 @@ export default function GamesPage() {
               </p>
             </div>
           </div>
-          <GameGrid games={mockGames} />
+          <GameGrid />
         </div>
       </main>
       <Footer />

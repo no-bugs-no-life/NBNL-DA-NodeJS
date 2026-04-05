@@ -9,6 +9,7 @@ let { uploadApk, uploadIpa } = require('../utils/uploadHandler');
 // GET /api/v1/apps/my           - List apps by current developer (login)
 // GET /api/v1/apps/pending      - List pending apps (ADMIN/MODERATOR)
 // GET /api/v1/apps/detail/:slug - Get app detail by slug (public)
+// GET /api/v1/apps/download/:id - Download app if accessible
 // GET /api/v1/apps/:id          - Get app detail by ID (public)
 // ============================================================
 
@@ -66,6 +67,18 @@ router.get('/:id',
             res.send(app);
         } catch (error) {
             res.status(404).send({ message: "App not found" });
+        }
+    });
+
+router.get('/download/:id',
+    /* #swagger.tags = ['Apps'] */
+    checkLogin, async function (req, res, next) {
+        try {
+            let result = await appController.downloadApp(req.params.id, req.userId);
+            if (result && result.error) return res.status(result.code || 400).send({ message: result.error });
+            res.send(result);
+        } catch (error) {
+            res.status(500).send({ message: error.message });
         }
     });
 

@@ -1,7 +1,11 @@
 import Link from "next/link";
+import { useAppDetailStore } from "../../store/useAppDetailStore";
 
-export default function AppTags({ tags = [] }: { tags?: string[] }) {
+export default function AppTags() {
+    const { appInfo } = useAppDetailStore();
+
     // Use some default placeholder tags if not provided, for visual testing
+    let tags = appInfo?.tags;
     if (!tags || tags.length === 0) {
         tags = ["Thiết kế", "Đồ họa", "Chỉnh sửa ảnh", "Phần mềm", "Công cụ AI"];
     }
