@@ -90,3 +90,15 @@ export const mockApps: AppItem[] = [
       "https://lh3.googleusercontent.com/aida-public/AB6AXuBeAYJa852A9crfj4MJBjUQ9CyfnszdiB1IqKVcUjKvm_271uKYQQ6r2KrquGryk0njXKDRwy73WadCRFFyBXFN5dSd-vMdY1u49u4bNRLXNzgsMBTKGCtw3MG40yvvsDEhsq-3Dggq686vKMSAaLQtW9o5dsEvptJxmP6MRj1PLRwQGXdQ6ikWy9uVvAvY5j1yLfbTE5lWyeMBUo7slJhEh0FBYd4-JE46d_FNdHmjATgn4MDqdSHuP9m23-xP_r9snrYxpTIOncM",
   },
 ];
+
+import { CategoryItem } from "../../store/useHomeStore";
+
+export const mockCategories: CategoryItem[] = [
+  { _id: "office", name: "Văn phòng & Năng suất", iconUrl: "check_circle" },
+  { _id: "design", name: "Đồ họa & Thiết kế", iconUrl: "brush" },
+  { _id: "development", name: "Lập trình", iconUrl: "code" },
+  { _id: "video", name: "Video & Hoạt hình", iconUrl: "movie" },
+  { _id: "education", name: "Giáo dục & Tìm kiếm", iconUrl: "school" },
+  { _id: "utilities", name: "Công cụ hệ thống", iconUrl: "build" },
+  { _id: "entertainment", name: "Giải trí", iconUrl: "joystick" },
+];
