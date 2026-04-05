@@ -15,7 +15,7 @@ export default function HomeTrending() {
       <div className="flex items-center justify-between mb-8">
         <h2 className="text-3xl font-bold tracking-tight">Trending Apps</h2>
         <Link
-          href="/category"
+          href="/apps"
           className="text-primary font-semibold text-sm flex items-center gap-1 hover:underline"
         >
           See all{" "}

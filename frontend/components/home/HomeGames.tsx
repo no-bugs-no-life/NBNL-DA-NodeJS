@@ -14,7 +14,7 @@ export default function HomeGames() {
           Best-selling Games
         </h2>
         <Link
-          href="/category"
+          href="/apps"
           className="text-primary font-semibold text-sm flex items-center gap-1 hover:underline"
         >
           See all{" "}

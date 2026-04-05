@@ -11,7 +11,7 @@ export default function NavLinks() {
       </Link>
       <Link
         className="text-blue-700 border-b-2 border-blue-700 pb-1"
-        href="/category"
+        href="/apps"
       >
         Apps
       </Link>

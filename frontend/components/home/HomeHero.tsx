@@ -69,13 +69,13 @@ export default function HomeHero() {
           </div>
           <div className="flex flex-col sm:flex-row gap-3 md:gap-4">
             <Link
-              href="/category"
+              href="/apps"
               className="w-full sm:w-auto text-center hero-gradient text-white px-8 py-3 rounded-lg font-semibold transition-all duration-300 active:scale-95 shadow-lg shadow-primary/20"
             >
               Get started
             </Link>
             <Link
-              href="/category"
+              href="/apps"
               className="w-full sm:w-auto text-center bg-white/10 backdrop-blur-md text-white px-8 py-3 rounded-lg font-semibold hover:bg-white/20 transition-all active:scale-95"
             >
               Learn more

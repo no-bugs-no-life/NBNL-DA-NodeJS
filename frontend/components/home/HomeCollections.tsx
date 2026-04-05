@@ -14,7 +14,7 @@ export default function HomeCollections() {
           {collections.slice(0, 2).map((col, idx) => (
             <Link
               key={col._id || idx}
-              href={`/category/${col._id || ''}`}
+              href={`/apps?collection=${col._id || ""}`}
               className="flex-1 bg-surface-container-lowest rounded-xl overflow-hidden shadow-[0_32px_64px_-12px_rgba(0,0,0,0.04)] group cursor-pointer block"
             >
               <div className="aspect-video relative overflow-hidden">

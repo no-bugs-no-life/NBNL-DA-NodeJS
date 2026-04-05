@@ -17,7 +17,7 @@ export default function HomeProductivity() {
           </p>
         </div>
         <Link
-          href="/category"
+          href="/apps"
           className="bg-surface-container-high px-6 py-2 rounded-lg font-bold text-sm hover:bg-surface-dim transition-colors"
         >
           Manage Apps

@@ -7,6 +7,7 @@ import AppReviews from "../../../components/app-details/AppReviews";
 import AppSystemReqs from "../../../components/app-details/AppSystemReqs";
 import AppExtraInfo from "../../../components/app-details/AppExtraInfo";
 import AppDeveloperInfo from "../../../components/app-details/AppDeveloperInfo";
+import AppTags from "../../../components/app-details/AppTags";
 
 export default function AppDetailsPage() {
   return (
@@ -23,6 +24,7 @@ export default function AppDetailsPage() {
           <div className="space-y-12">
             <AppSystemReqs />
             <AppExtraInfo />
+            <AppTags />
             <AppDeveloperInfo />
           </div>
         </div>

@@ -6,6 +6,7 @@ export interface AppItem {
     description: string;
     price: number;
     status: string;
+    tags?: string[];
 }
 
 export interface ProductItem {
@@ -15,6 +16,7 @@ export interface ProductItem {
     price: number;
     category: string;
     images?: string[];
+    tags?: string[];
 }
 
 export interface CategoryItem {
