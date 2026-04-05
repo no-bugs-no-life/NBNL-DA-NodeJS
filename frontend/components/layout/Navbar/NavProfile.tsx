@@ -3,11 +3,19 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
-import { Coins, User, Settings, LogOut } from "lucide-react";
+import { Coins, User, Settings, LogOut, LogIn } from "lucide-react";
+import useAuthStore from "@/store/useAuthStore";
+import { useRouter } from "next/navigation";
 
 export default function NavProfile() {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const { user, isAuthenticated, isLoading, checkAuth, logout } = useAuthStore();
+  const router = useRouter();
+
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -23,6 +31,12 @@ export default function NavProfile() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  const handleLogout = () => {
+    logout();
+    setIsOpen(false);
+    router.push("/login");
+  };
+
   return (
     <div className="flex items-center gap-4">
       <Link
@@ -34,82 +48,94 @@ export default function NavProfile() {
         </span>
       </Link>
 
-      <div className="relative" ref={dropdownRef}>
-        <button
-          onClick={() => setIsOpen(!isOpen)}
-          className="h-8 w-8 rounded-full overflow-hidden border border-outline-variant/20 hover:ring-2 hover:ring-blue-500 transition-all relative focus:outline-none"
+      {!isLoading && !isAuthenticated && (
+        <Link
+          href="/login"
+          className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-full transition-colors"
         >
-          <Image
-            alt="User profile"
-            src="https://lh3.googleusercontent.com/aida-public/AB6AXuATmrxYA52dli6iSqeFTy7F1qW-2DVZkF5AFAI7DrbRvJF6dxFe--SldncN0spBWln2U540bp4_gOJ2CJ93abVKmOfW-8Jo6fJa-GToYMWkHT1dIR01k9oE0dkbpM2zfigQpjfBY17fuZdzEyjgfpIHNPPRASMLkv70OApkI8bWReMHnmNGlJVeSYJMLNBB28duShTpcCa_qmclTgSiIy9bcQgn9chwN5lefFfQlbiXqj6TDEk0SCmISnIXjwZisKLp1IQzp3zYQBE"
-            fill
-            className="object-cover"
-          />
-        </button>
+          <LogIn className="w-4 h-4" />
+          Đăng nhập
+        </Link>
+      )}
 
-        {isOpen && (
-          <div className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden z-50">
-            <div className="p-4 border-b border-slate-100 bg-slate-50">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-full overflow-hidden border border-slate-200 relative">
-                  <Image
-                    alt="User profile"
-                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuATmrxYA52dli6iSqeFTy7F1qW-2DVZkF5AFAI7DrbRvJF6dxFe--SldncN0spBWln2U540bp4_gOJ2CJ93abVKmOfW-8Jo6fJa-GToYMWkHT1dIR01k9oE0dkbpM2zfigQpjfBY17fuZdzEyjgfpIHNPPRASMLkv70OApkI8bWReMHnmNGlJVeSYJMLNBB28duShTpcCa_qmclTgSiIy9bcQgn9chwN5lefFfQlbiXqj6TDEk0SCmISnIXjwZisKLp1IQzp3zYQBE"
-                    fill
-                    className="object-cover"
-                  />
+      {isAuthenticated && user && (
+        <div className="relative" ref={dropdownRef}>
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            className="h-9 w-9 rounded-full overflow-hidden border-2 border-slate-200 hover:border-blue-500 transition-all relative focus:outline-none"
+          >
+            <Image
+              alt={user.fullName || user.username}
+              src={user.avatarUrl || "https://i.sstatic.net/l60Hf.png"}
+              fill
+              className="object-cover"
+            />
+          </button>
+
+          {isOpen && (
+            <div className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden z-50">
+              <div className="p-4 border-b border-slate-100 bg-slate-50">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-full overflow-hidden border border-slate-200 relative">
+                    <Image
+                      alt={user.fullName || user.username}
+                      src={user.avatarUrl || "https://i.sstatic.net/l60Hf.png"}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="font-semibold text-slate-800 text-sm truncate max-w-[140px]">
+                      {user.fullName || user.username}
+                    </span>
+                    <span
+                      className="text-xs text-slate-500 truncate max-w-[140px]"
+                      title={user.email}
+                    >
+                      {user.email}
+                    </span>
+                  </div>
                 </div>
-                <div className="flex flex-col">
-                  <span className="font-semibold text-slate-800 text-sm">
-                    Nghia Trung
+                <div className="mt-3 flex items-center justify-between text-sm font-medium">
+                  <span className="text-slate-600 flex items-center gap-1.5">
+                    <Coins className="w-4 h-4 text-yellow-500" /> APKBugs Coin
                   </span>
-                  <span
-                    className="text-xs text-slate-500 truncate"
-                    title="hello@horizon-store.com"
-                  >
-                    hello@horizon-...
-                  </span>
+                  <span className="text-blue-600 font-bold">{user.coin ? user.coin.toLocaleString() : 0}</span>
                 </div>
               </div>
-              <div className="mt-3 flex items-center justify-between text-sm font-medium">
-                <span className="text-slate-600 flex items-center gap-1.5">
-                  <Coins className="w-4 h-4 text-yellow-500" /> Horizon Coin
-                </span>
-                <span className="text-blue-600 font-bold">5,000</span>
+
+              <div className="p-2 space-y-1">
+                <Link
+                  href="/profile"
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50 text-slate-700 hover:text-blue-600 transition-colors text-sm font-medium"
+                >
+                  <User className="w-4 h-4" />
+                  Hồ sơ của tôi
+                </Link>
+                <Link
+                  href="/settings"
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50 text-slate-700 hover:text-blue-600 transition-colors text-sm font-medium"
+                >
+                  <Settings className="w-4 h-4" />
+                  Cài đặt tài khoản
+                </Link>
+              </div>
+
+              <div className="p-2 border-t border-slate-100">
+                <button
+                  onClick={handleLogout}
+                  className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-red-50 text-slate-700 hover:text-red-600 transition-colors text-sm font-medium"
+                >
+                  <LogOut className="w-4 h-4" />
+                  Đăng xuất
+                </button>
               </div>
             </div>
-
-            <div className="p-2 space-y-1">
-              <Link
-                href="/profile"
-                onClick={() => setIsOpen(false)}
-                className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50 text-slate-700 hover:text-blue-600 transition-colors text-sm font-medium"
-              >
-                <User className="w-4 h-4" />
-                Hồ sơ của tôi
-              </Link>
-              <Link
-                href="/settings"
-                onClick={() => setIsOpen(false)}
-                className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50 text-slate-700 hover:text-blue-600 transition-colors text-sm font-medium"
-              >
-                <Settings className="w-4 h-4" />
-                Cài đặt tài khoản
-              </Link>
-            </div>
-
-            <div className="p-2 border-t border-slate-100">
-              <button
-                onClick={() => setIsOpen(false)}
-                className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-red-50 text-slate-700 hover:text-red-600 transition-colors text-sm font-medium"
-              >
-                <LogOut className="w-4 h-4" />
-                Đăng xuất
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

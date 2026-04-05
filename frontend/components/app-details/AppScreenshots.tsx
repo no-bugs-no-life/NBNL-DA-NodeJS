@@ -1,13 +1,14 @@
 "use client";
 
 import { useRef } from "react";
+import { useAppDetailStore } from "../../store/useAppDetailStore";
 
 export default function AppScreenshots() {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const images = [
-    "https://lh3.googleusercontent.com/aida-public/AB6AXuCNs3wmb-h6j36TOpv5cWZAZERQObwgvbkHqBq8Eg2uep3aHl6Yuq68UTAcDihvMgvz9mIVhudx1G-1y3Bu-XPc4SIC7ozlnn_YR5ZZwl-JTZ1M8Mg1TQ0dXZjhD2_AJVewrxkXcCrsWVATzsWprcfLyvYKRCHsPMFpXEdzJmlSJJykUBVrAUwiM7gf0-J-VLQmeeXczj4mVcZPOmXBNP3nrgzYVVg0NhQ1mW2K8CKP1dUi8kERNYKYlgWXovnF_2LmXSeymIM88bs",
-    "https://lh3.googleusercontent.com/aida-public/AB6AXuANXc43beuF57_SwFgsXdNMI6g8-FTPi2G33mBzkPzi7Qp7pi-JxbJ2b0hvplOopvtRYYj0c28oU2u94sB9BLFz_MyS5wgPsnOnv5I52DpKQN0eZ2o60FiINicAxzcqDhIuW5iJGP5h8jlqU5-s6fjdI17vNcKCiQGFAkyNZBb5watkWSZ_30XSHzLx6FcjnSJD3xWhyB3kzZLc1CwgQrwWmjMDwb9KH0VGhcyyofYa2tEjdB3HvneubKq9gcBeEkFWhW9y8NA05BI",
-    "https://lh3.googleusercontent.com/aida-public/AB6AXuDxZm6zvL1z4MqS4B1KuXlrJoUt_eadDAf1_Mgi7vsgt3ZNzCHOskJUXJ3DdzhLJRR_zancazLOTKXHjKLxoGpaOMpVnZ7jgsooQHyig0mA4-cMdh73G0RFXida-Kv4c2cedGsbpMtxZozd9_jYpstbrs0-cOC4QpTBn-2IdvO6E6wnFdVq2a6_S6EEOgjY0WxH4ufRKji3l04vLF71a4IYcD2HtP92jDxc9k8PGT9g7n9xgnapX_twpekV-Q5gkldNEyxEk7HRl_o",
+  const { appInfo } = useAppDetailStore();
+
+  const images = appInfo?.screenshots && appInfo.screenshots.length > 0 ? appInfo.screenshots : [
+    "https://lh3.googleusercontent.com/aida-public/AB6AXuCNs3wmb-h6j36TOpv5cWZAZERQObwgvbkHqBq8Eg2uep3aHl6Yuq68UTAcDihvMgvz9mIVhudx1G-1y3Bu-XPc4SIC7ozlnn_YR5ZZwl-JTZ1M8Mg1TQ0dXZjhD2_AJVewrxkXcCrsWVATzsWprcfLyvYKRCHsPMFpXEdzJmlSJJykUBVrAUwiM7gf0-J-VLQmeeXczj4mVcZPOmXBNP3nrgzYVVg0NhQ1mW2K8CKP1dUi8kERNYKYlgWXovnF_2LmXSeymIM88bs"
   ];
 
   const scroll = (direction: "left" | "right") => {

@@ -1,9 +1,18 @@
 "use client";
 import Link from "next/link";
-import { useHomeStore } from "@/store/useHomeStore";
+import { useQuery } from "@tanstack/react-query";
+import axios from "axios";
+import { AppItem } from "@/store/useHomeStore";
 
 export default function HomeTrending() {
-  const { trendingApps, isLoading } = useHomeStore();
+  const { data: trendingApps = [], isLoading } = useQuery({
+    queryKey: ["apps", "trending"],
+    queryFn: async () => {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+      const response = await axios.get(`${apiUrl}/api/v1/apps?limit=5`);
+      return response.data;
+    },
+  });
 
   if (isLoading || trendingApps.length === 0) return null;
 
@@ -28,7 +37,7 @@ export default function HomeTrending() {
         {/* Large featured app card */}
         {firstApp && (
           <Link
-            href={`/apps/${firstApp._id}`}
+            href={`/apps/${firstApp.slug}`}
             className="md:col-span-2 lg:row-span-2 bg-surface-container-low rounded-xl p-8 flex flex-col justify-between group cursor-pointer hover:bg-surface-bright transition-all duration-500"
           >
             <div>
@@ -67,10 +76,10 @@ export default function HomeTrending() {
         )}
 
         {/* Other apps cards */}
-        {otherApps.map((app, idx) => (
+        {otherApps.map((app: AppItem, idx: number) => (
           <Link
             key={app._id || idx}
-            href={`/apps/${app._id}`}
+            href={`/apps/${app.slug}`}
             className="bg-surface-container-lowest rounded-xl p-6 flex items-start gap-4 hover:bg-surface-bright transition-all shadow-[0_32px_64px_-12px_rgba(0,0,0,0.04)] cursor-pointer group"
           >
             <div className="w-14 h-14 bg-secondary-container/20 rounded-xl flex-shrink-0 flex items-center justify-center">

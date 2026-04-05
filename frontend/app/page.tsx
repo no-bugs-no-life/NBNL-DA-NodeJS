@@ -5,13 +5,13 @@ import HomeTrending from "../components/home/HomeTrending";
 import HomeGames from "../components/home/HomeGames";
 import HomeCollections from "../components/home/HomeCollections";
 import HomeProductivity from "../components/home/HomeProductivity";
-import HomeClientWrapper from "../components/home/HomeClientWrapper";
+
 
 export default function Home() {
   return (
     <>
       <Navbar />
-      <HomeClientWrapper />
+
       <main className="pt-24 pb-12">
         <HomeHero />
         <HomeTrending />

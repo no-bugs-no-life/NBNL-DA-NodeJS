@@ -1,9 +1,18 @@
 "use client";
 import Link from "next/link";
-import { useHomeStore } from "@/store/useHomeStore";
+import { useQuery } from "@tanstack/react-query";
+import axios from "axios";
+import { GameItem } from "@/components/games/types";
 
 export default function HomeGames() {
-  const { bestSellingGames, isLoading } = useHomeStore();
+  const { data: bestSellingGames = [], isLoading } = useQuery({
+    queryKey: ["apps", "bestselling-games"],
+    queryFn: async () => {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+      const response = await axios.get(`${apiUrl}/api/v1/apps?type=game&flag=bestseller&limit=6`);
+      return response.data;
+    },
+  });
 
   if (isLoading || bestSellingGames.length === 0) return null;
 
@@ -14,7 +23,7 @@ export default function HomeGames() {
           Best-selling Games
         </h2>
         <Link
-          href="/apps"
+          href="/games"
           className="text-primary font-semibold text-sm flex items-center gap-1 hover:underline"
         >
           See all{" "}
@@ -24,30 +33,30 @@ export default function HomeGames() {
         </Link>
       </div>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
-        {bestSellingGames.slice(0, 6).map((game, idx) => (
+        {bestSellingGames.slice(0, 6).map((game: GameItem, idx: number) => (
           <Link
             key={game._id || idx}
-            href={`/apps/${game._id}`}
+            href={`/apps/${game.slug}`}
             className="flex flex-col gap-3 group cursor-pointer block"
           >
             <div className="aspect-[3/4] rounded-lg overflow-hidden relative shadow-md group-hover:shadow-xl transition-all group-hover:-translate-y-1 bg-surface-container">
-              {game.images && game.images.length > 0 ? (
+              {game.iconUrl ? (
                 <img
                   className="w-full h-full object-cover"
-                  alt={game.title}
-                  src={game.images[0]}
+                  alt={game.name}
+                  src={game.iconUrl}
                 />
               ) : (
-                <div className="w-full h-full object-cover"></div> // Placeholder fallback if no images array is loaded
+                <div className="w-full h-full object-cover bg-slate-800"></div>
               )}
-              {idx === 0 && ( // Showing a mock GAME PASS badge on first game
+              {idx === 0 && (
                 <div className="absolute bottom-2 left-2 bg-black/60 backdrop-blur-md px-2 py-1 rounded text-[10px] text-white font-bold">
                   GAME PASS
                 </div>
               )}
             </div>
             <div>
-              <h4 className="font-bold text-sm truncate">{game.title}</h4>
+              <h4 className="font-bold text-sm truncate">{game.name}</h4>
               <div className="flex items-center justify-between mt-1">
                 <span className={`text-xs ${game.price === 0 ? 'text-tertiary font-bold' : 'text-on-surface-variant'}`}>
                   {game.price === 0 ? "Free" : `$${game.price}`}
@@ -59,7 +68,7 @@ export default function HomeGames() {
                   >
                     star
                   </span>
-                  <span className="ml-0.5">{(4.9 - (idx * 0.1)).toFixed(1)}</span>
+                  <span className="ml-0.5">{game.ratingScore ? game.ratingScore.toFixed(1) : "0.0"}</span>
                 </div>
               </div>
             </div>

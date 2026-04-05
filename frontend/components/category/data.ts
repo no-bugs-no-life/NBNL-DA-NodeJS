@@ -4,7 +4,7 @@ export const mockApps: AppItem[] = [
   {
     id: "1",
     title: "Calendar Flow",
-    company: "Horizon Soft",
+    company: "APKBugs Soft",
     rating: "4.8",
     reviews: "1.2k",
     price: "Miễn phí",
@@ -48,7 +48,7 @@ export const mockApps: AppItem[] = [
   {
     id: "5",
     title: "Cloud Share",
-    company: "Horizon Soft",
+    company: "APKBugs Soft",
     rating: "4.7",
     reviews: "2.1k",
     price: "Miễn phí",

@@ -1,9 +1,18 @@
 "use client";
 import Link from "next/link";
-import { useHomeStore } from "@/store/useHomeStore";
+import { useQuery } from "@tanstack/react-query";
+import axios from "axios";
+import { AppItem } from "@/store/useHomeStore";
 
 export default function HomeProductivity() {
-  const { productivityApps, isLoading } = useHomeStore();
+  const { data: productivityApps = [], isLoading } = useQuery({
+    queryKey: ["apps", "productivity"],
+    queryFn: async () => {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+      const response = await axios.get(`${apiUrl}/api/v1/apps?limit=3`);
+      return response.data;
+    },
+  });
 
   if (isLoading || productivityApps.length === 0) return null;
 
@@ -24,10 +33,10 @@ export default function HomeProductivity() {
         </Link>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {productivityApps.slice(0, 3).map((app, idx) => (
+        {productivityApps.slice(0, 3).map((app: AppItem, idx: number) => (
           <Link
             key={app._id || idx}
-            href={`/apps/${app._id}`}
+            href={`/apps/${app.slug}`}
             className="flex items-center gap-5 p-4 rounded-xl hover:bg-surface-container-low transition-colors cursor-pointer group block"
           >
             <div className="w-16 h-16 bg-white rounded-xl shadow-sm flex items-center justify-center group-hover:scale-105 transition-transform">

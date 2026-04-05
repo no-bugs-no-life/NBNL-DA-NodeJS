@@ -3,7 +3,7 @@ import Footer from "../../../components/layout/Footer";
 import Sidebar from "../../../components/category/Sidebar";
 import FeaturedArea from "../../../components/category/FeaturedArea";
 import ProductGrid from "../../../components/category/ProductGrid";
-import { mockApps } from "../../../components/category/data";
+
 
 export default async function CategoryDetailPage() {
     // We can await params if we need the ID, but for the UI layout, it mirrors `/apps`
@@ -16,7 +16,7 @@ export default async function CategoryDetailPage() {
                 <Sidebar />
                 <div className="flex-1 min-w-0">
                     <FeaturedArea />
-                    <ProductGrid apps={mockApps} />
+                    <ProductGrid />
                 </div>
             </main>
             <Footer />

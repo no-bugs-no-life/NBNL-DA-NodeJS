@@ -3,8 +3,8 @@ import DealHero from "@/components/deals/DealHero";
 import DealGrid from "@/components/deals/DealGrid";
 
 export const metadata = {
-  title: "Khuyến mãi | Horizon Store",
-  description: "Các ứng dụng và trò chơi đang giảm giá tại Horizon Store",
+  title: "Khuyến mãi | APKBugs",
+  description: "Các ứng dụng và trò chơi đang giảm giá tại APKBugs",
 };
 
 export default function DealsPage() {

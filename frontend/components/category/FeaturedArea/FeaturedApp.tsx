@@ -10,7 +10,7 @@ export default function FeaturedApp() {
         <span className="text-white/80 text-xs font-bold uppercase tracking-widest mb-2">
           Đề xuất hàng đầu
         </span>
-        <h2 className="text-3xl font-bold text-white mb-2">Horizon Docs Pro</h2>
+        <h2 className="text-3xl font-bold text-white mb-2">APKBugs Docs Pro</h2>
         <p className="text-white/70 max-w-md mb-6 leading-relaxed">
           Công cụ soạn thảo văn bản thế hệ mới với tích hợp AI thông minh nhất
           hiện nay.

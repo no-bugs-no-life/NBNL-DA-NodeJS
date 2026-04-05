@@ -14,8 +14,11 @@ require('../schemas/products');
 
 // Import sub-seeders
 const seedUser = require('./seedUser');
-const seedHome = require('./seedHome');
-const seedTags = require('./seedTags');
+const seedCategories = require('./seedCategories');
+const seedApps = require('./seedApps');
+const seedGames = require('./seedGames');
+const seedProducts = require('./seedProducts');
+const seedReviews = require('./seedReviews');
 
 async function mainSeed() {
     try {
@@ -25,8 +28,11 @@ async function mainSeed() {
         console.log('\n--- Running Sub-Seeders ---');
 
         await seedUser();
-        await seedHome();
-        await seedTags();
+        await seedCategories();
+        await seedApps();
+        await seedGames();
+        await seedProducts();
+        await seedReviews();
 
         console.log('---------------------------\n');
 

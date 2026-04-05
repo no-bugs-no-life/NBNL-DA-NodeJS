@@ -5,7 +5,8 @@ let userModel = mongoose.model('user');
 const ROLES = [
     { name: 'ADMIN', description: 'Quan tri he thong' },
     { name: 'MODERATOR', description: 'Kiem duyet noi dung' },
-    { name: 'USER', description: 'Nguoi dung thong thuong' }
+    { name: 'USER', description: 'Nguoi dung thong thuong' },
+    { name: 'DEVELOPER', description: 'Nha phat trien ung dung' }
 ];
 
 const USERS = [
@@ -22,6 +23,13 @@ const USERS = [
         email: 'mod@nnptud.com',
         fullName: 'Nguoi Kiem Duyet',
         roleName: 'MODERATOR'
+    },
+    {
+        username: 'system_dev',
+        password: 'Dev@123',
+        email: 'dev@apkbugs.com',
+        fullName: 'System Developer',
+        roleName: 'DEVELOPER'
     }
 ];
 

@@ -1,11 +1,10 @@
 import ProfileHeader from "@/components/profile/ProfileHeader";
 import ProfileSidebar from "@/components/profile/ProfileSidebar";
-import { mockUser } from "@/components/profile/data";
 import Navbar from "@/components/layout/Navbar";
 
 export const metadata = {
-  title: "Hồ sơ của tôi | Horizon Store",
-  description: "Trang cá nhân của người dùng trên hệ thống Horizon Store",
+  title: "Hồ sơ của tôi | APKBugs",
+  description: "Trang cá nhân của người dùng trên hệ thống APKBugs",
 };
 
 export default function ProfileLayout({
@@ -17,7 +16,7 @@ export default function ProfileLayout({
     <div className="min-h-screen pt-24 pb-12 w-full bg-slate-50">
       <Navbar />
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
-        <ProfileHeader user={mockUser} />
+        <ProfileHeader />
 
         <div className="flex flex-col lg:flex-row gap-8">
           <ProfileSidebar />

@@ -2,6 +2,7 @@ import { create } from "zustand";
 
 export interface AppItem {
     _id: string;
+    slug: string;
     name: string;
     description: string;
     price: number;
@@ -11,6 +12,7 @@ export interface AppItem {
 
 export interface ProductItem {
     _id: string;
+    slug: string;
     title: string;
     description: string;
     price: number;

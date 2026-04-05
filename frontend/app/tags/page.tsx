@@ -1,12 +1,12 @@
 import Navbar from "../../components/layout/Navbar";
 import Footer from "../../components/layout/Footer";
 import Link from "next/link";
-import { mockTags } from "../../components/category/Sidebar/TagsSidebar";
 import { Metadata } from "next";
+import { mockTags } from "../../components/category/Sidebar/TagsSidebar";
 
 export const metadata: Metadata = {
     title: "Từ khóa | Cửa hàng",
-    description: "Khám phá các ứng dụng theo từ khóa nổi bật",
+    description: "Duyệt qua các từ khóa ứng dụng phổ biến",
 };
 
 export default function TagsIndexPage() {
@@ -14,7 +14,7 @@ export default function TagsIndexPage() {
         <>
             <Navbar />
             <main className="pt-24 pb-24 px-6 max-w-[1920px] mx-auto min-h-screen">
-                <h1 className="text-4xl font-bold mb-8">Danh sách từ khóa</h1>
+                <h1 className="text-4xl font-bold mb-8">Từ khóa tìm kiếm phổ biến</h1>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                     {mockTags.map((t, idx) => (
                         <Link key={idx} href={`/tags/${encodeURIComponent(t)}`}>
@@ -27,7 +27,7 @@ export default function TagsIndexPage() {
                         </Link>
                     ))}
                 </div>
-            </main>
+            </main >
             <Footer />
         </>
     );

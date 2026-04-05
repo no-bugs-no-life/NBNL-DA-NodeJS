@@ -68,6 +68,12 @@ const userSchema = new mongoose.Schema(
             default: ""
         },
 
+        coin: {
+            type: Number,
+            default: 0,
+            min: [0, "Coin balance cannot be negative"]
+        },
+
         loginCount: {
             type: Number,
             default: 0,
