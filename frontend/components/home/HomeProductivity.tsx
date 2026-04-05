@@ -1,6 +1,12 @@
+"use client";
 import Link from "next/link";
+import { useHomeStore } from "@/store/useHomeStore";
 
 export default function HomeProductivity() {
+  const { productivityApps, isLoading } = useHomeStore();
+
+  if (isLoading || productivityApps.length === 0) return null;
+
   return (
     <section className="px-8 max-w-screen-2xl mx-auto mb-20">
       <div className="flex items-center justify-between mb-8">
@@ -18,98 +24,39 @@ export default function HomeProductivity() {
         </Link>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        <Link
-          href="/apps/writenow"
-          className="flex items-center gap-5 p-4 rounded-xl hover:bg-surface-container-low transition-colors cursor-pointer group block"
-        >
-          <div className="w-16 h-16 bg-white rounded-xl shadow-sm flex items-center justify-center group-hover:scale-105 transition-transform">
-            <span className="material-symbols-outlined text-primary text-3xl font-bold">
-              description
-            </span>
-          </div>
-          <div className="flex-1">
-            <h4 className="font-bold">WriteNow Editor</h4>
-            <p className="text-xs text-on-surface-variant">
-              Focus-driven word processor
-            </p>
-            <div className="mt-2 flex items-center gap-3">
-              <span className="text-[10px] bg-tertiary-container/10 text-tertiary font-bold px-1.5 py-0.5 rounded">
-                Free
+        {productivityApps.slice(0, 3).map((app, idx) => (
+          <Link
+            key={app._id || idx}
+            href={`/apps/${app._id}`}
+            className="flex items-center gap-5 p-4 rounded-xl hover:bg-surface-container-low transition-colors cursor-pointer group block"
+          >
+            <div className="w-16 h-16 bg-white rounded-xl shadow-sm flex items-center justify-center group-hover:scale-105 transition-transform">
+              <span className="material-symbols-outlined text-primary text-3xl font-bold">
+                {["description", "analytics", "mail"][idx % 3]}
               </span>
-              <div className="flex items-center text-amber-500 text-[10px]">
-                <span
-                  className="material-symbols-outlined text-[10px]"
-                  style={{ fontVariationSettings: "'FILL' 1" }}
-                >
-                  star
+            </div>
+            <div className="flex-1">
+              <h4 className="font-bold">{app.name}</h4>
+              <p className="text-xs text-on-surface-variant truncate block w-[90%]">
+                {app.description}
+              </p>
+              <div className="mt-2 flex items-center gap-3">
+                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${app.price === 0 ? "bg-tertiary-container/10 text-tertiary" : "bg-surface-container-highest text-on-surface"}`}>
+                  {app.price === 0 ? "Free" : `$${app.price}`}
                 </span>
-                <span className="ml-0.5">4.8</span>
+                <div className="flex items-center text-amber-500 text-[10px]">
+                  <span
+                    className="material-symbols-outlined text-[10px]"
+                    style={{ fontVariationSettings: "'FILL' 1" }}
+                  >
+                    star
+                  </span>
+                  <span className="ml-0.5">{(4.9 - (idx * 0.1)).toFixed(1)}</span>
+                </div>
               </div>
             </div>
-          </div>
-        </Link>
-
-        <Link
-          href="/apps/datascope"
-          className="flex items-center gap-5 p-4 rounded-xl hover:bg-surface-container-low transition-colors cursor-pointer group block"
-        >
-          <div className="w-16 h-16 bg-white rounded-xl shadow-sm flex items-center justify-center group-hover:scale-105 transition-transform">
-            <span className="material-symbols-outlined text-primary text-3xl font-bold">
-              analytics
-            </span>
-          </div>
-          <div className="flex-1">
-            <h4 className="font-bold">DataScope Pro</h4>
-            <p className="text-xs text-on-surface-variant">
-              Advanced visualization &amp; stats
-            </p>
-            <div className="mt-2 flex items-center gap-3">
-              <span className="text-[10px] bg-surface-container-highest text-on-surface font-bold px-1.5 py-0.5 rounded">
-                $14.99
-              </span>
-              <div className="flex items-center text-amber-500 text-[10px]">
-                <span
-                  className="material-symbols-outlined text-[10px]"
-                  style={{ fontVariationSettings: "'FILL' 1" }}
-                >
-                  star
-                </span>
-                <span className="ml-0.5">4.9</span>
-              </div>
-            </div>
-          </div>
-        </Link>
-
-        <Link
-          href="/apps/luminousmail"
-          className="flex items-center gap-5 p-4 rounded-xl hover:bg-surface-container-low transition-colors cursor-pointer group block"
-        >
-          <div className="w-16 h-16 bg-white rounded-xl shadow-sm flex items-center justify-center group-hover:scale-105 transition-transform">
-            <span className="material-symbols-outlined text-primary text-3xl font-bold">
-              mail
-            </span>
-          </div>
-          <div className="flex-1">
-            <h4 className="font-bold">Luminous Mail</h4>
-            <p className="text-xs text-on-surface-variant">
-              Intelligent inbox management
-            </p>
-            <div className="mt-2 flex items-center gap-3">
-              <span className="text-[10px] bg-tertiary-container/10 text-tertiary font-bold px-1.5 py-0.5 rounded">
-                Free
-              </span>
-              <div className="flex items-center text-amber-500 text-[10px]">
-                <span
-                  className="material-symbols-outlined text-[10px]"
-                  style={{ fontVariationSettings: "'FILL' 1" }}
-                >
-                  star
-                </span>
-                <span className="ml-0.5">4.7</span>
-              </div>
-            </div>
-          </div>
-        </Link>
+          </Link>
+        ))}
       </div>
     </section>
   );

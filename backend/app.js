@@ -48,6 +48,8 @@ app.use('/api/v1/subscriptions', require('./routes/subscriptions'));
 app.use('/api/v1/coupons', require('./routes/coupons'));
 app.use('/api/v1/files', require('./routes/files'));
 app.use('/api/v1/wishlists', require('./routes/wishlists'));
+app.use('/api/v1/profile', require('./routes/profile'));
+app.use('/api/v1/home', require('./routes/home'));
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
   next(createError(404));

@@ -43,6 +43,31 @@ const userSchema = new mongoose.Schema(
             required: true
         },
 
+        coverUrl: {
+            type: String,
+            default: "https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=1920&auto=format&fit=crop"
+        },
+
+        level: {
+            type: Number,
+            default: 1
+        },
+
+        xp: {
+            type: Number,
+            default: 0
+        },
+
+        maxXp: {
+            type: Number,
+            default: 1000
+        },
+
+        bio: {
+            type: String,
+            default: ""
+        },
+
         loginCount: {
             type: Number,
             default: 0,

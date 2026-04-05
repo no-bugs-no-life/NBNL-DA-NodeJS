@@ -1,85 +1,42 @@
 /**
- * Seed script - Chay 1 lan de khoi tao roles + users mac dinh
+ * Master Seed script - Runner cho tat ca cac file seed
  * Run: node scripts/seed.js
  */
 const mongoose = require('mongoose');
+
+// Bắt buộc khởi tạo các file Schema trước khi chạy seed()
 require('../schemas/roles');
 require('../schemas/users');
+require('../schemas/categories');
+require('../schemas/apps');
+require('../schemas/products');
 
-let roleModel = mongoose.model('role');
-let userModel = mongoose.model('user');
+// Import sub-seeders
+const seedUser = require('./seedUser');
+const seedHome = require('./seedHome');
 
-const ROLES = [
-    { name: 'ADMIN', description: 'Quan tri he thong' },
-    { name: 'MODERATOR', description: 'Kiem duyet noi dung' },
-    { name: 'USER', description: 'Nguoi dung thong thuong' }
-];
-
-const USERS = [
-    {
-        username: 'admin',
-        password: 'Admin@123',
-        email: 'admin@nnptud.com',
-        fullName: 'Quan Tri Vien',
-        roleName: 'ADMIN'
-    },
-    {
-        username: 'moderator',
-        password: 'Mod@123',
-        email: 'mod@nnptud.com',
-        fullName: 'Nguoi Kiem Duyet',
-        roleName: 'MODERATOR'
-    }
-];
-
-async function seed() {
+async function mainSeed() {
     try {
-        await mongoose.connect('mongodb://localhost:27017/NNPTUD-C2');
-        console.log('✅ Connected to MongoDB');
+        await mongoose.connect('mongodb://127.0.0.1:27017/NNPTUD-C2');
+        console.log('✅ Connected to MongoDB (Master Seeder)');
 
-        // === Seed Roles ===
-        let roleMap = {};
-        for (let roleData of ROLES) {
-            let role = await roleModel.findOne({ name: roleData.name, isDeleted: false });
-            if (!role) {
-                role = new roleModel({ name: roleData.name, description: roleData.description });
-                await role.save();
-                console.log(`✅ Created role: ${roleData.name}`);
-            } else {
-                console.log(`⏭️  Role exists: ${roleData.name}`);
-            }
-            roleMap[roleData.name] = role._id;
-        }
+        console.log('\n--- Running Sub-Seeders ---');
 
-        // === Seed Users ===
-        for (let userData of USERS) {
-            let existing = await userModel.findOne({ username: userData.username, isDeleted: false });
-            if (!existing) {
-                let newUser = new userModel({
-                    username: userData.username,
-                    password: userData.password,
-                    email: userData.email,
-                    fullName: userData.fullName,
-                    role: roleMap[userData.roleName],
-                    status: true
-                });
-                await newUser.save();
-                console.log(`✅ Created user: ${userData.username} (${userData.roleName})`);
-            } else {
-                console.log(`⏭️  User exists: ${userData.username}`);
-            }
-        }
+        await seedUser();
+        await seedHome();
 
-        console.log('\n🎉 Seed completed!');
+        console.log('---------------------------\n');
+
+        console.log('🎉 All Seeding Tasks Completed!');
         console.log('\nDefault accounts:');
         console.log('  ADMIN     - admin / Admin@123');
         console.log('  MODERATOR - moderator / Mod@123');
 
         process.exit(0);
     } catch (error) {
-        console.error('❌ Seed failed:', error.message);
+        console.error('❌ Master Seed failed:', error.message);
         process.exit(1);
     }
 }
 
-seed();
+mainSeed();
