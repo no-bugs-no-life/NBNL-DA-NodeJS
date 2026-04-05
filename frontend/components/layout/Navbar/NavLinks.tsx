@@ -2,10 +2,12 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCategories } from "@/hooks/useCategories";
+import useAuthStore from "@/store/useAuthStore";
 
 export default function NavLinks() {
   const pathname = usePathname();
   const { data: categories = [], isLoading } = useCategories();
+  const { isAdmin, isAuthenticated } = useAuthStore();
 
   const isActive = (path: string) => {
     if (path === "/") {
@@ -80,6 +82,16 @@ export default function NavLinks() {
       <Link className={getLinkClasses("/deals")} href="/deals">
         Khuyến mãi
       </Link>
+
+      {isAuthenticated && isAdmin() && (
+        <Link
+          href="/admin"
+          className="ml-2 flex items-center gap-1.5 px-4 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-600 hover:text-white rounded-full font-bold transition-all border border-blue-200 hover:border-blue-600 shadow-sm"
+        >
+          <span className="material-symbols-outlined text-[18px]">admin_panel_settings</span>
+          Quản lý
+        </Link>
+      )}
     </div>
   );
 }
