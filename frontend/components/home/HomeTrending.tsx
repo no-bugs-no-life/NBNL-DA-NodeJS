@@ -37,7 +37,7 @@ export default function HomeTrending() {
         {/* Large featured app card */}
         {firstApp && (
           <Link
-            href={`/apps/${firstApp._id}`}
+            href={`/apps/${firstApp.slug}`}
             className="md:col-span-2 lg:row-span-2 bg-surface-container-low rounded-xl p-8 flex flex-col justify-between group cursor-pointer hover:bg-surface-bright transition-all duration-500"
           >
             <div>
@@ -79,7 +79,7 @@ export default function HomeTrending() {
         {otherApps.map((app: AppItem, idx: number) => (
           <Link
             key={app._id || idx}
-            href={`/apps/${app._id}`}
+            href={`/apps/${app.slug}`}
             className="bg-surface-container-lowest rounded-xl p-6 flex items-start gap-4 hover:bg-surface-bright transition-all shadow-[0_32px_64px_-12px_rgba(0,0,0,0.04)] cursor-pointer group"
           >
             <div className="w-14 h-14 bg-secondary-container/20 rounded-xl flex-shrink-0 flex items-center justify-center">

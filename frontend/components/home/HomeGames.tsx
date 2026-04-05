@@ -36,7 +36,7 @@ export default function HomeGames() {
         {bestSellingGames.slice(0, 6).map((game: ProductItem, idx: number) => (
           <Link
             key={game._id || idx}
-            href={`/apps/${game._id}`}
+            href={`/apps/${game.slug}`}
             className="flex flex-col gap-3 group cursor-pointer block"
           >
             <div className="aspect-[3/4] rounded-lg overflow-hidden relative shadow-md group-hover:shadow-xl transition-all group-hover:-translate-y-1 bg-surface-container">

@@ -1,4 +1,7 @@
+import { useAppDetailStore } from "../../store/useAppDetailStore";
+
 export default function AppOverview() {
+  const { appInfo } = useAppDetailStore();
   const features = [
     {
       icon: "auto_fix_high",
@@ -21,11 +24,8 @@ export default function AppOverview() {
     <section>
       <h2 className="text-3xl font-bold tracking-tight mb-8">Tổng quan</h2>
       <div className="prose prose-slate max-w-none text-on-surface-variant leading-relaxed text-lg">
-        <p className="mb-6">
-          Chào mừng bạn đến với tiêu chuẩn vàng của chỉnh sửa hình ảnh kỹ thuật
-          số. Adobe Photoshop là phần mềm thiết kế và hình ảnh tốt nhất thế
-          giới, hỗ trợ hầu hết mọi dự án sáng tạo từ chỉnh sửa và tổng hợp ảnh
-          đến vẽ kỹ thuật số, hoạt ảnh và thiết kế đồ họa.
+        <p className="mb-6 whitespace-pre-wrap">
+          {appInfo?.description || "Không có thông tin mô tả."}
         </p>
         <ul className="grid grid-cols-1 md:grid-cols-2 gap-4 list-none p-0">
           {features.map((f, i) => (

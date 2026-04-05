@@ -1,6 +1,7 @@
 let appModel = require('../schemas/apps');
 let path = require('path');
 let fs = require('fs');
+let slugify = require('slugify');
 
 // Kiem tra app co thuoc ve developer khong
 async function isAppOwner(appId, userId) {
@@ -54,10 +55,41 @@ module.exports = {
             .populate('categoryId', 'name');
     },
 
+    // GET - App detail by slug
+    getAppBySlug: async function (slug) {
+        let app = await appModel.findOne({ slug: slug, isDeleted: false })
+            .populate('developerId', 'fullName email avatarUrl')
+            .populate('categoryId', 'name');
+
+        if (app) return app;
+
+        // Neu khong tim thay trong apps, tim trong products (Games) va map ve dinh dang app
+        let productModel = require('../schemas/products');
+        let product = await productModel.findOne({ slug: slug, isDeleted: false });
+        if (product) {
+            return {
+                ...product._doc,
+                _id: product._id,
+                name: product.title,
+                slug: product.slug,
+                description: product.description,
+                price: product.price,
+                fileUrl: "",
+                iconUrl: (product.images && product.images.length > 0) ? product.images[0] : "",
+                version: "1.0.0",
+                status: "published",
+                developerId: { fullName: "Horizon Games Publisher", email: "", avatarUrl: "" },
+                categoryId: { name: product.category }
+            };
+        }
+        return null;
+    },
+
     // POST - Create app
     createApp: async function (data, userId) {
         let newApp = new appModel({
             name: data.name,
+            slug: slugify(data.name, { replacement: '-', remove: undefined, lower: true, locale: 'vi', trim: true }),
             description: data.description || "",
             developerId: userId,
             categoryId: data.categoryId || null,
@@ -142,7 +174,14 @@ module.exports = {
 
         let allowedFields = ['name', 'description', 'categoryId', 'version', 'iconUrl', 'price', 'subscriptionPrice'];
         allowedFields.forEach(field => {
-            if (data[field] !== undefined) app[field] = data[field];
+            if (data[field] !== undefined) {
+                if (field === 'name' && data.name !== app.name) {
+                    app.name = data.name;
+                    app.slug = slugify(data.name, { replacement: '-', remove: undefined, lower: true, locale: 'vi', trim: true });
+                } else {
+                    app[field] = data[field];
+                }
+            }
         });
 
         // Reset ve pending khi cap nhat thong tin

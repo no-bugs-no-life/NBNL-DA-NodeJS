@@ -7,6 +7,11 @@ const appSchema = new mongoose.Schema(
             required: [true, "App name is required"],
             trim: true
         },
+        slug: {
+            type: String,
+            unique: true,
+            sparse: true
+        },
         description: {
             type: String,
             default: ""

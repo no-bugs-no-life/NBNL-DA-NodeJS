@@ -36,7 +36,7 @@ export default function HomeProductivity() {
         {productivityApps.slice(0, 3).map((app: AppItem, idx: number) => (
           <Link
             key={app._id || idx}
-            href={`/apps/${app._id}`}
+            href={`/apps/${app.slug}`}
             className="flex items-center gap-5 p-4 rounded-xl hover:bg-surface-container-low transition-colors cursor-pointer group block"
           >
             <div className="w-16 h-16 bg-white rounded-xl shadow-sm flex items-center justify-center group-hover:scale-105 transition-transform">

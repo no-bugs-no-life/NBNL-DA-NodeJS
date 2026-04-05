@@ -3,7 +3,6 @@ import Footer from "../../components/layout/Footer";
 import Sidebar from "../../components/category/Sidebar";
 import FeaturedArea from "../../components/category/FeaturedArea";
 import ProductGrid from "../../components/category/ProductGrid";
-import { mockApps } from "../../components/category/data";
 
 export default function CategoryPage() {
   return (
@@ -13,7 +12,7 @@ export default function CategoryPage() {
         <Sidebar />
         <div className="flex-1 min-w-0">
           <FeaturedArea />
-          <ProductGrid apps={mockApps} />
+          <ProductGrid />
         </div>
       </main>
       <Footer />

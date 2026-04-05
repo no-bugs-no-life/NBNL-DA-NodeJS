@@ -3,7 +3,7 @@ import Footer from "../../../components/layout/Footer";
 import TagsSidebar from "../../../components/category/Sidebar/TagsSidebar";
 import FeaturedArea from "../../../components/category/FeaturedArea";
 import ProductGrid from "../../../components/category/ProductGrid";
-import { mockApps } from "../../../components/category/data";
+
 
 export default async function TagsPage() {
     return (
@@ -13,7 +13,7 @@ export default async function TagsPage() {
                 <TagsSidebar />
                 <div className="flex-1 min-w-0">
                     <FeaturedArea />
-                    <ProductGrid apps={mockApps} />
+                    <ProductGrid />
                 </div>
             </main>
             <Footer />

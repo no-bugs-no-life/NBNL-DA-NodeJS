@@ -7,4 +7,5 @@ export interface AppItem {
   price: string;
   action: string;
   iconSrc: string;
+  slug?: string;
 }
