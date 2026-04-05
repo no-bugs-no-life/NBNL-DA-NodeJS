@@ -14,7 +14,7 @@ export default function ProductGrid() {
   const { data: apps = [], isLoading } = useQuery({
     queryKey: ["apps", "all"],
     queryFn: async () => {
-      
+
       const response = await axios.get(`${API_URL}/api/v1/apps?limit=50`);
       interface ApiApp {
         _id: string;
@@ -24,7 +24,8 @@ export default function ProductGrid() {
         price: number;
         iconUrl?: string;
       }
-      return response.data.map((item: ApiApp) => ({
+      const arr = response.data?.docs || response.data;
+      return arr.map((item: ApiApp) => ({
         id: item._id,
         slug: item.slug,
         title: item.name,

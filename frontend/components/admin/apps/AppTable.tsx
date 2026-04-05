@@ -1,10 +1,11 @@
 "use client";
 import { AppItem } from "@/app/admin/(protected)/apps/appsService";
+import { Pagination } from "@/components/ui/Pagination";
 
 interface Props {
     apps: AppItem[];
     isLoading: boolean;
-    onAction: (app: AppItem, action: 'approve' | 'reject' | 'delete') => void;
+    onAction: (app: AppItem, action: 'approve' | 'reject' | 'delete' | 'edit') => void;
     page: number;
     totalPages: number;
     onPageChange: (p: number) => void;
@@ -12,39 +13,31 @@ interface Props {
 
 export function AppTable({ apps, isLoading, onAction, page, totalPages, onPageChange }: Props) {
     return (
-        <div className="bg-white rounded-2xl overflow-hidden">
-            <table className="w-full text-sm">
-                <thead>
-                    <tr className="text-slate-500 bg-slate-50/50 border-b border-slate-100/50">
-                        <th className="text-left px-6 py-4 font-semibold text-slate-600">Ứng dụng</th>
-                        <th className="text-left px-6 py-4 font-semibold text-slate-600">Tác giả</th>
-                        <th className="text-left px-6 py-4 font-semibold text-slate-600">Danh mục</th>
-                        <th className="text-left px-6 py-4 font-semibold text-slate-600">Trạng thái</th>
-                        <th className="text-right px-6 py-4 font-semibold text-slate-600">Thao tác</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {isLoading ? <LoadingRows /> : <DataRows apps={apps} onAction={onAction} />}
-                </tbody>
-            </table>
+        <div className="bg-transparent md:bg-white md:rounded-2xl md:overflow-hidden">
+            {/* DESKTOP TABLE VIEW */}
+            <div className="hidden md:block">
+                <table className="w-full text-sm">
+                    <thead>
+                        <tr className="text-slate-500 bg-slate-50/50 border-b border-slate-100/50">
+                            <th className="text-left px-6 py-4 font-semibold text-slate-600">Ứng dụng</th>
+                            <th className="text-left px-6 py-4 font-semibold text-slate-600">Tác giả</th>
+                            <th className="text-left px-6 py-4 font-semibold text-slate-600">Danh mục</th>
+                            <th className="text-left px-6 py-4 font-semibold text-slate-600">Trạng thái</th>
+                            <th className="text-right px-6 py-4 font-semibold text-slate-600">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {isLoading ? <LoadingRows /> : <DataRows apps={apps} onAction={onAction} />}
+                    </tbody>
+                </table>
+            </div>
 
-            {!isLoading && totalPages > 1 && (
-                <div className="flex items-center justify-between px-6 py-4 border-t border-slate-100">
-                    <span className="text-sm text-slate-500">Trang {page} / {totalPages}</span>
-                    <div className="flex items-center gap-2">
-                        <button
-                            disabled={page <= 1}
-                            onClick={() => onPageChange(page - 1)}
-                            className="px-3 py-1.5 text-sm rounded-lg border border-slate-200 hover:bg-slate-50 disabled:opacity-50 disabled:pointer-events-none transition-colors"
-                        >Trang trước</button>
-                        <button
-                            disabled={page >= totalPages}
-                            onClick={() => onPageChange(page + 1)}
-                            className="px-3 py-1.5 text-sm rounded-lg border border-slate-200 hover:bg-slate-50 disabled:opacity-50 disabled:pointer-events-none transition-colors"
-                        >Trang sau</button>
-                    </div>
-                </div>
-            )}
+            {/* MOBILE CARDS VIEW */}
+            <div className="block md:hidden space-y-4">
+                {isLoading ? <LoadingCards /> : <MobileCards apps={apps} onAction={onAction} />}
+            </div>
+
+            {!isLoading && <Pagination currentPage={page} totalPages={totalPages} onPageChange={onPageChange} />}
         </div>
     );
 }
@@ -61,7 +54,82 @@ function LoadingRows() {
     );
 }
 
-function DataRows({ apps, onAction }: { apps: AppItem[], onAction: (app: AppItem, action: 'approve' | 'reject' | 'delete') => void }) {
+function LoadingCards() {
+    return (
+        <>
+            {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="animate-pulse bg-white p-4 rounded-xl shadow-sm border border-slate-100">
+                    <div className="flex gap-4 mb-4">
+                        <div className="w-12 h-12 bg-slate-100 rounded-lg"></div>
+                        <div className="flex-1">
+                            <div className="h-4 bg-slate-100 rounded w-1/2 mb-2"></div>
+                            <div className="h-3 bg-slate-100 rounded w-1/4"></div>
+                        </div>
+                    </div>
+                    <div className="h-8 bg-slate-100 rounded w-full"></div>
+                </div>
+            ))}
+        </>
+    );
+}
+
+function MobileCards({ apps, onAction }: { apps: AppItem[], onAction: (app: AppItem, action: 'approve' | 'reject' | 'delete' | 'edit') => void }) {
+    if (apps.length === 0) {
+        return <div className="text-center py-12 text-slate-400 bg-white rounded-xl">Không tìm thấy ứng dụng nào.</div>;
+    }
+
+    return (
+        <>
+            {apps.map((app) => (
+                <div key={app._id} className="bg-white p-4 rounded-xl shadow-sm border border-slate-100 flex flex-col gap-3">
+                    <div className="flex items-center gap-3">
+                        {app.iconUrl ? (
+                            <img src={app.iconUrl} alt={app.name} className="w-12 h-12 rounded-lg object-cover bg-slate-50 border border-slate-100" />
+                        ) : (
+                            <div className="w-12 h-12 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center">
+                                <span className="material-symbols-outlined text-slate-400">apps</span>
+                            </div>
+                        )}
+                        <div className="flex-1 overflow-hidden">
+                            <h3 className="font-bold text-slate-800 truncate leading-tight">{app.name}</h3>
+                            <p className="text-xs text-slate-500 mb-0.5">{app.developerId?.fullName || "N/A"}</p>
+                            <div className="flex items-center gap-2 mt-1">
+                                <span className="text-xs font-semibold text-slate-700 bg-slate-100 px-2 py-0.5 rounded">
+                                    {app.price === 0 ? "Miễn phí" : `${app.price.toLocaleString('vi-VN')} đ`}
+                                </span>
+                                {app.status === 'published' && <span className="text-[10px] uppercase font-bold tracking-wider text-green-600 bg-green-50 px-1.5 py-0.5 rounded">Đã XB</span>}
+                                {app.status === 'pending' && <span className="text-[10px] uppercase font-bold tracking-wider text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded">Chờ duyệt</span>}
+                                {app.status === 'rejected' && <span className="text-[10px] uppercase font-bold tracking-wider text-red-600 bg-red-50 px-1.5 py-0.5 rounded">Từ chối</span>}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 pt-3 border-t border-slate-50">
+                        <button onClick={() => onAction(app, 'edit')} className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 text-xs font-semibold col-span-2 lg:col-span-1">
+                            <span className="material-symbols-outlined text-[16px]">edit</span> Sửa
+                        </button>
+                        {app.status === 'pending' && (
+                            <>
+                                <button onClick={() => onAction(app, 'approve')} className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-green-50 text-green-600 hover:bg-green-100 text-xs font-semibold">
+                                    <span className="material-symbols-outlined text-[16px]">check</span> Duyệt
+                                </button>
+                                <button onClick={() => onAction(app, 'reject')} className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-amber-50 text-amber-600 hover:bg-amber-100 text-xs font-semibold">
+                                    <span className="material-symbols-outlined text-[16px]">close</span> Bỏ
+                                </button>
+                            </>
+                        )}
+                        <button onClick={() => onAction(app, 'delete')} className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-slate-50 text-red-600 hover:bg-red-50 border border-slate-100 hover:border-red-100 text-xs font-semibold col-span-2 lg:col-span-1">
+                            <span className="material-symbols-outlined text-[16px]">delete</span>
+                        </button>
+                    </div>
+                </div>
+            ))}
+        </>
+    );
+}
+
+
+function DataRows({ apps, onAction }: { apps: AppItem[], onAction: (app: AppItem, action: 'approve' | 'reject' | 'delete' | 'edit') => void }) {
     if (apps.length === 0) {
         return <tr><td colSpan={5} className="text-center py-16 text-slate-400">Không tìm thấy ứng dụng nào.</td></tr>;
     }
@@ -100,19 +168,22 @@ function DataRows({ apps, onAction }: { apps: AppItem[], onAction: (app: AppItem
                         {app.status === 'rejected' && <span className="text-red-600 bg-red-50 px-2.5 py-1 rounded-md text-xs font-semibold">Đã từ chối</span>}
                     </td>
                     <td className="px-6 py-4 text-right">
-                        <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="flex items-center justify-end gap-2">
+                            <button onClick={() => onAction(app, 'edit')} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 text-xs font-semibold">
+                                <span className="material-symbols-outlined text-sm">edit</span>
+                            </button>
                             {app.status === 'pending' && (
                                 <>
                                     <button onClick={() => onAction(app, 'approve')} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-50 text-green-600 hover:bg-green-100 text-xs font-semibold">
-                                        <span className="material-symbols-outlined text-sm">check_circle</span> Duyệt
+                                        <span className="material-symbols-outlined text-sm">check_circle</span>
                                     </button>
                                     <button onClick={() => onAction(app, 'reject')} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-50 text-amber-600 hover:bg-amber-100 text-xs font-semibold">
-                                        <span className="material-symbols-outlined text-sm">cancel</span> Từ chối
+                                        <span className="material-symbols-outlined text-sm">cancel</span>
                                     </button>
                                 </>
                             )}
                             <button onClick={() => onAction(app, 'delete')} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 text-xs font-semibold">
-                                <span className="material-symbols-outlined text-sm">delete</span> Xoá
+                                <span className="material-symbols-outlined text-sm">delete</span>
                             </button>
                         </div>
                     </td>

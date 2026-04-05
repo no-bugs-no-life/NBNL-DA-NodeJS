@@ -9,9 +9,10 @@ export default function HomeCollections() {
   const { data: collections = [], isLoading } = useQuery({
     queryKey: ["categories", "home"],
     queryFn: async () => {
-      
+
       const response = await axios.get(`${API_URL}/api/v1/categories`);
-      return response.data.filter((c: CategoryItem) => c.parentId == null).slice(0, 2);
+      const arr = response.data?.docs || response.data || [];
+      return arr.filter((c: CategoryItem) => c.parentId == null).slice(0, 2);
     },
   });
 

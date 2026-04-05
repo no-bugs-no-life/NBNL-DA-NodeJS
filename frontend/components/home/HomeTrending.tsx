@@ -11,7 +11,7 @@ export default function HomeTrending() {
     queryFn: async () => {
       
       const response = await axios.get(`${API_URL}/api/v1/apps?limit=5`);
-      return response.data;
+      return response.data?.docs || response.data;
     },
   });
 

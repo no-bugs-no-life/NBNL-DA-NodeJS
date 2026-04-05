@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import useAuthStore from "@/store/useAuthStore";
-import { fetchApps, approveApp, rejectApp, deleteApp, AppItem } from "./appsService";
+import { fetchApps, approveApp, rejectApp, deleteApp, createApp, updateApp, AppItem, AppInput } from "./appsService";
 
 export function useAdminApps() {
     const { token, isAdmin, isLoading: isAuthLoading } = useAuthStore();
@@ -13,6 +13,7 @@ export function useAdminApps() {
     const [isPendingFilter, setIsPendingFilter] = useState(false);
 
     const [actionTarget, setActionTarget] = useState<{ app: AppItem, action: "approve" | "reject" | "delete" } | null>(null);
+    const [formTarget, setFormTarget] = useState<{ app?: AppItem, action: "create" | "edit" } | null>(null);
     const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
     const notify = (msg: string, type: "success" | "error") => {
@@ -47,10 +48,23 @@ export function useAdminApps() {
         onError: () => notify("Lỗi khi xoá App!", "error"),
     });
 
+    const mCreate = useMutation({
+        mutationFn: (data: AppInput) => createApp(data, token),
+        onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["apps"] }); setFormTarget(null); notify("Thêm ứng dụng thành công!", "success"); },
+        onError: () => notify("Lỗi khi thêm ứng dụng!", "error"),
+    });
+
+    const mUpdate = useMutation({
+        mutationFn: ({ id, data }: { id: string, data: AppInput }) => updateApp(id, data, token),
+        onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["apps"] }); setFormTarget(null); notify("Cập nhật ứng dụng thành công!", "success"); },
+        onError: () => notify("Lỗi khi cập nhật ứng dụng!", "error"),
+    });
+
     return {
         isAdmin, isAuthLoading, apps, isLoading,
         actionTarget, setActionTarget,
-        toast, mApprove, mReject, mDelete,
+        formTarget, setFormTarget,
+        toast, mApprove, mReject, mDelete, mCreate, mUpdate,
         page, setPage, totalPages, totalDocs,
         isPendingFilter, setIsPendingFilter
     };

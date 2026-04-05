@@ -13,9 +13,9 @@ export function useCategories() {
   return useQuery<CategoryItem[]>({
     queryKey: ["categories"],
     queryFn: async () => {
-      
-      const response = await axios.get<CategoryItem[]>(`${API_URL}/api/v1/categories`);
-      return response.data;
+
+      const response = await axios.get<any>(`${API_URL}/api/v1/categories`);
+      return response.data?.docs || response.data;
     },
   });
 }

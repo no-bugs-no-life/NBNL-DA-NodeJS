@@ -12,6 +12,9 @@ async function getAllTags(req, res) {
             filter.name = { $regex: search.trim().toLowerCase(), $options: 'i' };
         }
 
+        let sortField = sortBy || 'createdAt';
+        let sortOrder = order === 'asc' ? 1 : -1;
+
         let options = {
             page: parseInt(page) || 1,
             limit: parseInt(limit) || 20,
@@ -173,6 +176,15 @@ async function getAppsByTagName(req, res) {
                 { path: 'categoryId', select: 'name iconUrl' }
             ]
         };
+
+        let appFilter = {
+            _id: { $in: tag.appIds },
+            isDeleted: false,
+            status: 'published'
+        };
+        if (categoryId) {
+            appFilter.categoryId = categoryId;
+        }
 
         let result = await appModel.paginate(appFilter, options);
         res.send({ tag, ...result });

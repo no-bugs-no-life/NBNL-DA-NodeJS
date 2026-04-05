@@ -1,5 +1,6 @@
 "use client";
 import { CategoryItem } from "@/hooks/useCategories";
+import { Pagination } from "@/components/ui/Pagination";
 
 interface Props {
     categories: CategoryItem[];
@@ -28,23 +29,7 @@ export function CategoryTable({ categories, isLoading, onEdit, onDelete, page, t
                 </tbody>
             </table>
 
-            {!isLoading && totalPages > 1 && (
-                <div className="flex items-center justify-between px-6 py-4 border-t border-slate-100">
-                    <span className="text-sm text-slate-500">Trang {page} / {totalPages}</span>
-                    <div className="flex items-center gap-2">
-                        <button
-                            disabled={page <= 1}
-                            onClick={() => onPageChange(page - 1)}
-                            className="px-3 py-1.5 text-sm rounded-lg border border-slate-200 hover:bg-slate-50 disabled:opacity-50 disabled:pointer-events-none transition-colors"
-                        >Trang trước</button>
-                        <button
-                            disabled={page >= totalPages}
-                            onClick={() => onPageChange(page + 1)}
-                            className="px-3 py-1.5 text-sm rounded-lg border border-slate-200 hover:bg-slate-50 disabled:opacity-50 disabled:pointer-events-none transition-colors"
-                        >Trang sau</button>
-                    </div>
-                </div>
-            )}
+            {!isLoading && <Pagination currentPage={page} totalPages={totalPages} onPageChange={onPageChange} />}
         </div>
     );
 }
@@ -73,7 +58,7 @@ function DataRows({ categories, onEdit, onDelete }: { categories: CategoryItem[]
                     <td className="px-6 py-4 font-semibold text-slate-800">{cat.name}</td>
                     <td className="px-6 py-4 text-slate-400 max-w-[200px] truncate text-xs font-mono">{cat.iconUrl || "—"}</td>
                     <td className="px-6 py-4 text-right">
-                        <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="flex items-center justify-end gap-2">
                             <button onClick={() => onEdit(cat)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 text-xs font-semibold">
                                 <span className="material-symbols-outlined text-sm">edit</span> Sửa
                             </button>

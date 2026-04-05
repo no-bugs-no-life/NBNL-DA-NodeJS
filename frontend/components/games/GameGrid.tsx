@@ -15,7 +15,7 @@ export default function GameGrid() {
     queryFn: async () => {
       
       const response = await axios.get(`${API_URL}/api/v1/apps?type=game&limit=50`);
-      return response.data;
+      return response.data?.docs || response.data;
     },
   });
 

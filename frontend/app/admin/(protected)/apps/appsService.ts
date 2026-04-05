@@ -43,3 +43,22 @@ export const deleteApp = async (id: string, token: string | null) => {
     const res = await axios.delete(`${API_URL}/api/v1/apps/${id}`, { headers: getHeaders(token) });
     return res.data;
 };
+
+export interface AppInput {
+    name: string;
+    description?: string;
+    slug: string;
+    price: number;
+    categoryId: string;
+    iconUrl?: string;
+}
+
+export const createApp = async (data: AppInput, token: string | null) => {
+    const res = await axios.post(`${API_URL}/api/v1/apps`, data, { headers: getHeaders(token) });
+    return res.data;
+};
+
+export const updateApp = async (id: string, data: AppInput, token: string | null) => {
+    const res = await axios.put(`${API_URL}/api/v1/apps/${id}`, data, { headers: getHeaders(token) });
+    return res.data;
+};
