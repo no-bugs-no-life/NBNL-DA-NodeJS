@@ -43,11 +43,11 @@ router.post('/',
     /* #swagger.tags = ['SubPackages'] */
     checkLogin, checkRole('ADMIN', 'MODERATOR'), async function (req, res, next) {
         try {
-            let { name, type, price, durationDays, description } = req.body;
-            if (!name || price === undefined) {
-                return res.status(400).send({ message: "name va price la bat buoc" });
+            let { name, type, price, durationDays, description, appId } = req.body;
+            if (!name || price === undefined || !appId) {
+                return res.status(400).send({ message: "name, price và appId là bắt buộc" });
             }
-            let newPkg = await subPackageController.createPackage({ name, type, price, durationDays, description });
+            let newPkg = await subPackageController.createPackage({ name, type, price, durationDays, description, appId });
             res.status(201).send(newPkg);
         } catch (error) {
             res.status(400).send({ message: error.message });

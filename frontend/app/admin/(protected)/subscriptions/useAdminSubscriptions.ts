@@ -44,7 +44,7 @@ export function useAdminSubscriptions() {
   const totalPages = subsData?.totalPages || 1;
 
   const mCreate = useMutation({
-    mutationFn: (data: { userId: string; appId: string; packageId: string }) =>
+    mutationFn: (data: { userId: string; packageId: string }) =>
       createSubscription(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-subscriptions"] });

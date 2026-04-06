@@ -48,7 +48,13 @@ export const fetchReports = async (
     targetType?: ReportTargetType;
   } = {},
 ): Promise<PaginatedResult<ReportItem>> => {
-  const qs = new URLSearchParams(params as Record<string, string>).toString();
+  const cleanParams: Record<string, string> = {};
+  Object.entries(params).forEach(([k, v]) => {
+    if (v !== undefined && v !== null && String(v) !== "") {
+      cleanParams[k] = String(v);
+    }
+  });
+  const qs = new URLSearchParams(cleanParams).toString();
   const res = await api.get(`/api/v1/reports?${qs}`);
   return res.data;
 };

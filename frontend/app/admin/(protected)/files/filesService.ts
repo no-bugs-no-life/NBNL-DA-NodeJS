@@ -43,7 +43,13 @@ export const deleteFile = async (id: string) => {
 };
 
 export const uploadFile = async (formData: FormData) => {
-  const res = await api.post(`/api/v1/files/upload-image`, formData, {
+  const fileType = formData.get("fileType") as string;
+  const isAppFile = ["apk", "ipa", "exe"].includes(fileType?.toLowerCase());
+  const endpoint = isAppFile
+    ? "/api/v1/files/upload-app-file"
+    : "/api/v1/files/upload-image";
+
+  const res = await api.post(endpoint, formData, {
     headers: { "Content-Type": "multipart/form-data" },
   });
   return res.data;

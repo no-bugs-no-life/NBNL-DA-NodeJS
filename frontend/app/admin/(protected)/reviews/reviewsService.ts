@@ -41,6 +41,11 @@ export const createReviewAdmin = async (data: ReviewInput) => {
   return res.data;
 };
 
+export const updateReviewAdmin = async (id: string, data: Partial<ReviewInput>) => {
+  const res = await api.put(`/api/v1/reviews/admin/${id}`, data);
+  return res.data;
+};
+
 export const approveReview = async (id: string) => {
   const res = await api.post(`/api/v1/reviews/${id}/approve`, {});
   return res.data;

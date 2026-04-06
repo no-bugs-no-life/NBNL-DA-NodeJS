@@ -1,12 +1,25 @@
 "use client";
 import { AppItem } from "@/app/admin/(protected)/apps/appsService";
 import { Pagination } from "@/components/ui/Pagination";
+import { API_URL } from "@/configs/api";
+
+const getImageUrl = (url?: string) => {
+  if (!url) return "";
+  if (
+    url.startsWith("http") ||
+    url.startsWith("blob:") ||
+    url.startsWith("data:")
+  )
+    return url;
+  if (/^[a-fA-F0-9]{24}$/.test(url)) return "https://i.sstatic.net/l60Hf.png"; // Fallback for old corrupt icons
+  return `${API_URL}/${url.replace(/\\/g, "/")}`;
+};
 interface Props {
   apps: AppItem[];
   isLoading: boolean;
   onAction: (
     app: AppItem,
-    action: "approve" | "reject" | "delete" | "edit" | "info",
+    action: "approve" | "reject" | "delete" | "edit" | "info" | "publish",
   ) => void;
   page: number;
   totalPages: number;
@@ -126,7 +139,7 @@ function ActionButtons({
   app: AppItem;
   onAction: (
     app: AppItem,
-    action: "approve" | "reject" | "delete" | "edit" | "info",
+    action: "approve" | "reject" | "delete" | "edit" | "info" | "publish",
   ) => void;
   showLabels?: boolean;
 }) {
@@ -180,15 +193,30 @@ function ActionButtons({
           </button>{" "}
         </>
       )}{" "}
-      <button
-        title="Xóa"
-        onClick={() => onAction(app, "delete")}
-        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 text-xs font-semibold"
-      >
-        {" "}
-        <span className="material-symbols-outlined text-sm">delete</span>{" "}
-        {showLabels && "Xóa"}{" "}
-      </button>{" "}
+      {app.status === "approved" && !app.isDeleted && (
+        <button
+          title="Xuất bản"
+          onClick={() => onAction(app, "publish")}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-purple-50 text-purple-600 hover:bg-purple-100 text-xs font-semibold"
+        >
+          {" "}
+          <span className="material-symbols-outlined text-sm">
+            publish
+          </span>{" "}
+          {showLabels && "Xuất bản"}{" "}
+        </button>
+      )}{" "}
+      {!app.isDeleted && (
+        <button
+          title="Xóa"
+          onClick={() => onAction(app, "delete")}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 text-xs font-semibold"
+        >
+          {" "}
+          <span className="material-symbols-outlined text-sm">delete</span>{" "}
+          {showLabels && "Xóa"}{" "}
+        </button>
+      )}{" "}
     </div>
   );
 }
@@ -199,7 +227,7 @@ function MobileCards({
   apps: AppItem[];
   onAction: (
     app: AppItem,
-    action: "approve" | "reject" | "delete" | "edit" | "info",
+    action: "approve" | "reject" | "delete" | "edit" | "info" | "publish",
   ) => void;
 }) {
   if (apps.length === 0) {
@@ -222,7 +250,7 @@ function MobileCards({
             {" "}
             {app.iconUrl ? (
               <img
-                src={app.iconUrl}
+                src={getImageUrl(app.iconUrl)}
                 alt={app.name}
                 className="w-12 h-12 rounded-lg object-cover bg-slate-50 border border-slate-100"
               />
@@ -240,7 +268,7 @@ function MobileCards({
                 {app.name}
               </h3>{" "}
               <p className="text-xs text-slate-500 mb-0.5">
-                {app.developerId?.fullName || "N/A"}
+                {app.developerId?.name || "N/A"}
               </p>{" "}
               <div className="flex items-center gap-2 mt-1">
                 {" "}
@@ -281,7 +309,7 @@ function DataRows({
   apps: AppItem[];
   onAction: (
     app: AppItem,
-    action: "approve" | "reject" | "delete" | "edit" | "info",
+    action: "approve" | "reject" | "delete" | "edit" | "info" | "publish",
   ) => void;
 }) {
   if (apps.length === 0) {
@@ -308,7 +336,7 @@ function DataRows({
               {" "}
               {app.iconUrl ? (
                 <img
-                  src={app.iconUrl}
+                  src={getImageUrl(app.iconUrl)}
                   alt={app.name}
                   className="w-10 h-10 rounded-lg object-cover bg-slate-100"
                 />
@@ -336,10 +364,10 @@ function DataRows({
           <td className="px-6 py-4">
             {" "}
             <p className="font-medium text-slate-700">
-              {app.developerId?.fullName || "N/A"}
+              {app.developerId?.name || "N/A"}
             </p>{" "}
             <p className="text-xs text-slate-400">
-              {app.developerId?.email}
+              {app.developerId?.contactEmail}
             </p>{" "}
           </td>{" "}
           <td className="px-6 py-4">

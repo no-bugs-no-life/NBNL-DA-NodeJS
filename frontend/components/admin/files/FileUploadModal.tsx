@@ -1,17 +1,17 @@
 "use client";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useUsers } from "@/hooks/useUsers";
 export type CreatePayload =
   | { type: "multipart"; formData: FormData }
   | {
-      type: "manual";
-      data: {
-        ownerType: string;
-        ownerId?: string;
-        fileType: string;
-        url: string;
-      };
+    type: "manual";
+    data: {
+      ownerType: string;
+      ownerId?: string;
+      fileType: string;
+      url: string;
     };
+  };
 const FILE_TYPES = [
   "apk",
   "ipa",
@@ -22,12 +22,15 @@ const FILE_TYPES = [
   "other",
 ] as const;
 const OWNER_TYPES = ["app", "user", "developer"] as const;
+import { FileItem } from "@/hooks/useFiles";
 interface Props {
+  action?: "create" | "edit";
+  file?: FileItem;
   onClose: () => void;
   onSubmit: (payload: CreatePayload) => void;
   loading?: boolean;
 }
-export function FileUploadModal({ onClose, onSubmit, loading }: Props) {
+export function FileUploadModal({ onClose, onSubmit, loading, action = "create", file }: Props) {
   const [activeTab, setActiveTab] = useState<"upload" | "url">("upload");
   const [fileType, setFileType] = useState<string>("icon");
   const [ownerType, setOwnerType] = useState<string>("user");
@@ -36,6 +39,17 @@ export function FileUploadModal({ onClose, onSubmit, loading }: Props) {
   const [manualUrl, setManualUrl] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { data: users = [] } = useUsers();
+
+  useEffect(() => {
+    if (action === "edit" && file) {
+      setActiveTab("url");
+      setFileType(file.fileType || "other");
+      setOwnerType(file.ownerType || "user");
+      setSelectedUserId(file.ownerId || "");
+      setManualUrl(file.url || "");
+    }
+  }, [action, file]);
+
   const handleSubmit = () => {
     if (activeTab === "url") {
       if (!manualUrl.trim()) return;
@@ -68,7 +82,7 @@ export function FileUploadModal({ onClose, onSubmit, loading }: Props) {
         <div className="p-6 border-b border-slate-100 flex items-center justify-between">
           {" "}
           <h2 className="text-xl font-bold text-slate-800">
-            Tải lên file mới
+            {action === "edit" ? "Sửa thông tin file" : "Tải lên file mới"}
           </h2>{" "}
           <button
             onClick={onClose}
@@ -97,32 +111,34 @@ export function FileUploadModal({ onClose, onSubmit, loading }: Props) {
           {" "}
           <div className="flex gap-1 p-1 bg-slate-100 rounded-xl w-fit">
             {" "}
-            <button
-              onClick={() => {
-                setActiveTab("upload");
-                setSelectedFile(null);
-                setManualUrl("");
-              }}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${activeTab === "upload" ? "bg-white text-slate-800 " : "text-slate-500 hover:text-slate-700"}`}
-            >
-              {" "}
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="w-4 h-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={2}
-                stroke="currentColor"
+            {action !== "edit" && (
+              <button
+                onClick={() => {
+                  setActiveTab("upload");
+                  setSelectedFile(null);
+                  setManualUrl("");
+                }}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${activeTab === "upload" ? "bg-white text-slate-800 " : "text-slate-500 hover:text-slate-700"}`}
               >
                 {" "}
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M4 16v1a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3v-1m-4-8-4-4m0 0 8 8m-8 0h8"
-                />{" "}
-              </svg>{" "}
-              Tải file lên{" "}
-            </button>{" "}
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="w-4 h-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={2}
+                  stroke="currentColor"
+                >
+                  {" "}
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M4 16v1a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3v-1m-4-8-4-4m0 0 8 8m-8 0h8"
+                  />{" "}
+                </svg>{" "}
+                Tải file lên{" "}
+              </button>
+            )}
             <button
               onClick={() => {
                 setActiveTab("url");
@@ -195,7 +211,6 @@ export function FileUploadModal({ onClose, onSubmit, loading }: Props) {
               </select>{" "}
             </div>{" "}
           </div>{" "}
-          {/* Owner user select — full width */}{" "}
           <div>
             {" "}
             <label className="block text-sm font-semibold text-slate-700 mb-1.5">
@@ -325,7 +340,7 @@ export function FileUploadModal({ onClose, onSubmit, loading }: Props) {
                 />{" "}
               </svg>
             )}{" "}
-            {loading ? "Đang tải..." : "Tải lên"}{" "}
+            {loading ? "Đang xử lý..." : action === "edit" ? "Cập nhật" : "Tải lên"}{" "}
           </button>{" "}
         </div>{" "}
       </div>{" "}

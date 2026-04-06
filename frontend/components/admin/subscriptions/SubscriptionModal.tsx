@@ -1,14 +1,12 @@
 "use client";
 import { useState } from "react";
 import { useUsers } from "@/hooks/useUsers";
-import { useAdminApps } from "@/hooks/useAdminApps";
 import { useAdminSubPackages } from "@/app/admin/(protected)/sub-packages/useAdminSubPackages";
 
 interface Props {
   onClose: () => void;
   onSubmit: (data: {
     userId: string;
-    appId: string;
     packageId: string;
   }) => void;
   loading?: boolean;
@@ -16,18 +14,16 @@ interface Props {
 
 export function SubscriptionModal({ onClose, onSubmit, loading }: Props) {
   const [userId, setUserId] = useState("");
-  const [appId, setAppId] = useState("");
   const [packageId, setPackageId] = useState("");
 
   const { data: users = [] } = useUsers();
-  const { data: apps = [] } = useAdminApps();
   const { packages } = useAdminSubPackages();
 
-  const isValid = userId && appId && packageId;
+  const isValid = userId && packageId;
 
   const handleSubmit = () => {
     if (!isValid) return;
-    onSubmit({ userId, appId, packageId });
+    onSubmit({ userId, packageId });
   };
 
   return (
@@ -64,24 +60,6 @@ export function SubscriptionModal({ onClose, onSubmit, loading }: Props) {
 
           <div>
             <label className="block text-sm font-semibold text-slate-700 mb-1.5">
-              App <span className="text-red-500">*</span>
-            </label>
-            <select
-              value={appId}
-              onChange={(e) => setAppId(e.target.value)}
-              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-sm bg-white"
-            >
-              <option value="">-- Chọn app --</option>
-              {apps.map((a) => (
-                <option key={a._id} value={a._id}>
-                  {a.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-1.5">
               Gói Subscription <span className="text-red-500">*</span>
             </label>
             <select
@@ -109,7 +87,7 @@ export function SubscriptionModal({ onClose, onSubmit, loading }: Props) {
             </select>
             {packages.length === 0 && (
               <p className="text-xs text-slate-400 mt-1">
-                Chưa có gói nào.{" "}
+                Chưa có gói Subscription nào.{" "}
                 <a
                   href="/admin/sub-packages"
                   className="text-blue-500 underline"

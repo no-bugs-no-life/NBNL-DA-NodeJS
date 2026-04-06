@@ -1,7 +1,7 @@
 "use client";
 import { ReviewItem } from "@/app/admin/(protected)/reviews/reviewsService";
 import { Pagination } from "@/components/ui/Pagination";
-type ReviewAction = "approve" | "reject" | "delete" | "reset";
+type ReviewAction = "approve" | "reject" | "delete" | "reset" | "edit";
 interface Props {
   reviews: ReviewItem[];
   isLoading: boolean;
@@ -105,6 +105,11 @@ function ActionButton({
       icon: "delete",
       color: "bg-red-50 text-red-600 hover:bg-red-100",
     },
+    edit: {
+      label: "Sửa",
+      icon: "edit",
+      color: "bg-amber-100 text-amber-700 hover:bg-amber-200",
+    },
   };
   const cfg = configs[action];
   return (
@@ -130,35 +135,29 @@ export function ReviewTable({
 }: Props) {
   return (
     <div className="bg-transparent md:bg-white md:rounded-2xl md:overflow-hidden">
-      {" "}
-      {/* DESKTOP TABLE VIEW */}{" "}
+      {/* DESKTOP TABLE VIEW */}
       <div className="hidden md:block">
-        {" "}
         <table className="w-full text-sm">
-          {" "}
           <thead>
-            {" "}
             <tr className="text-slate-500 bg-slate-50/50 border-b border-slate-100/50">
-              {" "}
               <th className="text-left px-6 py-4 font-semibold text-slate-600">
                 Người dùng
-              </th>{" "}
+              </th>
               <th className="text-left px-6 py-4 font-semibold text-slate-600">
                 Ứng dụng
-              </th>{" "}
+              </th>
               <th className="text-left px-6 py-4 font-semibold text-slate-600">
                 Đánh giá
-              </th>{" "}
+              </th>
               <th className="text-left px-6 py-4 font-semibold text-slate-600">
                 Trạng thái
-              </th>{" "}
+              </th>
               <th className="text-right px-6 py-4 font-semibold text-slate-600">
                 Thao tác
-              </th>{" "}
-            </tr>{" "}
-          </thead>{" "}
+              </th>
+            </tr>
+          </thead>
           <tbody>
-            {" "}
             {isLoading ? (
               <LoadingRows />
             ) : (
@@ -167,13 +166,12 @@ export function ReviewTable({
                 isPendingFilter={isPendingFilter}
                 onAction={onAction}
               />
-            )}{" "}
-          </tbody>{" "}
-        </table>{" "}
-      </div>{" "}
-      {/* MOBILE CARDS VIEW */}{" "}
+            )}
+          </tbody>
+        </table>
+      </div>
+      {/* MOBILE CARDS VIEW */}
       <div className="block md:hidden space-y-4">
-        {" "}
         {isLoading ? (
           <LoadingCards />
         ) : (
@@ -182,37 +180,34 @@ export function ReviewTable({
             isPendingFilter={isPendingFilter}
             onAction={onAction}
           />
-        )}{" "}
-      </div>{" "}
+        )}
+      </div>
       {!isLoading && (
         <Pagination
           currentPage={page}
           totalPages={totalPages}
           onPageChange={onPageChange}
         />
-      )}{" "}
+      )}
     </div>
   );
 }
 function LoadingRows() {
   return (
     <>
-      {" "}
       {Array.from({ length: 5 }).map((_, i) => (
         <tr key={i} className="animate-pulse border-b border-slate-50">
-          {" "}
           <td colSpan={5} className="px-6 py-4">
             <div className="h-4 bg-slate-100 rounded w-full" />
-          </td>{" "}
+          </td>
         </tr>
-      ))}{" "}
+      ))}
     </>
   );
 }
 function LoadingCards() {
   return (
     <>
-      {" "}
       {Array.from({ length: 4 }).map((_, i) => (
         <div
           key={i}
@@ -251,7 +246,6 @@ function MobileCards({
     );
   return (
     <>
-      {" "}
       {reviews.map((review) => (
         <div
           key={review._id}
@@ -261,15 +255,17 @@ function MobileCards({
           <div className="flex items-start gap-3">
             {" "}
             <Avatar
-              name={review.userId.fullName}
-              avatarUrl={review.userId.avatarUrl}
+              name={review.userId?.fullName || "Người dùng vô danh"}
+              avatarUrl={review.userId?.avatarUrl}
             />{" "}
             <div className="flex-1 overflow-hidden">
               {" "}
               <h3 className="font-bold text-slate-800 text-sm">
-                {review.userId.fullName}
+                {review.userId?.fullName || "Người dùng vô danh"}
               </h3>{" "}
-              <p className="text-xs text-slate-500">{review.appId.name}</p>{" "}
+              <p className="text-xs text-slate-500">
+                {review.appId?.name || "Ứng dụng đã xoá"}
+              </p>{" "}
               <div className="mt-1.5">
                 <StarRating rating={review.rating} />
               </div>{" "}
@@ -325,17 +321,17 @@ function getRowActions(
   isPendingFilter: boolean,
 ): ReviewAction[] {
   if (isPendingFilter) {
-    return review.status === "pending" ? ["approve", "reject"] : [];
+    return review.status === "pending" ? ["edit", "approve", "reject"] : [];
   }
   switch (review.status) {
     case "pending":
-      return ["approve", "reject", "delete"];
+      return ["edit", "approve", "reject", "delete"];
     case "approved":
-      return ["reset", "delete"];
+      return ["edit", "reset", "delete"];
     case "rejected":
-      return ["approve", "delete"];
+      return ["edit", "approve", "delete"];
     default:
-      return ["delete"];
+      return ["edit", "delete"];
   }
 }
 function DataRows({
@@ -357,7 +353,6 @@ function DataRows({
     );
   return (
     <>
-      {" "}
       {reviews.map((review) => {
         const actions = getRowActions(review, isPendingFilter);
         return (
@@ -365,48 +360,40 @@ function DataRows({
             key={review._id}
             className="hover:bg-slate-50/50 transition-colors border-b border-slate-50 group"
           >
-            {" "}
             <td className="px-6 py-4">
-              {" "}
               <div className="flex items-center gap-3">
-                {" "}
                 <Avatar
-                  name={review.userId.fullName}
-                  avatarUrl={review.userId.avatarUrl}
-                />{" "}
+                  name={review.userId?.fullName || "Người dùng vô danh"}
+                  avatarUrl={review.userId?.avatarUrl}
+                />
                 <div>
-                  {" "}
                   <p className="font-semibold text-slate-800 text-sm">
-                    {review.userId.fullName}
-                  </p>{" "}
+                    {review.userId?.fullName || "Người dùng vô danh"}
+                  </p>
                   <p className="text-xs text-slate-400">
-                    {review.userId.email}
-                  </p>{" "}
-                </div>{" "}
-              </div>{" "}
-            </td>{" "}
+                    {review.userId?.email || ""}
+                  </p>
+                </div>
+              </div>
+            </td>
             <td className="px-6 py-4">
-              {" "}
               <p className="font-medium text-slate-700 text-sm">
-                {review.appId.name}
-              </p>{" "}
-            </td>{" "}
+                {review.appId?.name || "Ứng dụng đã xoá"}
+              </p>
+            </td>
             <td className="px-6 py-4">
-              {" "}
-              <StarRating rating={review.rating} />{" "}
+              <StarRating rating={review.rating} />
               {review.comment && (
                 <p className="text-xs text-slate-500 mt-1 line-clamp-2 max-w-xs">
                   {review.comment}
                 </p>
-              )}{" "}
-            </td>{" "}
+              )}
+            </td>
             <td className="px-6 py-4">
               <StatusBadge status={review.status} />
-            </td>{" "}
+            </td>
             <td className="px-6 py-4 text-right">
-              {" "}
               <div className="flex items-center justify-end gap-2">
-                {" "}
                 {actions.map((a) => (
                   <ActionButton
                     key={a}
@@ -415,12 +402,12 @@ function DataRows({
                     onAction={onAction}
                     showLabel={false}
                   />
-                ))}{" "}
-              </div>{" "}
-            </td>{" "}
+                ))}
+              </div>
+            </td>
           </tr>
         );
-      })}{" "}
+      })}
     </>
   );
 }

@@ -7,6 +7,11 @@ const subPackageSchema = new mongoose.Schema(
             required: [true, "Package name is required"],
             trim: true
         },
+        appId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "app",
+            required: [true, "App ID is required"]
+        },
         type: {
             type: String,
             required: [true, "Package type is required"],
@@ -45,6 +50,7 @@ const subPackageSchema = new mongoose.Schema(
 subPackageSchema.index({ type: 1 });
 subPackageSchema.index({ isActive: 1 });
 subPackageSchema.index({ price: 1 });
+subPackageSchema.index({ appId: 1 });
 
 const mongoosePaginate = require('mongoose-paginate-v2');
 subPackageSchema.plugin(mongoosePaginate);

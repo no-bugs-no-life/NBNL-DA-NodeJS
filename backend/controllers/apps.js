@@ -1,4 +1,5 @@
 let appModel = require('../schemas/apps');
+let developerModel = require('../schemas/developers');
 let path = require('path');
 let fs = require('fs');
 let slugify = require('slugify');
@@ -7,7 +8,9 @@ let slugify = require('slugify');
 async function isAppOwner(appId, userId) {
     let app = await appModel.findOne({ _id: appId, isDeleted: false });
     if (!app) return false;
-    return app.developerId.toString() === userId;
+    let developer = await developerModel.findOne({ userId: userId, isDeleted: false });
+    if (!developer) return false;
+    return app.developerId.toString() === developer._id.toString();
 }
 
 // Lay role cua user
@@ -27,28 +30,99 @@ module.exports = {
         if (type) filter.type = type;
         if (flag) filter.flags = { $in: [flag] };
 
+        // Chi hien thi app cua cac developer da duoc approved
+        let approvedDevs = await developerModel.find({ status: "approved", isDeleted: false }).select('_id');
+        let approvedDevIds = approvedDevs.map(d => d._id);
+        filter.developerId = { $in: approvedDevIds };
+
         let options = {
             page: parseInt(page) || 1,
             limit: parseInt(limit) || 20,
             sort: { createdAt: -1 },
             populate: [
-                { path: 'developerId', select: 'fullName email avatarUrl' },
-                { path: 'categoryId', select: 'name' }
+                { path: 'developerId', select: 'name contactEmail avatarUrl userId' },
+                { path: 'categoryId', select: 'name' },
+                { path: 'tags', select: 'name' },
+                { path: 'reviews', select: 'rating status' }
             ]
         };
-        return await appModel.paginate(filter, options);
+        let result = await appModel.paginate(filter, options);
+        result.docs = result.docs.map(app => {
+            let doc = app.toObject ? app.toObject() : app;
+            let approvedReviews = (doc.reviews || []).filter(r => r.status === 'approved');
+            doc.ratingCount = approvedReviews.length;
+            doc.ratingScore = approvedReviews.length > 0 ? (approvedReviews.reduce((sum, r) => sum + r.rating, 0) / approvedReviews.length) : 0;
+            return doc;
+        });
+        return result;
+    },
+
+    // GET - List all apps (ADMIN/MODERATOR)
+    getAdminApps: async function (queries) {
+        let { limit = 20, page = 1, categoryId, type, flag, status, isDeleted } = queries;
+        let filter = { isDeleted: false };
+
+        if (isDeleted === 'true') {
+            filter.isDeleted = true;
+        } else if (isDeleted === 'all') {
+            delete filter.isDeleted;
+        }
+
+        if (status) {
+            filter.status = status;
+        }
+
+        if (categoryId) filter.categoryId = categoryId;
+        if (type) filter.type = type;
+        if (flag) filter.flags = { $in: [flag] };
+
+        let options = {
+            page: parseInt(page) || 1,
+            limit: parseInt(limit) || 20,
+            sort: { createdAt: -1 },
+            populate: [
+                { path: 'developerId', select: 'name contactEmail avatarUrl userId' },
+                { path: 'categoryId', select: 'name' },
+                { path: 'tags', select: 'name' },
+                { path: 'reviews', select: 'rating status' }
+            ]
+        };
+        let result = await appModel.paginate(filter, options);
+        result.docs = result.docs.map(app => {
+            let doc = app.toObject ? app.toObject() : app;
+            let approvedReviews = (doc.reviews || []).filter(r => r.status === 'approved');
+            doc.ratingCount = approvedReviews.length;
+            doc.ratingScore = approvedReviews.length > 0 ? (approvedReviews.reduce((sum, r) => sum + r.rating, 0) / approvedReviews.length) : 0;
+            return doc;
+        });
+        return result;
     },
 
     // GET - List apps by current developer
     getMyApps: async function (userId, queries = {}) {
         let { page = 1, limit = 20 } = queries;
+        let developer = await developerModel.findOne({ userId: userId, isDeleted: false });
+        if (!developer) return { docs: [], totalDocs: 0, limit, page, totalPages: 0 };
+
         let options = {
             page: parseInt(page) || 1,
             limit: parseInt(limit) || 20,
             sort: { createdAt: -1 },
-            populate: { path: 'categoryId', select: 'name' }
+            populate: [
+                { path: 'categoryId', select: 'name' },
+                { path: 'tags', select: 'name' },
+                { path: 'reviews', select: 'rating status' }
+            ]
         };
-        return await appModel.paginate({ developerId: userId, isDeleted: false }, options);
+        let result = await appModel.paginate({ developerId: developer._id, isDeleted: false }, options);
+        result.docs = result.docs.map(app => {
+            let doc = app.toObject ? app.toObject() : app;
+            let approvedReviews = (doc.reviews || []).filter(r => r.status === 'approved');
+            doc.ratingCount = approvedReviews.length;
+            doc.ratingScore = approvedReviews.length > 0 ? (approvedReviews.reduce((sum, r) => sum + r.rating, 0) / approvedReviews.length) : 0;
+            return doc;
+        });
+        return result;
     },
 
     // GET - List pending apps
@@ -59,18 +133,29 @@ module.exports = {
             limit: parseInt(limit) || 20,
             sort: { createdAt: 1 },
             populate: [
-                { path: 'developerId', select: 'fullName email avatarUrl' },
-                { path: 'categoryId', select: 'name' }
+                { path: 'developerId', select: 'name contactEmail avatarUrl userId' },
+                { path: 'categoryId', select: 'name' },
+                { path: 'tags', select: 'name' },
+                { path: 'reviews', select: 'rating status' }
             ]
         };
-        return await appModel.paginate({ status: "pending", isDeleted: false }, options);
+        let result = await appModel.paginate({ status: { $in: ["pending", "approved", "rejected"] }, isDeleted: false }, options);
+        result.docs = result.docs.map(app => {
+            let doc = app.toObject ? app.toObject() : app;
+            let approvedReviews = (doc.reviews || []).filter(r => r.status === 'approved');
+            doc.ratingCount = approvedReviews.length;
+            doc.ratingScore = approvedReviews.length > 0 ? (approvedReviews.reduce((sum, r) => sum + r.rating, 0) / approvedReviews.length) : 0;
+            return doc;
+        });
+        return result;
     },
 
     // GET - App detail
     getAppById: async function (id) {
         let app = await appModel.findOne({ _id: id, isDeleted: false })
-            .populate('developerId', 'fullName email avatarUrl')
-            .populate('categoryId', 'name');
+            .populate({ path: 'developerId', match: { isDeleted: false }, select: 'name contactEmail avatarUrl userId status' })
+            .populate('categoryId', 'name')
+            .populate('tags', 'name');
 
         if (app) {
             let reviewModel = require('../schemas/reviews');
@@ -84,6 +169,8 @@ module.exports = {
                 comment: r.comment,
                 createdAt: r.createdAt
             }));
+            app.ratingCount = reviews.length;
+            app.ratingScore = reviews.length > 0 ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length) : 0;
         }
         return app;
     },
@@ -91,8 +178,9 @@ module.exports = {
     // GET - App detail by slug
     getAppBySlug: async function (slug) {
         let app = await appModel.findOne({ slug: slug, isDeleted: false })
-            .populate('developerId', 'fullName email avatarUrl')
-            .populate('categoryId', 'name');
+            .populate({ path: 'developerId', match: { status: 'approved', isDeleted: false }, select: 'name contactEmail avatarUrl userId status' })
+            .populate('categoryId', 'name')
+            .populate('tags', 'name');
 
         if (app) {
             let reviewModel = require('../schemas/reviews');
@@ -106,6 +194,8 @@ module.exports = {
                 comment: r.comment,
                 createdAt: r.createdAt
             }));
+            app.ratingCount = reviews.length;
+            app.ratingScore = reviews.length > 0 ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length) : 0;
             return app;
         }
 
@@ -159,13 +249,37 @@ module.exports = {
     },
 
     // POST - Create app
-    createApp: async function (data, userId) {
+    createApp: async function (data, authUserId) {
+        let isAdmin = (await getUserRole(authUserId)) === 'ADMIN';
+        let developer;
+
+        if (isAdmin && data.developerId) {
+            developer = await developerModel.findOne({ _id: data.developerId, isDeleted: false });
+        } else {
+            developer = await developerModel.findOne({ userId: authUserId, isDeleted: false });
+        }
+
+        if (!developer || developer.status !== 'approved') {
+            return { error: "Bạn phải đăng ký và được duyệt hồ sơ Developer trước khi tạo App", code: 403 };
+        }
+
+        let baseSlug = slugify(data.name, { replacement: '-', remove: undefined, lower: true, locale: 'vi', trim: true });
+        let finalSlug = baseSlug;
+        let counter = 1;
+        while (true) {
+            let existingApp = await appModel.findOne({ slug: finalSlug, isDeleted: false });
+            if (!existingApp) break;
+            finalSlug = `${baseSlug}-${counter}`;
+            counter++;
+        }
+
         let newApp = new appModel({
             name: data.name,
-            slug: slugify(data.name, { replacement: '-', remove: undefined, lower: true, locale: 'vi', trim: true }),
+            slug: finalSlug,
             description: data.description || "",
-            developerId: userId,
+            developerId: developer._id,
             categoryId: data.categoryId || null,
+            tags: Array.isArray(data.tags) ? data.tags : [],
             version: data.version || "1.0.0",
             status: "pending",
             fileId: null,
@@ -182,7 +296,8 @@ module.exports = {
     uploadFile: async function (appId, userId, fileId) {
         let app = await appModel.findOne({ _id: appId, isDeleted: false });
         if (!app) return { error: "App not found", code: 404 };
-        if (app.developerId.toString() !== userId) return { error: "Ban khong co quyen tai file len app nay", code: 403 };
+        let isOwner = await isAppOwner(appId, userId);
+        if (!isOwner) return { error: "Ban khong co quyen tai file len app nay", code: 403 };
 
         app.fileId = fileId;
         await app.save();
@@ -222,21 +337,31 @@ module.exports = {
         let app = await appModel.findOne({ _id: id, isDeleted: false });
         if (!app) return { error: "App not found", code: 404 };
         let isAdmin = (await getUserRole(userId)) === 'ADMIN';
-        if (app.developerId.toString() !== userId && !isAdmin) {
+        let isOwner = await isAppOwner(id, userId);
+        if (!isOwner && !isAdmin) {
             return { error: "Ban khong co quyen chinh sua app nay", code: 403 };
         }
 
-        let allowedFields = ['name', 'description', 'categoryId', 'version', 'iconUrl', 'price', 'subscriptionPrice'];
-        allowedFields.forEach(field => {
+        let allowedFields = ['name', 'description', 'categoryId', 'tags', 'version', 'iconUrl', 'price', 'subscriptionPrice'];
+        for (let field of allowedFields) {
             if (data[field] !== undefined) {
                 if (field === 'name' && data.name !== app.name) {
                     app.name = data.name;
-                    app.slug = slugify(data.name, { replacement: '-', remove: undefined, lower: true, locale: 'vi', trim: true });
+                    let baseSlug = slugify(data.name, { replacement: '-', remove: undefined, lower: true, locale: 'vi', trim: true });
+                    let finalSlug = baseSlug;
+                    let counter = 1;
+                    while (true) {
+                        let existingApp = await appModel.findOne({ slug: finalSlug, _id: { $ne: app._id }, isDeleted: false });
+                        if (!existingApp) break;
+                        finalSlug = `${baseSlug}-${counter}`;
+                        counter++;
+                    }
+                    app.slug = finalSlug;
                 } else {
                     app[field] = data[field];
                 }
             }
-        });
+        }
 
         // Reset ve pending khi cap nhat thong tin
         app.status = "pending";
@@ -251,7 +376,8 @@ module.exports = {
         if (!app) return { error: "App not found", code: 404 };
 
         let isAdmin = (await getUserRole(userId)) === 'ADMIN';
-        if (app.developerId.toString() !== userId && !isAdmin) {
+        let isOwner = await isAppOwner(id, userId);
+        if (!isOwner && !isAdmin) {
             return { error: "Ban khong co quyen xoa app nay", code: 403 };
         }
 

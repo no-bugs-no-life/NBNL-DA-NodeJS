@@ -2,8 +2,23 @@
 import { useState } from "react";
 import { AppItem, AppInput } from "@/app/admin/(protected)/apps/appsService";
 import { useCategories } from "@/hooks/useCategories";
+import { useDevelopers } from "@/hooks/useDevelopers";
+import { useTags } from "@/hooks/useTags";
 import { apiClient } from "@/store/useAuthStore";
 import useAuthStore from "@/store/useAuthStore";
+import { API_URL } from "@/configs/api";
+
+const getIconDisplayUrl = (url: string) => {
+  if (!url) return "";
+  if (
+    url.startsWith("http") ||
+    url.startsWith("blob:") ||
+    url.startsWith("data:")
+  )
+    return url;
+  if (/^[a-fA-F0-9]{24}$/.test(url)) return ""; // Broken old ObjectID, require reupload
+  return `${API_URL}/${url.replace(/\\/g, "/")}`;
+};
 
 interface Props {
   app?: AppItem;
@@ -22,12 +37,28 @@ export function AppFormModal({
 }: Props) {
   const { data: categories = [], isLoading: isLoadingCategories } =
     useCategories();
+  const { data: devsData, isLoading: isLoadingDevs } = useDevelopers(
+    1,
+    1000,
+    "name",
+    1,
+    "approved",
+  );
+  const developers = devsData?.docs || [];
+
+  const { data: tagsData, isLoading: isLoadingTags } = useTags(1, 1000);
+  const tagsList = tagsData?.docs || [];
+
   const { user } = useAuthStore();
+  const isAdmin =
+    typeof user?.role === "object"
+      ? (user.role as any).name === "ADMIN"
+      : user?.role === "ADMIN";
 
   const [iconFile, setIconFile] = useState<File | null>(null);
-  const [iconPreviewUrl, setIconPreviewUrl] = useState<string>(
-    app?.iconUrl || "",
-  );
+  const [iconPreviewUrl, setIconPreviewUrl] = useState<string>(() => {
+    return getIconDisplayUrl(app?.iconUrl || "");
+  });
   const [uploading, setUploading] = useState(false);
 
   const [formData, setFormData] = useState<AppInput>(() => {
@@ -35,10 +66,12 @@ export function AppFormModal({
       return {
         name: app.name || "",
         slug: app.slug || "",
-        description: "", // Description usually not eagerly loaded in admin list
+        description: (app as any).description || "",
         price: app.price || 0,
         categoryId: app.categoryId?._id || "",
+        tags: app.tags?.map((t: any) => t._id) || [],
         iconUrl: app.iconUrl || "",
+        developerId: app.developerId?._id || "",
       };
     }
     return {
@@ -47,7 +80,9 @@ export function AppFormModal({
       description: "",
       price: 0,
       categoryId: "",
+      tags: [],
       iconUrl: "",
+      developerId: "",
     };
   });
 
@@ -73,7 +108,7 @@ export function AppFormModal({
         headers: { "Content-Type": "multipart/form-data" },
       },
     );
-    return res.data._id; // returns filesId
+    return res.data.url.replace(/\\/g, "/"); // return URL instead of local filesId
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -116,6 +151,33 @@ export function AppFormModal({
         <div className="p-6 overflow-y-auto flex-1">
           <form id="app-form" onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-4">
+              {isAdmin && action === "create" && (
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1.5">
+                    Workspace (Developer){" "}
+                    <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    required
+                    value={formData.developerId || ""}
+                    onChange={(e) =>
+                      setFormData({ ...formData, developerId: e.target.value })
+                    }
+                    disabled={isLoadingDevs}
+                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-sm bg-white"
+                  >
+                    <option value="" disabled>
+                      -- Chọn Workspace (Developer Profile) --
+                    </option>
+                    {developers.map((d: any) => (
+                      <option key={d._id} value={d._id}>
+                        {d.name} ({d.contactEmail})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
               <div>
                 <label className="block text-sm font-semibold text-slate-700 mb-1.5">
                   Tên ứng dụng
@@ -192,6 +254,34 @@ export function AppFormModal({
                     </option>
                   ))}
                 </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-1.5">
+                  Tags
+                </label>
+                <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto p-2 border border-slate-200 rounded-xl bg-slate-50">
+                  {isLoadingTags ? (
+                    <span className="text-sm text-slate-500 px-2">Đang tải tags...</span>
+                  ) : tagsList.length === 0 ? (
+                    <span className="text-sm text-slate-500 px-2">Chưa có tag nào</span>
+                  ) : tagsList.map((tag: any) => (
+                    <label key={tag._id} className="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-50 transition-colors">
+                      <input
+                        type="checkbox"
+                        checked={formData.tags?.includes(tag._id) || false}
+                        onChange={(e) => {
+                          const newTags = e.target.checked
+                            ? [...(formData.tags || []), tag._id]
+                            : (formData.tags || []).filter(id => id !== tag._id);
+                          setFormData({ ...formData, tags: newTags });
+                        }}
+                        className="rounded text-blue-600 focus:ring-blue-500 w-4 h-4 cursor-pointer"
+                      />
+                      <span className="text-sm font-medium text-slate-700 select-none">{tag.name}</span>
+                    </label>
+                  ))}
+                </div>
               </div>
 
               <div>

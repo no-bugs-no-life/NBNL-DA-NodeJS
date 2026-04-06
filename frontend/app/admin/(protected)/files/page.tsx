@@ -39,7 +39,7 @@ function ToastAlert({
   if (!toast) return null;
   return (
     <div
-      className={`fixed bottom-6 right-6 z-50 flex items-center gap-3 px-5 py-3.5 rounded-xl text-sm font-semibold text-white ${toast.type === "success" ? "bg-green-600" : "bg-red-600"}`}
+      className={`fixed top-6 right-6 z-[9999] flex items-center gap-3 px-5 py-3.5 rounded-xl shadow-lg text-sm font-semibold text-white ${toast.type === "success" ? "bg-green-600" : "bg-red-600"}`}
     >
       {" "}
       <span className="material-symbols-outlined">
@@ -89,11 +89,29 @@ export default function AdminFilesPage() {
       )}{" "}
       {s.showCreate && (
         <FileUploadModal
+          action="create"
           onClose={() => s.setShowCreate(false)}
           onSubmit={(payload) => s.mCreate.mutate(payload)}
           loading={s.mCreate.isPending}
         />
       )}{" "}
+      {s.editTarget && (
+        <FileUploadModal
+          action="edit"
+          file={s.editTarget}
+          onClose={() => s.setEditTarget(null)}
+          onSubmit={(payload) => {
+            if (payload.type === "manual") {
+              s.mUpdate.mutate({
+                id: s.editTarget!._id,
+                fileType: payload.data.fileType,
+                url: payload.data.url,
+              });
+            }
+          }}
+          loading={s.mUpdate?.isPending}
+        />
+      )}
       <ToastAlert toast={s.toast} />{" "}
     </div>
   );

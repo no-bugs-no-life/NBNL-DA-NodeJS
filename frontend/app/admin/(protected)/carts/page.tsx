@@ -4,6 +4,7 @@ import { CartTable } from "@/components/admin/carts/CartTable";
 import { CartDetailModal } from "@/components/admin/carts/CartDetailModal";
 import { useAdminCarts, useDeleteCart, CartItem } from "@/hooks/useCart";
 import { useUsers } from "@/hooks/useUsers";
+import { useAdminApps } from "@/hooks/useAdminApps";
 import axios from "axios";
 import { API_URL } from "@/configs/api";
 export default function CartsAdminPage() {
@@ -113,55 +114,27 @@ function ToastAlert({
 // ===== Create Cart Modal =====
 function CreateCartModal({ onClose }: { onClose: () => void }) {
   const { data: users } = useUsers();
+  const { data: apps = [], isLoading: loadingApps } = useAdminApps();
   const [selectedUserId, setSelectedUserId] = useState<string>("");
-  const [searchApp, setSearchApp] = useState("");
-  const [apps, setApps] = useState<Record<string, unknown>[]>([]);
-  const [loadingApps, setLoadingApps] = useState(false);
-  const [selectedApp, setSelectedApp] = useState<Record<
-    string,
-    unknown
-  > | null>(null);
+  const [selectedAppId, setSelectedAppId] = useState<string>("");
   const [itemType, setItemType] = useState<string>("one_time");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
-  const fetchApps = async (query: string) => {
-    if (!query.trim()) {
-      setApps([]);
-      return;
-    }
-    setLoadingApps(true);
-    try {
-      const res = await axios.get(
-        `${API_URL}/api/v1/apps?limit=50&status=active`,
-      );
-      const all = res.data?.docs || res.data || [];
-      setApps(
-        all.filter(
-          (a: Record<string, unknown>) =>
-            String(a.name).toLowerCase().includes(query.toLowerCase()) &&
-            (Number(a.price) > 0 || Number(a.subscriptionPrice) > 0),
-        ),
-      );
-    } catch {
-      setApps([]);
-    }
-    setLoadingApps(false);
-  };
+
   const handleUserChange = (userId: string) => {
     setSelectedUserId(userId);
-    setSelectedApp(null);
-    setSearchApp("");
-    setApps([]);
+    setSelectedAppId("");
   };
+
   const handleSubmit = async () => {
-    if (!selectedUserId || !selectedApp) return;
+    if (!selectedUserId || !selectedAppId) return;
     setIsSubmitting(true);
     setError("");
     try {
       const token = localStorage.getItem("token");
       await axios.post(
         `${API_URL}/api/v1/carts/admin/${selectedUserId}/items`,
-        { appId: selectedApp._id, itemType },
+        { appId: selectedAppId, itemType },
         { headers: { Authorization: `Bearer ${token}` } },
       );
       window.location.reload();
@@ -187,22 +160,62 @@ function CreateCartModal({ onClose }: { onClose: () => void }) {
           />{" "}
           {/* Step 2: Select App */}{" "}
           {selectedUserId && (
-            <SelectAppStep
-              searchApp={searchApp}
-              onSearchChange={(v) => {
-                setSearchApp(v);
-                fetchApps(v);
-              }}
-              apps={apps}
-              loadingApps={loadingApps}
-              selectedApp={selectedApp}
-              onSelectApp={setSelectedApp}
-            />
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-1.5">
+                2. Chọn Ứng dụng
+              </label>
+              {loadingApps ? (
+                <div className="text-sm text-slate-400 py-2">
+                  Đang tải danh sách ứng dụng...
+                </div>
+              ) : apps.length === 0 ? (
+                <div className="text-sm text-slate-400 py-2">
+                  Không có ứng dụng nào.
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-1">
+                  {apps.map((app) => {
+                    const isSelected = selectedAppId === app._id;
+                    return (
+                      <button
+                        key={app._id}
+                        type="button"
+                        onClick={() => setSelectedAppId(app._id)}
+                        className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl border text-left transition-all text-sm ${isSelected
+                          ? "border-blue-400 bg-blue-50"
+                          : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50"
+                          }`}
+                      >
+                        <AppIcon iconUrl={app.iconUrl} name={app.name} />
+                        <span className="font-medium text-slate-700 truncate flex-1">
+                          {app.name}
+                        </span>
+                        {isSelected && (
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="w-4 h-4 text-blue-600 shrink-0"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            strokeWidth={2.5}
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="m4.5 12.75 6 6 9-13.5"
+                            />
+                          </svg>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           )}{" "}
           {/* Step 3: Select Type */}{" "}
-          {selectedApp && (
+          {selectedAppId && (
             <SelectTypeStep
-              app={selectedApp}
               itemType={itemType}
               onTypeChange={setItemType}
             />
@@ -210,7 +223,7 @@ function CreateCartModal({ onClose }: { onClose: () => void }) {
           {error && <p className="text-sm text-red-500">{error}</p>}{" "}
         </div>{" "}
         <ModalFooter
-          disabled={!selectedUserId || !selectedApp || isSubmitting}
+          disabled={!selectedUserId || !selectedAppId || isSubmitting}
           isSubmitting={isSubmitting}
           onClose={onClose}
           onSubmit={handleSubmit}
@@ -278,156 +291,100 @@ function SelectUserStep({
     </div>
   );
 }
-function SelectAppStep({
-  searchApp,
-  onSearchChange,
-  apps,
-  loadingApps,
-  selectedApp,
-  onSelectApp,
-}: {
-  searchApp: string;
-  onSearchChange: (v: string) => void;
-  apps: Record<string, unknown>[];
-  loadingApps: boolean;
-  selectedApp: Record<string, unknown> | null;
-  onSelectApp: (a: Record<string, unknown>) => void;
-}) {
+function AppIcon({ iconUrl, name }: { iconUrl?: string; name: string }) {
+  const getImageUrl = (url?: string) => {
+    if (!url) return undefined;
+    if (url.startsWith("http")) return url;
+    return `${API_URL}${url.startsWith("/") ? "" : "/"}${url}`;
+  };
+
+  if (iconUrl)
+    return (
+      <img
+        src={getImageUrl(iconUrl)}
+        alt={name}
+        className="w-6 h-6 rounded-lg object-cover bg-slate-100 shrink-0"
+      />
+    );
   return (
-    <div>
+    <div className="w-6 h-6 rounded-lg bg-slate-100 flex items-center justify-center shrink-0">
       {" "}
-      <label className="block text-sm font-semibold text-slate-700 mb-2">
-        2. Chọn App
-      </label>{" "}
-      <input
-        type="text"
-        value={searchApp}
-        onChange={(e) => onSearchChange(e.target.value)}
-        placeholder="Tìm kiếm app..."
-        className="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 text-sm mb-2"
-      />{" "}
-      {loadingApps ? (
-        <div className="space-y-2">
-          {" "}
-          {[1, 2, 3].map((i) => (
-            <div
-              key={i}
-              className="h-12 bg-slate-50 rounded-xl animate-pulse"
-            />
-          ))}{" "}
-        </div>
-      ) : apps.length === 0 && searchApp ? (
-        <p className="text-sm text-slate-400 text-center py-4">
-          Không tìm thấy app phù hợp
-        </p>
-      ) : (
-        <div className="space-y-1 max-h-48 overflow-y-auto custom-scrollbar">
-          {" "}
-          {apps.map((app: Record<string, unknown>) => (
-            <button
-              key={app._id as string}
-              onClick={() => onSelectApp(app)}
-              className={`w-full flex items-center gap-3 p-3 rounded-xl text-left transition-all ${selectedApp?._id === app._id ? "border-blue-500 bg-blue-50 border" : "border border-transparent hover:bg-slate-50"}`}
-            >
-              {" "}
-              <div className="w-10 h-10 rounded-lg bg-slate-100 overflow-hidden shrink-0">
-                {" "}
-                <img
-                  src={
-                    (app.iconUrl as string) || "https://i.sstatic.net/l60Hf.png"
-                  }
-                  alt=""
-                  className="w-full h-full object-cover"
-                />{" "}
-              </div>{" "}
-              <div className="flex-1 min-w-0">
-                {" "}
-                <p className="font-semibold text-sm text-slate-800 truncate">
-                  {app.name as string}
-                </p>{" "}
-                <p className="text-xs text-slate-500">
-                  {" "}
-                  ${(app.price as number) || 0}{" "}
-                  {(app.subscriptionPrice as number) > 0
-                    ? ` + $${app.subscriptionPrice}/mo`
-                    : ""}{" "}
-                </p>{" "}
-              </div>{" "}
-            </button>
-          ))}{" "}
-        </div>
-      )}{" "}
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        className="w-3.5 h-3.5 text-slate-400"
+        fill="none"
+        viewBox="0 0 24 24"
+        strokeWidth={2}
+        stroke="currentColor"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M8.25 3v1.5M4.5 8.25H3m18 0h-1.5M4.5 12H3m18 0h-1.5m-15 3.75H3m18 0h-1.5M8.25 19.5V21M12 3v1.5m0 15V21m3.75-18v1.5m0 15V21m-9-1.5h10.5a2.25 2.25 0 0 0 2.25-2.25V6.75a2.25 2.25 0 0 0-2.25-2.25H6.75A2.25 2.25 0 0 0 4.5 6.75v10.5a2.25 2.25 0 0 0 2.25 2.25Z"
+        />
+      </svg>{" "}
     </div>
   );
 }
+
+// Bỏ SelectAppStep
 function SelectTypeStep({
-  app,
   itemType,
   onTypeChange,
 }: {
-  app: Record<string, unknown>;
   itemType: string;
   onTypeChange: (v: string) => void;
 }) {
-  const hasSub = (app.subscriptionPrice as number) > 0;
   return (
     <div>
       {" "}
       <label className="block text-sm font-semibold text-slate-700 mb-2">
-        3. Loại mua hàng
+        3. Loại mua hàng (áp dụng chung)
       </label>{" "}
       <div className="space-y-2">
         {" "}
-        {Number(app.price) > 0 && (
-          <label
-            className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${itemType === "one_time" ? "border-blue-500 bg-blue-50" : "border-slate-200"}`}
-          >
+        <label
+          className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${itemType === "one_time" ? "border-blue-500 bg-blue-50" : "border-slate-200"}`}
+        >
+          {" "}
+          <input
+            type="radio"
+            name="itemType"
+            value="one_time"
+            checked={itemType === "one_time"}
+            onChange={() => onTypeChange("one_time")}
+            className="accent-blue-600"
+          />{" "}
+          <div>
             {" "}
-            <input
-              type="radio"
-              name="itemType"
-              value="one_time"
-              checked={itemType === "one_time"}
-              onChange={() => onTypeChange("one_time")}
-              className="accent-blue-600"
-            />{" "}
-            <div>
-              {" "}
-              <p className="font-semibold text-sm text-slate-800">
-                Mua một lần
-              </p>{" "}
-              <p className="text-xs text-slate-500">Sở hữu vĩnh viễn</p>{" "}
-            </div>{" "}
-            <span className="ml-auto font-bold text-sm">
-              ${app.price as number}
-            </span>{" "}
-          </label>
-        )}{" "}
-        {hasSub && (
-          <label
-            className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${itemType === "subscription" ? "border-blue-500 bg-blue-50" : "border-slate-200"}`}
-          >
+            <p className="font-semibold text-sm text-slate-800">
+              Mua một lần
+            </p>{" "}
+            <p className="text-xs text-slate-500">Sở hữu vĩnh viễn</p>{" "}
+          </div>{" "}
+        </label>
+        {" "}
+        <label
+          className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${itemType === "subscription" ? "border-blue-500 bg-blue-50" : "border-slate-200"}`}
+        >
+          {" "}
+          <input
+            type="radio"
+            name="itemType"
+            value="subscription"
+            checked={itemType === "subscription"}
+            onChange={() => onTypeChange("subscription")}
+            className="accent-blue-600"
+          />{" "}
+          <div>
             {" "}
-            <input
-              type="radio"
-              name="itemType"
-              value="subscription"
-              checked={itemType === "subscription"}
-              onChange={() => onTypeChange("subscription")}
-              className="accent-blue-600"
-            />{" "}
-            <div>
-              {" "}
-              <p className="font-semibold text-sm text-slate-800">
-                Đăng ký
-              </p>{" "}
-              <p className="text-xs text-slate-500">Hủy bất kỳ lúc nào</p>{" "}
-            </div>{" "}
-            <span className="ml-auto font-bold text-sm">
-              ${app.subscriptionPrice as number}/mo
-            </span>{" "}
-          </label>
-        )}{" "}
+            <p className="font-semibold text-sm text-slate-800">
+              Đăng ký
+            </p>{" "}
+            <p className="text-xs text-slate-500">Hủy bất kỳ lúc nào</p>{" "}
+          </div>{" "}
+        </label>
+        {" "}
       </div>{" "}
     </div>
   );

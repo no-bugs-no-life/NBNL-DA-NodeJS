@@ -3,8 +3,23 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { AppItem, AppInput } from "./appsService";
 import { useCategories } from "@/hooks/useCategories";
+import { useTags } from "@/hooks/useTags";
 import { apiClient } from "@/store/useAuthStore";
 import useAuthStore from "@/store/useAuthStore";
+import { API_URL } from "@/configs/api";
+
+const getImageUrl = (url?: string) => {
+  if (!url) return "";
+  if (
+    url.startsWith("http") ||
+    url.startsWith("blob:") ||
+    url.startsWith("data:")
+  )
+    return url;
+  if (/^[a-fA-F0-9]{24}$/.test(url)) return "https://i.sstatic.net/l60Hf.png"; // Fallback for old corrupt icons
+  return `${API_URL}/${url.replace(/\\/g, "/")}`;
+};
+
 interface Props {
   app: AppItem;
   onApprove: () => void;
@@ -92,6 +107,8 @@ interface EditFormProps {
 }
 function EditForm({ app, onSave, onCancel, loading }: EditFormProps) {
   const { data: categories = [] } = useCategories();
+  const { data: tagsData, isLoading: isLoadingTags } = useTags(1, 1000);
+  const tagsList = tagsData?.docs || [];
   const { user } = useAuthStore();
   const [formData, setFormData] = useState<AppInput>({
     name: app.name || "",
@@ -99,6 +116,7 @@ function EditForm({ app, onSave, onCancel, loading }: EditFormProps) {
     description: (app as any).description || "",
     price: app.price || 0,
     categoryId: app.categoryId?._id || "",
+    tags: app.tags?.map((t: any) => t._id) || [],
     iconUrl: app.iconUrl || "",
   });
   const [uploading, setUploading] = useState(false);
@@ -341,7 +359,7 @@ export function AppInfoPage({
             {" "}
             {app.iconUrl ? (
               <img
-                src={app.iconUrl}
+                src={getImageUrl(app.iconUrl)}
                 alt={app.name}
                 className="w-20 h-20 rounded-2xl object-cover bg-slate-100 shrink-0"
               />
@@ -385,9 +403,8 @@ export function AppInfoPage({
               </p>{" "}
             </SectionCard>
           )}{" "}
-          {/* Meta chips */}{" "}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            {" "}
+          {/* Meta chips */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-3">
             <MetaChip
               label="Giá"
               value={
@@ -395,27 +412,26 @@ export function AppInfoPage({
                   ? "Miễn phí"
                   : `${app.price.toLocaleString("vi-VN")} đ`
               }
-            />{" "}
-            <MetaChip label="Slug" value={app.slug} />{" "}
-            <MetaChip label="Danh mục" value={app.categoryId?.name} />{" "}
-            <MetaChip label="Trạng thái" value={app.status} />{" "}
-          </div>{" "}
-          {/* Developer */}{" "}
+            />
+            <MetaChip label="Slug" value={app.slug} />
+            <MetaChip label="Danh mục" value={app.categoryId?.name} />
+            <MetaChip label="Trạng thái" value={app.status} />
+            <MetaChip label="Đánh giá" value={`${app.ratingScore?.toFixed(1) || "0"} ⭐ (${app.ratingCount || 0})`} />
+          </div>
+          {/* Developer */}
           <SectionCard title="Nhà phát triển">
-            {" "}
             {app.developerId ? (
               <div className="flex items-center gap-4">
-                {" "}
                 {app.developerId.avatarUrl ? (
                   <img
                     src={app.developerId.avatarUrl}
-                    alt={app.developerId.fullName}
+                    alt={app.developerId.name}
                     className="w-12 h-12 rounded-full object-cover bg-slate-100 shrink-0"
                   />
                 ) : (
                   <div className="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-sm font-bold shrink-0">
                     {" "}
-                    {(app.developerId.fullName || "?")
+                    {(app.developerId.name || "?")
                       .split(" ")
                       .map((n) => n[0])
                       .join("")
@@ -426,10 +442,10 @@ export function AppInfoPage({
                 <div>
                   {" "}
                   <p className="font-semibold text-slate-800 text-sm">
-                    {app.developerId.fullName}
+                    {app.developerId.name}
                   </p>{" "}
                   <p className="text-xs text-slate-400">
-                    {app.developerId.email}
+                    {app.developerId.contactEmail}
                   </p>{" "}
                 </div>{" "}
               </div>
@@ -441,8 +457,7 @@ export function AppInfoPage({
           <SectionCard title="Thông tin hệ thống">
             {" "}
             <div className="space-y-2">
-              {" "}
-              <InfoRow label="ID" value={app._id} />{" "}
+              <InfoRow label="ID" value={app._id} />
               <InfoRow
                 label="Ngày tạo"
                 value={
@@ -450,15 +465,16 @@ export function AppInfoPage({
                     ? new Date(app.createdAt).toLocaleString("vi-VN")
                     : undefined
                 }
-              />{" "}
-              <InfoRow label="Trạng thái" value={app.status} />{" "}
+              />
+              <InfoRow label="Trạng thái" value={app.status} />
+              <InfoRow label="Tags" value={app.tags?.map((t: any) => t.name).join(", ") || "Chưa có"} />
               <InfoRow
                 label="Vô hiệu hoá"
                 value={isDisabled ? "Có" : "Không"}
-              />{" "}
-            </div>{" "}
-          </SectionCard>{" "}
-          {/* Admin actions */}{" "}
+              />
+            </div>
+          </SectionCard>
+          {/* Admin actions */}
           <SectionCard title="Thao tác Admin">
             {" "}
             <div className="flex flex-wrap gap-3">

@@ -11,6 +11,7 @@ export interface PaginatedResult<T> {
 export interface SubPackageItem {
   _id: string;
   name: string;
+  appId?: { _id: string; name: string; iconUrl?: string } | string;
   type: "monthly" | "yearly" | "lifetime";
   price: number;
   durationDays: number;
@@ -23,6 +24,7 @@ export interface SubPackageItem {
 
 export interface CreateSubPackageInput {
   name: string;
+  appId: string;
   type: string;
   price: number;
   durationDays?: number;
@@ -31,6 +33,7 @@ export interface CreateSubPackageInput {
 
 export interface UpdateSubPackageInput {
   name?: string;
+  appId?: string;
   type?: string;
   price?: number;
   durationDays?: number;
@@ -38,13 +41,19 @@ export interface UpdateSubPackageInput {
   isActive?: boolean;
 }
 
-export const fetchSubPackages = async (params?: {
+export const fetchSubPackages = async (params: {
   page?: number;
   limit?: number;
   type?: string;
   isActive?: string;
-}): Promise<PaginatedResult<SubPackageItem>> => {
-  const qs = new URLSearchParams(params as Record<string, string>).toString();
+} = {}): Promise<PaginatedResult<SubPackageItem>> => {
+  const cleanParams: Record<string, string> = {};
+  Object.entries(params).forEach(([k, v]) => {
+    if (v !== undefined && v !== null && v !== "") {
+      cleanParams[k] = String(v);
+    }
+  });
+  const qs = new URLSearchParams(cleanParams).toString();
   const res = await api.get(`/api/v1/sub-packages?${qs}`);
   return res.data;
 };

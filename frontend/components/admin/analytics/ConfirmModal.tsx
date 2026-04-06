@@ -27,8 +27,10 @@ export function ConfirmModal({
           <h2 className="text-lg font-bold text-slate-800">Xác nhận xoá</h2>
           <p className="text-sm text-slate-500">
             Bạn có chắc muốn xoá bản ghi analytics{" "}
-            <span className="font-semibold text-slate-700">&quot;{recordName}&quot;</span>?
-            Hành động không thể hoàn tác.
+            <span className="font-semibold text-slate-700">
+              &quot;{recordName}&quot;
+            </span>
+            ? Hành động không thể hoàn tác.
           </p>
         </div>
         <div className="flex gap-3">
