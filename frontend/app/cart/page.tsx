@@ -133,7 +133,7 @@ function AddAppModal({
       !currentAppIds.includes(a._id) &&
       (a.price > 0 || a.subscriptionPrice > 0) &&
       (a.name.toLowerCase().includes(search.toLowerCase()) ||
-        a.developerId?.fullName?.toLowerCase().includes(search.toLowerCase())),
+        a.developerId?.name?.toLowerCase().includes(search.toLowerCase())),
   );
 
   const handleSubmit = () => {
@@ -244,7 +244,7 @@ function AppSearchPanel({
                   {app.name}
                 </p>
                 <p className="text-xs text-slate-500">
-                  {app.developerId?.fullName || "N/A"}
+                  {app.developerId?.name || "N/A"}
                 </p>
               </div>
               <div className="text-right shrink-0">
@@ -300,7 +300,7 @@ function SelectTypePanel({
         </div>
         <div>
           <p className="font-bold text-slate-800">{app.name}</p>
-          <p className="text-xs text-slate-500">{app.developerId?.fullName}</p>
+          <p className="text-xs text-slate-500">{app.developerId?.name}</p>
           <p className="text-sm font-semibold text-blue-600 mt-1">
             {app.price > 0 ? `$${app.price}` : "Miễn phí"}
           </p>

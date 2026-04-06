@@ -104,7 +104,13 @@ export default function AdminReviewsPage() {
         reviews={s.reviews}
         isLoading={s.isLoading}
         isPendingFilter={s.isPendingFilter}
-        onAction={(review, action) => s.setActionTarget({ review, action })}
+        onAction={(review, action) => {
+          if (action === "edit") {
+            s.setFormTarget({ action: "edit", review });
+          } else {
+            s.setActionTarget({ review, action });
+          }
+        }}
         page={s.page}
         totalPages={s.totalPages}
         onPageChange={s.setPage}
@@ -134,9 +140,15 @@ export default function AdminReviewsPage() {
       )}{" "}
       {s.formTarget && (
         <ReviewFormModal
+          review={s.formTarget.review}
+          action={s.formTarget.action}
           onClose={() => s.setFormTarget(null)}
-          onSubmit={(data) => s.mCreate.mutate(data)}
-          loading={s.mCreate.isPending}
+          onSubmit={(data) => {
+            if (s.formTarget?.action === "create") s.mCreate.mutate(data);
+            else if (s.formTarget?.action === "edit" && s.formTarget.review)
+              s.mUpdate.mutate({ id: s.formTarget.review._id, data });
+          }}
+          loading={s.mCreate.isPending || s.mUpdate.isPending}
         />
       )}{" "}
       <ToastAlert toast={s.toast} />{" "}

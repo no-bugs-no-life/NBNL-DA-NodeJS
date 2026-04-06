@@ -7,7 +7,7 @@ interface Props {
   isLoading: boolean;
   onAction: (
     dev: DeveloperItem,
-    action: "edit" | "delete" | "approve" | "reject",
+    action: "edit" | "revoke" | "approve" | "reject",
   ) => void;
   page: number;
   totalPages: number;
@@ -143,7 +143,7 @@ function ActionButtons({
   dev: DeveloperItem;
   onAction: (
     dev: DeveloperItem,
-    action: "edit" | "delete" | "approve" | "reject",
+    action: "edit" | "revoke" | "approve" | "reject",
   ) => void;
   showLabels?: boolean;
 }) {
@@ -181,14 +181,16 @@ function ActionButtons({
           </button>
         </>
       )}
-      <button
-        title="Xóa"
-        onClick={() => onAction(dev, "delete")}
-        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 text-xs font-semibold"
-      >
-        <span className="material-symbols-outlined text-sm">delete</span>
-        {showLabels && "Xóa"}
-      </button>
+      {dev.status === "approved" && (
+        <button
+          title="Thu hồi"
+          onClick={() => onAction(dev, "revoke")}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-orange-50 text-orange-600 hover:bg-orange-100 text-xs font-semibold"
+        >
+          <span className="material-symbols-outlined text-sm">undo</span>
+          {showLabels && "Thu hồi"}
+        </button>
+      )}
     </div>
   );
 }
@@ -200,7 +202,7 @@ function MobileCards({
   developers: DeveloperItem[];
   onAction: (
     dev: DeveloperItem,
-    action: "edit" | "delete" | "approve" | "reject",
+    action: "edit" | "revoke" | "approve" | "reject",
   ) => void;
 }) {
   if (developers.length === 0)
@@ -267,7 +269,7 @@ function DataRows({
   developers: DeveloperItem[];
   onAction: (
     dev: DeveloperItem,
-    action: "edit" | "delete" | "approve" | "reject",
+    action: "edit" | "revoke" | "approve" | "reject",
   ) => void;
 }) {
   if (developers.length === 0) {

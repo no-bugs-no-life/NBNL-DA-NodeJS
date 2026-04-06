@@ -3,7 +3,7 @@ import { AppItem } from "@/app/admin/(protected)/apps/appsService";
 
 interface Props {
   app: AppItem;
-  action: "approve" | "reject" | "delete";
+  action: "approve" | "reject" | "delete" | "publish";
   onClose: () => void;
   onConfirm: () => void;
   loading: boolean;
@@ -31,6 +31,11 @@ export function ConfirmAppModal({
     message = `Bạn có chắc chắn muốn từ chối ứng dụng "${app.name}" không? Ứng dụng sẽ bị đánh dấu là đã từ chối.`;
     btnClass = "bg-amber-600 hover:bg-amber-700 text-white";
     btnText = "Từ chối";
+  } else if (action === "publish") {
+    title = "Phát hành Ứng dụng";
+    message = `Bạn có chắc chắn muốn xuất bản ứng dụng "${app.name}" để hiển thị công khai trên Store không?`;
+    btnClass = "bg-purple-600 hover:bg-purple-700 text-white";
+    btnText = "Xuất bản";
   } else {
     title = "Xác nhận xoá";
     message = `Bạn có chắc chắn muốn xoá ứng dụng "${app.name}" không? Hành động này không thể hoàn tác.`;

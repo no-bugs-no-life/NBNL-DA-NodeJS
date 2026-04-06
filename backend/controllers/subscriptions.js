@@ -7,9 +7,9 @@ module.exports = {
     getAllSubscriptions: async function (queries) {
         let { limit = 20, page = 1, userId, appId, status } = queries;
         let filter = { isDeleted: false };
-        if (userId) filter.userId = userId;
-        if (appId) filter.appId = appId;
-        if (status) filter.status = status;
+        if (userId && userId !== 'undefined') filter.userId = userId;
+        if (appId && appId !== 'undefined') filter.appId = appId;
+        if (status && status !== 'undefined') filter.status = status;
 
         let options = {
             page: parseInt(page) || 1,
@@ -57,16 +57,17 @@ module.exports = {
 
     // POST - Tao subscription moi (ADMIN/MODERATOR)
     createSubscription: async function (data) {
-        let { userId, appId, packageId } = data;
-
-        // Kiem tra app ton tai
-        let app = await appModel.findOne({ _id: appId, isDeleted: false });
-        if (!app) return { error: "App not found", code: 404 };
+        let { userId, packageId } = data;
 
         // Lay package
         let pkg = await subPackageModel.findOne({ _id: packageId, isDeleted: false });
         if (!pkg) return { error: "Package not found", code: 404 };
         if (!pkg.isActive) return { error: "Package is not active", code: 400 };
+
+        // Kiem tra app ton tai
+        let appId = pkg.appId;
+        let app = await appModel.findOne({ _id: appId, isDeleted: false });
+        if (!app) return { error: "App not found based on package", code: 404 };
 
         // Tinh ngay
         let startDate = new Date();
@@ -113,6 +114,7 @@ module.exports = {
         }
 
         sub.packageId = packageId;
+        sub.appId = pkg.appId;
         sub.startDate = startDate;
         sub.endDate = endDate;
         sub.status = 'active';

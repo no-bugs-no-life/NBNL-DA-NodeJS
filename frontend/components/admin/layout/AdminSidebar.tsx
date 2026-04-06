@@ -24,7 +24,11 @@ const MENU_GROUPS = [
     title: "Tổng quan",
     items: [
       { name: "Dashboard", icon: Squares2X2Icon, path: "/admin/dashboard" },
-      { name: "Quản lý Analytics", icon: ChartBarIcon, path: "/admin/analytics" },
+      {
+        name: "Quản lý Analytics",
+        icon: ChartBarIcon,
+        path: "/admin/analytics",
+      },
     ],
   },
   {

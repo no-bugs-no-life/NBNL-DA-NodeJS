@@ -38,14 +38,19 @@ export interface FetchSubscriptionsParams {
 export const fetchSubscriptions = async (
   params: FetchSubscriptionsParams = {},
 ): Promise<PaginatedResult<SubscriptionItem>> => {
-  const qs = new URLSearchParams(params as Record<string, string>).toString();
+  const cleanParams: Record<string, string> = {};
+  Object.entries(params).forEach(([k, v]) => {
+    if (v !== undefined && v !== null && v !== "") {
+      cleanParams[k] = String(v);
+    }
+  });
+  const qs = new URLSearchParams(cleanParams).toString();
   const res = await api.get(`/api/v1/subscriptions?${qs}`);
   return res.data;
 };
 
 export const createSubscription = async (data: {
   userId: string;
-  appId: string;
   packageId: string;
 }) => {
   const res = await api.post(`/api/v1/subscriptions`, data);

@@ -1,17 +1,22 @@
 let subPackageModel = require('../schemas/subPackages');
+let appModel = require('../schemas/apps');
 
 module.exports = {
     // GET - Lay tat ca packages (co phan trang)
     getAllPackages: async function (queries = {}) {
-        let { limit = 20, page = 1, type, isActive } = queries;
+        let { limit = 20, page = 1, type, isActive, appId } = queries;
         let filter = { isDeleted: false };
-        if (type) filter.type = type;
-        if (isActive !== undefined) filter.isActive = isActive === 'true';
+        if (type && type !== 'undefined') filter.type = type;
+        if (isActive !== undefined && isActive !== 'undefined') filter.isActive = isActive === 'true';
+        if (appId && appId !== 'undefined') filter.appId = appId;
 
         let options = {
             page: parseInt(page) || 1,
             limit: parseInt(limit) || 20,
-            sort: { createdAt: -1 }
+            sort: { createdAt: -1 },
+            populate: [
+                { path: 'appId', select: 'name iconUrl' }
+            ]
         };
 
         return await subPackageModel.paginate(filter, options);
@@ -19,12 +24,16 @@ module.exports = {
 
     // GET - Lay package theo id
     getPackageById: async function (id) {
-        return await subPackageModel.findOne({ _id: id, isDeleted: false });
+        return await subPackageModel.findOne({ _id: id, isDeleted: false })
+            .populate('appId', 'name iconUrl');
     },
 
     // POST - Tao package moi
     createPackage: async function (data) {
-        let { name, type, price, durationDays, description } = data;
+        let { name, appId, type, price, durationDays, description } = data;
+
+        let app = await appModel.findOne({ _id: appId, isDeleted: false });
+        if (!app) return { error: "App not found", code: 404 };
 
         // Tinh durationDays tu dong neu khong truyen
         if (!durationDays && type) {
@@ -35,6 +44,7 @@ module.exports = {
 
         let newPkg = new subPackageModel({
             name,
+            appId,
             type: type || 'monthly',
             price: price || 0,
             durationDays: durationDays ?? 30,
@@ -42,6 +52,7 @@ module.exports = {
             isActive: true
         });
         await newPkg.save();
+        await newPkg.populate('appId', 'name iconUrl');
         return newPkg;
     },
 
@@ -51,6 +62,11 @@ module.exports = {
         if (!pkg) return { error: "Package not found", code: 404 };
 
         if (data.name !== undefined) pkg.name = data.name;
+        if (data.appId !== undefined) {
+            let app = await appModel.findOne({ _id: data.appId, isDeleted: false });
+            if (!app) return { error: "App not found", code: 404 };
+            pkg.appId = data.appId;
+        }
         if (data.type !== undefined) pkg.type = data.type;
         if (data.price !== undefined) pkg.price = data.price;
         if (data.durationDays !== undefined) pkg.durationDays = data.durationDays;

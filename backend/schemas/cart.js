@@ -54,11 +54,10 @@ const cartSchema = mongoose.Schema({
 cartSchema.index({ user: 1 });
 
 // Auto recalculate totalPrice before save
-cartSchema.pre('save', function (next) {
+cartSchema.pre('save', function () {
     this.totalPrice = this.items.reduce((sum, item) => {
         return sum + (item.priceAtAdd * item.quantity);
     }, 0);
-    next();
 });
 
 const mongoosePaginate = require('mongoose-paginate-v2');

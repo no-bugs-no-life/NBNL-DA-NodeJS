@@ -142,11 +142,13 @@ export function useAdminAnalytics() {
   const [endDate, setEndDate] = useState("");
 
   // ── Modal targets
-  const [detailTarget, setDetailTarget] =
-    useState<AnalyticsRecord | null>(null);
+  const [detailTarget, setDetailTarget] = useState<AnalyticsRecord | null>(
+    null,
+  );
   const [editTarget, setEditTarget] = useState<AnalyticsRecord | null>(null);
-  const [deleteTarget, setDeleteTarget] =
-    useState<AnalyticsRecord | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<AnalyticsRecord | null>(
+    null,
+  );
 
   // ── Toast
   const [toast, setToast] = useState<{
@@ -193,13 +195,8 @@ export function useAdminAnalytics() {
 
   // ── Mutations
   const mUpdate = useMutation({
-    mutationFn: ({
-      id,
-      data,
-    }: {
-      id: string;
-      data: AnalyticsUpdate;
-    }) => updateAnalyticsRecord(id, data, token),
+    mutationFn: ({ id, data }: { id: string; data: AnalyticsUpdate }) =>
+      updateAnalyticsRecord(id, data, token),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-analytics"] });
       setEditTarget(null);

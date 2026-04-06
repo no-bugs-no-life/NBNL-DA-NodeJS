@@ -103,6 +103,25 @@ router.post('/admin',
         }
     });
 
+// PUT /api/v1/reviews/admin/:id - Update any review (ADMIN/MODERATOR)
+router.put('/admin/:id',
+    /* #swagger.tags = ['Reviews'] */
+    checkLogin, checkRole('ADMIN', 'MODERATOR'), async function (req, res, next) {
+        try {
+            let result = await reviewController.updateReviewAdmin(req.params.id, req.body);
+            if (result && result.error) {
+                let code = result.code || 400;
+                return res.status(code).send({ message: result.error });
+            }
+            if (!result) {
+                return res.status(404).send({ message: "Review not found" });
+            }
+            res.send(result);
+        } catch (error) {
+            res.status(400).send({ message: error.message });
+        }
+    });
+
 // PUT /api/v1/reviews/:id - Update own review
 router.put('/:id',
     /* #swagger.tags = ['Reviews'] */

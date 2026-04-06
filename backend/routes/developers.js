@@ -144,12 +144,26 @@ router.put('/:id/permissions',
         }
     });
 
+router.put('/:id/revoke',
+    /* #swagger.tags = ['Developers'] */
+    checkLogin, checkRole('ADMIN'), async function (req, res, next) {
+        try {
+            let { reason } = req.body;
+            let result = await developerController.revokeDeveloper(req.params.id, req.userId, reason);
+            if (result && result.error) return res.status(result.code || 400).send({ message: result.error });
+            res.send(result);
+        } catch (error) {
+            res.status(400).send({ message: error.message });
+        }
+    });
+
 // ============================================================
-// DELETE /api/v1/developers/:id         - Soft delete (owner / ADMIN)
+// DELETE /api/v1/developers/:id         - Soft delete (DISABLED)
 // ============================================================
 
+/*
 router.delete('/:id',
-    /* #swagger.tags = ['Developers'] */
+    // #swagger.tags = ['Developers']
     checkLogin, async function (req, res, next) {
         try {
             let result = await developerController.deleteDeveloper(req.params.id, req.userId);
@@ -159,5 +173,6 @@ router.delete('/:id',
             res.status(500).send({ message: error.message });
         }
     });
+*/
 
 module.exports = router;

@@ -24,6 +24,17 @@ router.get('/',
         }
     });
 
+router.get('/admin',
+    /* #swagger.tags = ['Apps'] */
+    checkLogin, checkRole('ADMIN', 'MODERATOR'), async function (req, res, next) {
+        try {
+            let apps = await appController.getAdminApps(req.query);
+            res.send(apps);
+        } catch (error) {
+            res.status(500).send({ message: error.message });
+        }
+    });
+
 router.get('/my',
     /* #swagger.tags = ['Apps'] */
     checkLogin, async function (req, res, next) {
@@ -172,15 +183,15 @@ router.put('/:id',
 
 router.patch('/:id/disable',
     /* #swagger.tags = ['Apps'] */
- checkLogin, checkRole('ADMIN'), async function (req, res, next) {
-    try {
-        let result = await appController.toggleDisableApp(req.params.id);
-        if (result && result.error) return res.status(result.code || 400).send({ message: result.error });
-        res.send(result);
-    } catch (error) {
-        res.status(500).send({ message: error.message });
-    }
-});
+    checkLogin, checkRole('ADMIN'), async function (req, res, next) {
+        try {
+            let result = await appController.toggleDisableApp(req.params.id);
+            if (result && result.error) return res.status(result.code || 400).send({ message: result.error });
+            res.send(result);
+        } catch (error) {
+            res.status(500).send({ message: error.message });
+        }
+    });
 
 // ============================================================
 // DELETE /api/v1/apps/:id         - Soft delete app (owner / ADMIN)

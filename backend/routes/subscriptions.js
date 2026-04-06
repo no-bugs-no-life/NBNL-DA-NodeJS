@@ -80,11 +80,11 @@ router.post('/',
     /* #swagger.tags = ['Subscriptions'] */
     checkLogin, checkRole('ADMIN', 'MODERATOR'), async function (req, res, next) {
         try {
-            let { userId, appId, packageId } = req.body;
-            if (!userId || !appId || !packageId) {
-                return res.status(400).send({ message: "userId, appId va packageId la bat buoc" });
+            let { userId, packageId } = req.body;
+            if (!userId || !packageId) {
+                return res.status(400).send({ message: "userId và packageId là bắt buộc" });
             }
-            let result = await subscriptionController.createSubscription({ userId, appId, packageId });
+            let result = await subscriptionController.createSubscription({ userId, packageId });
             if (result && result.error) {
                 return res.status(result.code || 400).send({ message: result.error });
             }

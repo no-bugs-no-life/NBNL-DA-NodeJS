@@ -5,6 +5,8 @@ import {
   CreateSubPackageInput,
   UpdateSubPackageInput,
 } from "@/app/admin/(protected)/sub-packages/subPackagesService";
+import { useAdminApps } from "@/hooks/useAdminApps";
+import { API_URL } from "@/configs/api";
 interface Props {
   initialData?: SubPackageItem | null;
   onClose: () => void;
@@ -16,6 +18,35 @@ const TYPE_OPTIONS = [
   { value: "yearly", label: "Hàng năm", duration: 365 },
   { value: "lifetime", label: "Vĩnh viễn", duration: 0 },
 ];
+
+function AppIcon({ iconUrl, name }: { iconUrl?: string; name: string }) {
+  const getImageUrl = (url?: string) => {
+    if (!url) return undefined;
+    if (url.startsWith("http")) return url;
+    return `${API_URL}${url.startsWith("/") ? "" : "/"}${url}`;
+  };
+
+  if (iconUrl)
+    return (
+      <img
+        src={getImageUrl(iconUrl)}
+        alt={name}
+        className="w-8 h-8 rounded-xl object-cover shrink-0"
+      />
+    );
+  const initials = (name || "?")
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .substring(0, 2)
+    .toUpperCase();
+  return (
+    <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xs font-bold shrink-0">
+      {initials}
+    </div>
+  );
+}
+
 export function SubPackageModal({
   initialData,
   onClose,
@@ -29,6 +60,11 @@ export function SubPackageModal({
   const [durationDays, setDurationDays] = useState("");
   const [description, setDescription] = useState("");
   const [isActive, setIsActive] = useState(true);
+  const [appId, setAppId] = useState("");
+
+  const { data: appsData, isLoading: isLoadingApps } = useAdminApps();
+  const apps = appsData || [];
+
   useEffect(() => {
     if (initialData) {
       setName(initialData.name);
@@ -37,9 +73,10 @@ export function SubPackageModal({
       setDurationDays(String(initialData.durationDays));
       setDescription(initialData.description || "");
       setIsActive(initialData.isActive);
+      setAppId(typeof initialData.appId === "object" ? initialData.appId?._id || "" : initialData.appId || "");
     }
   }, [initialData]);
-  const isValid = name.trim() && price !== "" && Number(price) >= 0;
+  const isValid = name.trim() && price !== "" && Number(price) >= 0 && appId !== "";
   const handleTypeChange = (newType: string) => {
     setType(newType);
     const opt = TYPE_OPTIONS.find((t) => t.value === newType);
@@ -49,6 +86,7 @@ export function SubPackageModal({
     if (!isValid) return;
     const data = {
       name: name.trim(),
+      appId,
       type,
       price: Number(price),
       durationDays: type === "lifetime" ? 0 : Number(durationDays) || 30,
@@ -78,8 +116,61 @@ export function SubPackageModal({
           </button>{" "}
         </div>{" "}
         <div className="p-6 overflow-y-auto flex-1 space-y-5">
-          {" "}
-          {/* Name */}{" "}
+          {/* App selector */}
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 mb-1.5">
+              Ứng dụng <span className="text-red-500">*</span>
+            </label>
+            {isLoadingApps ? (
+              <div className="text-sm text-slate-400 py-2">
+                Đang tải danh sách ứng dụng...
+              </div>
+            ) : apps.length === 0 ? (
+              <div className="text-sm text-slate-400 py-2">
+                Không có ứng dụng nào.
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-1">
+                {apps.map((app) => {
+                  const isSelected = appId === app._id;
+                  return (
+                    <button
+                      key={app._id}
+                      type="button"
+                      onClick={() => setAppId(app._id)}
+                      className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl border text-left transition-all text-sm ${isSelected
+                        ? "border-blue-400 bg-blue-50"
+                        : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50"
+                        }`}
+                    >
+                      <AppIcon iconUrl={app.iconUrl} name={app.name} />
+                      <span className="font-medium text-slate-700 truncate flex-1">
+                        {app.name}
+                      </span>
+                      {isSelected && (
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="w-4 h-4 text-blue-600 shrink-0"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          strokeWidth={2.5}
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="m4.5 12.75 6 6 9-13.5"
+                          />
+                        </svg>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Name */}
           <div>
             {" "}
             <label className="block text-sm font-semibold text-slate-700 mb-1.5">

@@ -24,7 +24,9 @@ function SummaryCard({
 }) {
   return (
     <div className="flex items-center gap-3 bg-white rounded-xl p-4 border border-slate-100 shadow-sm">
-      <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${color}`}>
+      <div
+        className={`w-10 h-10 rounded-lg flex items-center justify-center ${color}`}
+      >
         <span className="material-symbols-outlined text-lg">{icon}</span>
       </div>
       <div>
@@ -292,9 +294,7 @@ export default function AdminAnalyticsPage() {
       {/* Delete confirm modal */}
       {s.deleteTarget && (
         <ConfirmModal
-          recordName={
-            `${s.deleteTarget.appId?.name ?? "—"} · ${new Date(s.deleteTarget.date).toLocaleDateString("vi-VN")}`
-          }
+          recordName={`${s.deleteTarget.appId?.name ?? "—"} · ${new Date(s.deleteTarget.date).toLocaleDateString("vi-VN")}`}
           onClose={() => s.setDeleteTarget(null)}
           onConfirm={() => s.mDelete.mutate(s.deleteTarget!._id)}
           loading={s.mDelete.isPending}

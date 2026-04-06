@@ -13,13 +13,17 @@ export interface AppItem {
   status: string;
   developerId: {
     _id: string;
-    fullName: string;
-    email: string;
+    name: string;
+    contactEmail: string;
     avatarUrl?: string;
   };
   categoryId: { _id: string; name: string };
+  tags?: { _id: string; name: string }[];
+  ratingScore?: number;
+  ratingCount?: number;
   createdAt: string;
   isDisabled?: boolean;
+  isDeleted?: boolean;
 }
 
 export interface PaginatedResult<T> {
@@ -33,14 +37,27 @@ export interface PaginatedResult<T> {
 export const fetchApps = async (
   page = 1,
   limit = 20,
-  isPending = false,
+  filterStatus = "published", // Default to published for backwards compatibility
   token: string | null,
 ): Promise<PaginatedResult<AppItem>> => {
-  const endpoint = isPending ? "/api/v1/apps/pending" : "/api/v1/apps";
-  const res = await axios.get(
-    `${API_URL}${endpoint}?page=${page}&limit=${limit}`,
-    { headers: getHeaders(token) },
-  );
+  let endpoint = `/api/v1/apps?page=${page}&limit=${limit}`;
+
+  // If using the admin endpoint, pass queries
+  if (filterStatus !== "published" || token) {
+    endpoint = `/api/v1/apps/admin?page=${page}&limit=${limit}`;
+
+    if (filterStatus === "deleted") {
+      endpoint += `&isDeleted=true`;
+    } else if (filterStatus === "all") {
+      // Do nothing, fetching all active
+    } else {
+      endpoint += `&status=${filterStatus}`;
+    }
+  }
+
+  const res = await axios.get(`${API_URL}${endpoint}`, {
+    headers: getHeaders(token),
+  });
   return res.data;
 };
 
@@ -72,6 +89,15 @@ export const approveApp = async (id: string, token: string | null) => {
   return res.data;
 };
 
+export const publishApp = async (id: string, token: string | null) => {
+  const res = await axios.post(
+    `${API_URL}/api/v1/apps/publish/${id}`,
+    {},
+    { headers: getHeaders(token) },
+  );
+  return res.data;
+};
+
 export const rejectApp = async (id: string, token: string | null) => {
   const res = await axios.post(
     `${API_URL}/api/v1/apps/reject/${id}`,
@@ -94,7 +120,9 @@ export interface AppInput {
   slug: string;
   price: number;
   categoryId: string;
+  tags?: string[];
   iconUrl?: string;
+  developerId?: string;
 }
 
 export const createApp = async (data: AppInput, token: string | null) => {

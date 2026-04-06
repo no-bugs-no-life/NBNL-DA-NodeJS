@@ -2,96 +2,190 @@
 import React, { useState } from "react";
 import { DeveloperTable } from "@/components/admin/developers/DeveloperTable";
 import { DeveloperFormModal } from "@/components/admin/developers/DeveloperFormModal";
+import { ApproveRejectModal } from "@/components/admin/developers/ApproveRejectModal";
 import {
   useDevelopers,
+  useCreateDeveloper,
   useUpdateDeveloper,
-  useDeleteDeveloper,
+  useRevokeDeveloper,
   useApproveDeveloper,
   useRejectDeveloper,
   DeveloperItem,
 } from "@/hooks/useDevelopers";
 
+function TopBar({
+  count,
+  currentStatus,
+  setStatus,
+  onAddClick,
+}: {
+  count: number;
+  currentStatus: string;
+  setStatus: (s: string) => void;
+  onAddClick: () => void;
+}) {
+  return (
+    <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+      <div>
+        <h1 className="text-3xl font-bold text-slate-800">Quản lý Developer</h1>
+        <p className="text-slate-500 text-sm">Hiển thị {count} hồ sơ</p>
+      </div>
+      <div className="flex items-center gap-2">
+        <div className="flex bg-white rounded-xl p-1 shadow-sm border border-slate-200 overflow-x-auto">
+          <button
+            onClick={() => setStatus("")}
+            className={`px-4 py-2 whitespace-nowrap rounded-lg text-sm font-semibold transition-colors ${currentStatus === "" ? "bg-blue-50 text-blue-600" : "text-slate-500 hover:text-slate-700"}`}
+          >
+            Tất cả
+          </button>
+          <button
+            onClick={() => setStatus("pending")}
+            className={`px-4 py-2 whitespace-nowrap rounded-lg text-sm font-semibold transition-colors ${currentStatus === "pending" ? "bg-amber-50 text-amber-600" : "text-slate-500 hover:text-slate-700"}`}
+          >
+            Chờ duyệt
+          </button>
+          <button
+            onClick={() => setStatus("approved")}
+            className={`px-4 py-2 whitespace-nowrap rounded-lg text-sm font-semibold transition-colors ${currentStatus === "approved" ? "bg-green-50 text-green-600" : "text-slate-500 hover:text-slate-700"}`}
+          >
+            Đã duyệt
+          </button>
+          <button
+            onClick={() => setStatus("rejected")}
+            className={`px-4 py-2 whitespace-nowrap rounded-lg text-sm font-semibold transition-colors ${currentStatus === "rejected" ? "bg-red-50 text-red-600" : "text-slate-500 hover:text-slate-700"}`}
+          >
+            Bị từ chối
+          </button>
+        </div>
+        <button
+          onClick={onAddClick}
+          className="flex items-center gap-2 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-sm font-semibold transition-colors shadow-sm whitespace-nowrap"
+        >
+          <span className="material-symbols-outlined text-sm">add</span> Thêm
+          mới
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function ToastAlert({
+  toast,
+}: {
+  toast: { message: string; type: string } | null;
+}) {
+  if (!toast) return null;
+  return (
+    <div
+      className={`fixed top-6 right-6 z-[9999] flex items-center gap-3 px-5 py-3.5 rounded-xl shadow-lg text-sm font-semibold text-white transition-all animate-in slide-in-from-top-2 duration-300 ${toast.type === "success" ? "bg-green-600" : "bg-red-600"}`}
+    >
+      <span className="material-symbols-outlined">
+        {toast.type === "success" ? "check_circle" : "error"}
+      </span>
+      {toast.message}
+    </div>
+  );
+}
+
 export default function DevelopersPage() {
   const [page, setPage] = useState(1);
-  const { data: devsData, isLoading } = useDevelopers(page, 20);
+  const [filterStatus, setFilterStatus] = useState("");
+  const { data: devsData, isLoading } = useDevelopers(
+    page,
+    20,
+    "createdAt",
+    -1,
+    filterStatus || undefined,
+  );
 
+  const createMutation = useCreateDeveloper();
   const updateMutation = useUpdateDeveloper();
-  const deleteMutation = useDeleteDeveloper();
+  const revokeMutation = useRevokeDeveloper();
   const approveMutation = useApproveDeveloper();
   const rejectMutation = useRejectDeveloper();
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedDev, setSelectedDev] = useState<DeveloperItem | undefined>(
-    undefined,
+  const [formTarget, setFormTarget] = useState<{
+    dev?: DeveloperItem;
+    action: "create" | "edit";
+  } | null>(null);
+  const [actionTarget, setActionTarget] = useState<{
+    dev: DeveloperItem;
+    action: "approve" | "reject" | "revoke";
+  } | null>(null);
+  const [toast, setToast] = useState<{ message: string; type: string } | null>(
+    null,
   );
 
-  const handleAction = async (
+  const showToast = (
+    message: string,
+    type: "success" | "error" = "success",
+  ) => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3000);
+  };
+
+  const handleAction = (
     dev: DeveloperItem,
-    action: "edit" | "delete" | "approve" | "reject",
+    action: "edit" | "revoke" | "approve" | "reject",
   ) => {
     if (action === "edit") {
-      setSelectedDev(dev);
-      setIsModalOpen(true);
-    } else if (action === "delete") {
-      if (confirm(`Bạn có chắc muốn xoá tài khoản developer "${dev.name}"?`)) {
-        try {
-          await deleteMutation.mutateAsync(dev._id);
-          if (devsData?.docs.length === 1 && page > 1) {
-            setPage(page - 1);
-          }
-        } catch (error: any) {
-          alert(error.response?.data?.error || "Lỗi khi xoá");
-        }
+      setFormTarget({ dev, action: "edit" });
+    } else if (action === "revoke") {
+      if (confirm(`Bạn có chắc muốn thu hồi tài khoản developer "${dev.name}"?`)) {
+        revokeMutation
+          .mutateAsync({ id: dev._id })
+          .then(() => {
+            showToast("Đã thu hồi quyền developer", "success");
+            if (devsData?.docs.length === 1 && page > 1) setPage(page - 1);
+          })
+          .catch((err: any) =>
+            showToast(err.response?.data?.error || "Lỗi khi thu hồi", "error"),
+          );
       }
-    } else if (action === "approve") {
-      if (confirm(`Duyệt tài khoản developer "${dev.name}"?`)) {
-        try {
-          await approveMutation.mutateAsync({ id: dev._id });
-        } catch (error: any) {
-          alert(error.response?.data?.error || "Lỗi khi duyệt");
-        }
-      }
-    } else if (action === "reject") {
-      const reason = prompt("Nhập lý do từ chối:");
-      if (reason !== null) {
-        try {
-          await rejectMutation.mutateAsync({ id: dev._id, reason });
-        } catch (error: any) {
-          alert(error.response?.data?.error || "Lỗi khi từ chối");
-        }
-      }
+    } else {
+      setActionTarget({ dev, action });
     }
   };
 
   const handleSubmit = async (data: Partial<DeveloperItem>) => {
     try {
-      if (selectedDev) {
-        await updateMutation.mutateAsync({ id: selectedDev._id, data });
+      if (formTarget?.action === "create") {
+        await createMutation.mutateAsync(data);
+        showToast("Thêm mới Developer thành công", "success");
+      } else if (formTarget?.action === "edit" && formTarget.dev) {
+        await updateMutation.mutateAsync({ id: formTarget.dev._id, data });
+        showToast("Cập nhật thành công", "success");
       }
-      setIsModalOpen(false);
-    } catch (error) {
-      const err = error as { response?: { data?: { message?: string } } };
-      alert(err.response?.data?.message || "Đã xảy ra lỗi");
+      setFormTarget(null);
+    } catch (error: any) {
+      showToast(
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        "Đã xảy ra lỗi",
+        "error",
+      );
     }
   };
 
   const isMutating = Boolean(
+    createMutation.isPending ||
     updateMutation.isPending ||
-    deleteMutation.isPending ||
+    revokeMutation.isPending ||
     approveMutation.isPending ||
     rejectMutation.isPending,
   );
 
   return (
     <div className="p-8 max-w-7xl mx-auto space-y-8 animate-in fade-in duration-500">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-800 tracking-tight">
-          Quản lý Developer
-        </h1>
-        <p className="text-slate-500 mt-1">
-          Quản lý hồ sơ nhà phát triển hệ thống trực thuộc User Accounts
-        </p>
-      </div>
+      <TopBar
+        count={devsData?.totalDocs || 0}
+        currentStatus={filterStatus}
+        setStatus={(s) => {
+          setFilterStatus(s);
+          setPage(1);
+        }}
+        onAddClick={() => setFormTarget({ action: "create" })}
+      />
 
       <DeveloperTable
         developers={devsData?.docs || []}
@@ -102,14 +196,58 @@ export default function DevelopersPage() {
         onPageChange={setPage}
       />
 
-      {isModalOpen && selectedDev && (
+      <ToastAlert toast={toast} />
+
+      {formTarget && (
         <DeveloperFormModal
-          developer={selectedDev}
-          onClose={() => setIsModalOpen(false)}
+          developer={formTarget.dev}
+          action={formTarget.action}
+          onClose={() => setFormTarget(null)}
           onSubmit={handleSubmit}
-          loading={isMutating}
+          loading={createMutation.isPending || updateMutation.isPending}
         />
       )}
+
+      {actionTarget &&
+        (actionTarget.action === "approve" ||
+          actionTarget.action === "reject") && (
+          <ApproveRejectModal
+            dev={actionTarget.dev}
+            action={actionTarget.action}
+            onClose={() => setActionTarget(null)}
+            loading={approveMutation.isPending || rejectMutation.isPending}
+            onApprove={async (permissions) => {
+              try {
+                await approveMutation.mutateAsync({
+                  id: actionTarget.dev._id,
+                  permissions,
+                });
+                showToast("Đã duyệt developer", "success");
+                setActionTarget(null);
+              } catch (err: any) {
+                showToast(
+                  err.response?.data?.error || "Lỗi khi duyệt",
+                  "error",
+                );
+              }
+            }}
+            onReject={async (reason) => {
+              try {
+                await rejectMutation.mutateAsync({
+                  id: actionTarget.dev._id,
+                  reason,
+                });
+                showToast("Đã từ chối developer", "success");
+                setActionTarget(null);
+              } catch (err: any) {
+                showToast(
+                  err.response?.data?.error || "Lỗi khi từ chối",
+                  "error",
+                );
+              }
+            }}
+          />
+        )}
     </div>
   );
 }

@@ -4,26 +4,40 @@ import Link from "next/link";
 import Image from "next/image";
 
 function UserProfile() {
-  const { user } = useAuthStore();
+  const { user, logout } = useAuthStore();
   const avatar = user?.avatarUrl || "https://i.sstatic.net/l60Hf.png";
 
   const roleObj = user?.role as unknown as { name?: string };
   const roleName =
     typeof user?.role === "object" ? roleObj.name : user?.role || "ADMIN";
 
+  const handleLogout = () => {
+    logout();
+    window.location.href = "/login";
+  };
+
   return (
-    <div className="flex items-center gap-3">
-      <div className="text-right hidden sm:block">
-        <p className="text-sm font-bold text-slate-800 leading-none">
-          {user?.fullName || user?.username || "Admin"}
-        </p>
-        <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider mt-1 block">
-          {roleName}
-        </span>
+    <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3">
+        <div className="text-right hidden sm:block">
+          <p className="text-sm font-bold text-slate-800 leading-none">
+            {user?.fullName || user?.username || "Admin"}
+          </p>
+          <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider mt-1 block">
+            {roleName}
+          </span>
+        </div>
+        <div className="w-10 h-10 rounded-full bg-slate-200 border-2 border-slate-200 relative overflow-hidden">
+          <Image src={avatar} alt="Avatar" fill className="object-cover" />
+        </div>
       </div>
-      <div className="w-10 h-10 rounded-full bg-slate-200 border-2 border-slate-200 relative overflow-hidden">
-        <Image src={avatar} alt="Avatar" fill className="object-cover" />
-      </div>
+      <button
+        onClick={handleLogout}
+        title="Đăng xuất"
+        className="w-10 h-10 flex items-center justify-center rounded-xl bg-red-50 text-red-600 hover:bg-red-100 transition-colors shadow-sm"
+      >
+        <span className="material-symbols-outlined text-[20px]">logout</span>
+      </button>
     </div>
   );
 }

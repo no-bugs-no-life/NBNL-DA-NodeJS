@@ -1,9 +1,19 @@
 "use client";
 import { useState } from "react";
-import { ReviewInput } from "@/app/admin/(protected)/reviews/reviewsService";
+import { ReviewInput, ReviewItem } from "@/app/admin/(protected)/reviews/reviewsService";
 import { useAdminApps } from "@/hooks/useAdminApps";
 import { useAdminUsers } from "@/hooks/useAdminUsers";
+import { API_URL } from "@/configs/api";
+
+const getImageUrl = (url?: string) => {
+  if (!url) return undefined;
+  if (url.startsWith("http")) return url;
+  return `${API_URL}${url.startsWith("/") ? "" : "/"}${url}`;
+};
+
 interface Props {
+  review?: ReviewItem;
+  action?: "create" | "edit";
   onClose: () => void;
   onSubmit: (data: ReviewInput) => void;
   loading: boolean;
@@ -17,7 +27,7 @@ function UserAvatar({ name, avatarUrl }: { name: string; avatarUrl?: string }) {
   if (avatarUrl)
     return (
       <img
-        src={avatarUrl}
+        src={getImageUrl(avatarUrl)}
         alt={name}
         className="w-6 h-6 rounded-full object-cover shrink-0"
       />
@@ -38,7 +48,7 @@ function AppIcon({ iconUrl, name }: { iconUrl?: string; name: string }) {
   if (iconUrl)
     return (
       <img
-        src={iconUrl}
+        src={getImageUrl(iconUrl)}
         alt={name}
         className="w-6 h-6 rounded-lg object-cover bg-slate-100 shrink-0"
       />
@@ -64,16 +74,24 @@ function AppIcon({ iconUrl, name }: { iconUrl?: string; name: string }) {
     </div>
   );
 }
-export function ReviewFormModal({ onClose, onSubmit, loading }: Props) {
+export function ReviewFormModal({ onClose, onSubmit, loading, action = "create", review }: Props) {
   const { data: apps = [], isLoading: isLoadingApps } = useAdminApps();
   const { data: users = [], isLoading: isLoadingUsers } = useAdminUsers();
-  const [formData, setFormData] = useState<ReviewInput>({
-    appId: "",
-    userId: "",
-    rating: 5,
-    comment: "",
-    status: "pending",
-  });
+  const [formData, setFormData] = useState<ReviewInput>(
+    review ? {
+      appId: review.appId?._id || "",
+      userId: review.userId?._id || "",
+      rating: review.rating || 5,
+      comment: review.comment || "",
+      status: review.status || "pending",
+    } : {
+      appId: "",
+      userId: "",
+      rating: 5,
+      comment: "",
+      status: "pending",
+    }
+  );
   const selectedApp = apps.find((a) => a._id === formData.appId);
   const selectedUser = users.find((u) => u._id === formData.userId);
   const handleSubmit = (e: React.FormEvent) => {
@@ -89,7 +107,7 @@ export function ReviewFormModal({ onClose, onSubmit, loading }: Props) {
         <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
           {" "}
           <h2 className="text-xl font-bold text-slate-800">
-            Thêm Đánh giá mới
+            {action === "edit" ? "Sửa Đánh giá" : "Thêm Đánh giá mới"}
           </h2>{" "}
           <button
             onClick={onClose}
@@ -118,67 +136,71 @@ export function ReviewFormModal({ onClose, onSubmit, loading }: Props) {
           {" "}
           <form id="review-form" onSubmit={handleSubmit} className="space-y-5">
             {" "}
-            {/* App + User on same row */}{" "}
-            <div className="grid grid-cols-2 gap-4">
-              {" "}
+            <div className="grid grid-cols-1 gap-4">
+              {/* App selector (Grid Style) */}
               <div>
-                {" "}
                 <label className="block text-sm font-semibold text-slate-700 mb-1.5">
-                  Ung dung
-                </label>{" "}
-                <div className="relative">
-                  {" "}
-                  <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none z-10">
-                    {" "}
-                    <AppIcon
-                      iconUrl={selectedApp?.iconUrl}
-                      name={selectedApp?.name || ""}
-                    />{" "}
-                  </div>{" "}
-                  <select
-                    required
-                    value={formData.appId}
-                    onChange={(e) =>
-                      setFormData({ ...formData, appId: e.target.value })
-                    }
-                    disabled={isLoadingApps}
-                    className="w-full pl-11 pr-8 py-2.5 rounded-xl border border-slate-200 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-sm bg-white appearance-none"
-                  >
-                    {" "}
-                    <option value="">
-                      {isLoadingApps ? "Dang tai..." : "-- Chon ung dung --"}
-                    </option>{" "}
-                    {apps.map((app) => (
-                      <option key={app._id} value={app._id}>
-                        {app.name}
-                      </option>
-                    ))}{" "}
-                  </select>{" "}
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                    {" "}
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="w-4 h-4 text-slate-400"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth={2}
-                      stroke="currentColor"
-                    >
-                      {" "}
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="m19 9-7 7-7-7"
-                      />{" "}
-                    </svg>{" "}
-                  </div>{" "}
-                </div>{" "}
-              </div>{" "}
+                  Ứng dụng
+                </label>
+                {isLoadingApps ? (
+                  <div className="text-sm text-slate-400 py-2">
+                    Đang tải danh sách ứng dụng...
+                  </div>
+                ) : apps.length === 0 ? (
+                  <div className="text-sm text-slate-400 py-2">
+                    Không có ứng dụng nào.
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-1">
+                    {apps.map((app) => {
+                      const isSelected = formData.appId === app._id;
+                      return (
+                        <button
+                          key={app._id}
+                          type="button"
+                          onClick={() => {
+                            if (!isLoadingApps && action !== "edit") {
+                              setFormData({ ...formData, appId: app._id });
+                            }
+                          }}
+                          disabled={isLoadingApps || action === "edit"}
+                          className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl border text-left transition-all text-sm disabled:opacity-50 ${isSelected
+                            ? "border-blue-400 bg-blue-50"
+                            : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50"
+                            }`}
+                        >
+                          <AppIcon iconUrl={app.iconUrl} name={app.name} />
+                          <span className="font-medium text-slate-700 truncate flex-1">
+                            {app.name}
+                          </span>
+                          {isSelected && (
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="w-4 h-4 text-blue-600 shrink-0"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              strokeWidth={2.5}
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="m4.5 12.75 6 6 9-13.5"
+                              />
+                            </svg>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* User selector */}
               <div>
-                {" "}
                 <label className="block text-sm font-semibold text-slate-700 mb-1.5">
-                  Nguoi dung
-                </label>{" "}
+                  Người dùng
+                </label>
                 <div className="relative">
                   {" "}
                   <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none z-10">
@@ -196,7 +218,7 @@ export function ReviewFormModal({ onClose, onSubmit, loading }: Props) {
                     onChange={(e) =>
                       setFormData({ ...formData, userId: e.target.value })
                     }
-                    disabled={isLoadingUsers}
+                    disabled={isLoadingUsers || action === "edit"}
                     className="w-full pl-11 pr-8 py-2.5 rounded-xl border border-slate-200 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-sm bg-white appearance-none"
                   >
                     {" "}
@@ -232,6 +254,11 @@ export function ReviewFormModal({ onClose, onSubmit, loading }: Props) {
                 </div>{" "}
               </div>{" "}
             </div>{" "}
+            {action === "edit" && (
+              <p className="text-xs text-amber-600 mt-2 bg-amber-50 p-2 rounded-lg border border-amber-100">
+                Lưu ý: Không thể thay đổi người dùng và ứng dụng khi sửa đánh giá. Khi lưu đánh giá này, trạng thái sẽ tự động được đưa về "Chờ duyệt".
+              </p>
+            )}
             {/* Star rating */}{" "}
             <div>
               {" "}
@@ -296,7 +323,8 @@ export function ReviewFormModal({ onClose, onSubmit, loading }: Props) {
                       status: e.target.value as ReviewInput["status"],
                     })
                   }
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-sm bg-white appearance-none"
+                  disabled={action === "edit"}
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-sm bg-white appearance-none disabled:opacity-50"
                 >
                   {" "}
                   {STATUS_OPTIONS.map((opt) => (
@@ -369,7 +397,7 @@ export function ReviewFormModal({ onClose, onSubmit, loading }: Props) {
                 />{" "}
               </svg>
             )}{" "}
-            Luu danh gia{" "}
+            {action === "edit" ? "Cập nhật đánh giá" : "Lưu đánh giá"}{" "}
           </button>{" "}
         </div>{" "}
       </div>{" "}
