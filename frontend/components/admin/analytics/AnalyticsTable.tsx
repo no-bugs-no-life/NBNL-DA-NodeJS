@@ -249,12 +249,12 @@ function MobileCards({
             <StatChip label="Views" value={r.views} color="blue" />
             <StatChip label="Downloads" value={r.downloads} color="green" />
             <StatChip label="Installs" value={r.installs} color="slate" />
-            <StatChip label="Active Users" value={r.activeUsers} color="amber" />
             <StatChip
-              label="Rating"
-              value={r.ratingAverage}
-              color="slate"
+              label="Active Users"
+              value={r.activeUsers}
+              color="amber"
             />
+            <StatChip label="Rating" value={r.ratingAverage} color="slate" />
             <StatChip label="Crashes" value={r.crashCount} color="red" />
           </div>
           <RowActions

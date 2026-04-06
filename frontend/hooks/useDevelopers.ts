@@ -130,13 +130,14 @@ export function useUpdateDeveloper() {
   });
 }
 
-export function useDeleteDeveloper() {
+export function useRevokeDeveloper() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (id: string) => {
+    mutationFn: async ({ id, reason }: { id: string; reason?: string }) => {
       const token = localStorage.getItem("token");
-      const response = await axios.delete(
-        `${API_URL}/api/v1/developers/${id}`,
+      const response = await axios.put(
+        `${API_URL}/api/v1/developers/${id}/revoke`,
+        { reason },
         {
           headers: { Authorization: `Bearer ${token}` },
         },

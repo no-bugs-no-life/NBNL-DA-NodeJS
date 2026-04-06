@@ -11,7 +11,7 @@ export default function AppDeveloperInfo() {
         <div className="w-12 h-12 bg-surface-container rounded-full flex items-center justify-center p-1 overflow-hidden">
           {appInfo?.developerId?.avatarUrl ? (
             <img
-              alt={appInfo?.developerId?.fullName}
+              alt={appInfo?.developerId?.name}
               src={appInfo?.developerId?.avatarUrl}
               className="w-full h-full object-cover rounded-full"
             />
@@ -23,13 +23,13 @@ export default function AppDeveloperInfo() {
         </div>
         <div>
           <p className="font-bold">
-            {appInfo?.developerId?.fullName || "Developer"}
+            {appInfo?.developerId?.name || "Developer"}
           </p>
           <a
             className="text-primary text-sm font-medium hover:underline"
             href="#"
           >
-            {appInfo?.developerId?.email || "Xem tất cả ứng dụng"}
+            {appInfo?.developerId?.contactEmail || "Xem tất cả ứng dụng"}
           </a>
         </div>
       </div>

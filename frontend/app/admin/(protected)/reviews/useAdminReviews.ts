@@ -9,6 +9,7 @@ import {
   deleteReview,
   resetReview,
   createReviewAdmin,
+  updateReviewAdmin,
   ReviewItem,
   ReviewInput,
 } from "./reviewsService";
@@ -25,7 +26,7 @@ export function useAdminReviews() {
     review: ReviewItem;
     action: "approve" | "reject" | "delete" | "reset";
   } | null>(null);
-  const [formTarget, setFormTarget] = useState<{ action: "create" } | null>(
+  const [formTarget, setFormTarget] = useState<{ action: "create" | "edit", review?: ReviewItem } | null>(
     null,
   );
   const [toast, setToast] = useState<{
@@ -97,6 +98,16 @@ export function useAdminReviews() {
     onError: () => notify("Lỗi khi thêm đánh giá!", "error"),
   });
 
+  const mUpdate = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<ReviewInput> }) => updateReviewAdmin(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["reviews"] });
+      setFormTarget(null);
+      notify("Cập nhật đánh giá thành công!", "success");
+    },
+    onError: () => notify("Lỗi khi cập nhật đánh giá!", "error"),
+  });
+
   return {
     isAdmin,
     isAuthLoading,
@@ -112,6 +123,7 @@ export function useAdminReviews() {
     mDelete,
     mReset,
     mCreate,
+    mUpdate,
     page,
     setPage,
     totalPages,

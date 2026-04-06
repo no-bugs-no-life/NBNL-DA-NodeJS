@@ -6,7 +6,12 @@ export interface AppDetailData {
   slug: string;
   description: string;
   price: number;
-  developerId?: { fullName: string; email: string; avatarUrl: string };
+  developerId?: {
+    name: string;
+    contactEmail: string;
+    avatarUrl: string;
+    userId?: string;
+  };
   categoryId?: { name: string };
   iconUrl?: string;
   version?: string;

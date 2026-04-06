@@ -1,4 +1,5 @@
 let reviewModel = require('../schemas/reviews');
+let appModel = require('../schemas/apps');
 
 module.exports = {
     getAllReviews: async function (queries) {
@@ -62,6 +63,7 @@ module.exports = {
             comment: comment || ""
         });
         await newReview.save();
+        await appModel.updateOne({ _id: appId }, { $push: { reviews: newReview._id } });
         await newReview.populate('userId', 'fullName avatarUrl');
         await newReview.populate('appId', 'name');
         return newReview;
@@ -81,9 +83,26 @@ module.exports = {
             status: status || "approved" // admin-created reviews auto-approved
         });
         await newReview.save();
+        await appModel.updateOne({ _id: appId }, { $push: { reviews: newReview._id } });
         await newReview.populate('userId', 'fullName avatarUrl');
         await newReview.populate('appId', 'name');
         return newReview;
+    },
+
+    updateReviewAdmin: async function (id, data) {
+        let review = await reviewModel.findOne({ _id: id, isDeleted: false });
+        if (!review) return { error: "Review not found" };
+
+        if (data.rating !== undefined) review.rating = data.rating;
+        if (data.comment !== undefined) review.comment = data.comment;
+
+        // As requested: khi cập nhật sẽ chuyển từ đã duyệt về pending
+        review.status = "pending";
+
+        await review.save();
+        await review.populate('userId', 'fullName avatarUrl');
+        await review.populate('appId', 'name');
+        return review;
     },
 
     updateReview: async function (id, userId, data) {
@@ -106,6 +125,7 @@ module.exports = {
         if (review.userId.toString() !== userId) return { error: "You can only delete your own reviews", code: 403 };
         review.isDeleted = true;
         await review.save();
+        await appModel.updateOne({ _id: review.appId }, { $pull: { reviews: review._id } });
         return { message: "Review deleted" };
     },
 

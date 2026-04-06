@@ -19,7 +19,7 @@ export default function ProductGrid() {
         _id: string;
         slug: string;
         name: string;
-        developerId?: { fullName: string };
+        developerId?: { name: string };
         price: number;
         iconUrl?: string;
       }
@@ -28,7 +28,7 @@ export default function ProductGrid() {
         id: item._id,
         slug: item.slug,
         title: item.name,
-        company: item.developerId?.fullName || "Developer",
+        company: item.developerId?.name || "Developer",
         rating: "4.5",
         reviews: "1K+",
         price: item.price === 0 ? "Miễn phí" : `$${item.price}`,

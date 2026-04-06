@@ -9,7 +9,7 @@ export interface WishlistAppItem {
   price: number;
   subscriptionPrice?: number;
   status?: string;
-  developerId?: { fullName?: string };
+  developerId?: { name?: string };
 }
 
 export interface WishlistItem {
@@ -126,6 +126,32 @@ export function useCreateWishlistAdmin() {
       const token = localStorage.getItem("token");
       const response = await axios.post(
         `${API_URL}/api/v1/wishlists/admin`,
+        data,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin", "wishlists"] });
+    },
+  });
+}
+
+export function useUpdateWishlistAdmin() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: { userId?: string; appIds?: string[] };
+    }) => {
+      const token = localStorage.getItem("token");
+      const response = await axios.put(
+        `${API_URL}/api/v1/wishlists/${id}`,
         data,
         {
           headers: { Authorization: `Bearer ${token}` },

@@ -59,7 +59,7 @@ export default function AppDetailHeader() {
             {appInfo.name}
           </h1>
           <p className="text-xl text-primary font-medium">
-            {appInfo.developerId?.fullName || "Developer"}
+            {appInfo.developerId?.name || "Developer"}
           </p>
         </div>
         <AppStats />

@@ -15,8 +15,8 @@ module.exports = {
     getAllReports: async function (queries) {
         let { limit = 20, page = 1, status, targetType } = queries;
         let filter = { isDeleted: false };
-        if (status) filter.status = status;
-        if (targetType) filter.targetType = targetType;
+        if (status && status !== 'undefined') filter.status = status;
+        if (targetType && targetType !== 'undefined') filter.targetType = targetType;
 
         let options = {
             page: parseInt(page) || 1,

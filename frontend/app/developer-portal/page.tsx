@@ -9,6 +9,13 @@ import {
 import useAuthStore from "@/store/useAuthStore";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import { AppFormModal } from "@/components/admin/apps/AppFormModal";
+import {
+  createApp,
+  updateApp,
+  AppInput,
+} from "@/app/admin/(protected)/apps/appsService";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 export default function DeveloperPortalPage() {
   const { user, checkAuth } = useAuthStore();
@@ -22,6 +29,46 @@ export default function DeveloperPortalPage() {
     bio: "",
     website: "",
     contactEmail: "",
+  });
+
+  const queryClient = useQueryClient();
+  const [formTarget, setFormTarget] = useState<{
+    app?: any;
+    action: "create" | "edit";
+  } | null>(null);
+
+  const mCreate = useMutation({
+    mutationFn: (data: AppInput) =>
+      createApp(data, localStorage.getItem("token")),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["developers", "my-apps"] });
+      setFormTarget(null);
+      alert("Tạo ứng dụng thành công!");
+    },
+    onError: (err: any) => {
+      alert(
+        err.response?.data?.message ||
+          err.response?.data?.error ||
+          "Có lỗi xảy ra",
+      );
+    },
+  });
+
+  const mUpdate = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: AppInput }) =>
+      updateApp(id, data, localStorage.getItem("token")),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["developers", "my-apps"] });
+      setFormTarget(null);
+      alert("Cập nhật ứng dụng thành công!");
+    },
+    onError: (err: any) => {
+      alert(
+        err.response?.data?.message ||
+          err.response?.data?.error ||
+          "Có lỗi xảy ra",
+      );
+    },
   });
 
   useEffect(() => {
@@ -105,6 +152,15 @@ export default function DeveloperPortalPage() {
             <h2 className="text-xl font-bold text-slate-800">
               Ứng dụng của tôi
             </h2>
+            {devProfile && devProfile.status === "approved" && (
+              <button
+                onClick={() => setFormTarget({ action: "create" })}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl flex items-center gap-2 transition-colors shadow-sm"
+              >
+                <span className="material-symbols-outlined text-sm">add</span>{" "}
+                Thêm mới
+              </button>
+            )}
           </div>
           {loadingApps ? (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -124,7 +180,11 @@ export default function DeveloperPortalPage() {
           ) : myApps && myApps.length > 0 ? (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {myApps.map((app: any) => (
-                <AppCard key={app._id} app={app} />
+                <AppCard
+                  key={app._id}
+                  app={app}
+                  onEdit={() => setFormTarget({ app, action: "edit" })}
+                />
               ))}
             </div>
           ) : (
@@ -133,6 +193,19 @@ export default function DeveloperPortalPage() {
         </section>
       </main>
       <Footer />
+      {formTarget && (
+        <AppFormModal
+          app={formTarget.app}
+          action={formTarget.action}
+          onClose={() => setFormTarget(null)}
+          onSubmit={(data) => {
+            if (formTarget.action === "create") mCreate.mutate(data);
+            else if (formTarget.action === "edit" && formTarget.app)
+              mUpdate.mutate({ id: formTarget.app._id, data: data });
+          }}
+          loading={mCreate.isPending || mUpdate.isPending}
+        />
+      )}
     </>
   );
 }
@@ -431,7 +504,7 @@ function StatsGrid({ dev }: { dev: DeveloperItem }) {
   );
 }
 
-function AppCard({ app }: { app: any }) {
+function AppCard({ app, onEdit }: { app: any; onEdit?: () => void }) {
   const statusBadge: Record<string, string> = {
     pending: "bg-yellow-100 text-yellow-700",
     approved: "bg-green-100 text-green-700",
@@ -469,6 +542,14 @@ function AppCard({ app }: { app: any }) {
             arrow_forward
           </span>
         </a>
+        {onEdit && (
+          <button
+            onClick={onEdit}
+            className="mt-2 text-xs font-semibold text-slate-500 hover:text-slate-700 transition"
+          >
+            Chỉnh sửa
+          </button>
+        )}
       </div>
     </div>
   );

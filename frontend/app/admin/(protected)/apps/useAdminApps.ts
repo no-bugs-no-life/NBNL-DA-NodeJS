@@ -7,6 +7,7 @@ import {
   fetchAppById,
   approveApp,
   rejectApp,
+  publishApp,
   deleteApp,
   createApp,
   updateApp,
@@ -21,11 +22,11 @@ export function useAdminApps() {
 
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
-  const [isPendingFilter, setIsPendingFilter] = useState(false);
+  const [filterStatus, setFilterStatus] = useState<string>("published");
 
   const [actionTarget, setActionTarget] = useState<{
     app: AppItem;
-    action: "approve" | "reject" | "delete";
+    action: "approve" | "reject" | "delete" | "publish";
   } | null>(null);
   const [formTarget, setFormTarget] = useState<{
     app?: AppItem;
@@ -41,9 +42,9 @@ export function useAdminApps() {
     setTimeout(() => setToast(null), 3000);
   };
 
-  const { data: appsData, isLoading } = useQuery({
-    queryKey: ["apps", page, limit, isPendingFilter],
-    queryFn: () => fetchApps(page, limit, isPendingFilter, token),
+  const { data: appsData, isLoading, refetch, isFetching } = useQuery({
+    queryKey: ["apps", page, limit, filterStatus],
+    queryFn: () => fetchApps(page, limit, filterStatus, token),
   });
 
   const apps = appsData?.docs || [];
@@ -80,6 +81,16 @@ export function useAdminApps() {
     onError: () => notify("Lỗi khi xoá App!", "error"),
   });
 
+  const mPublish = useMutation({
+    mutationFn: (id: string) => publishApp(id, token),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["apps"] });
+      setActionTarget(null);
+      notify("Phát hành App thành công!", "success");
+    },
+    onError: () => notify("Lỗi khi phát hành App!", "error"),
+  });
+
   const mCreate = useMutation({
     mutationFn: (data: AppInput) => createApp(data, token),
     onSuccess: () => {
@@ -113,6 +124,7 @@ export function useAdminApps() {
     toast,
     mApprove,
     mReject,
+    mPublish,
     mDelete,
     mCreate,
     mUpdate,
@@ -120,8 +132,10 @@ export function useAdminApps() {
     setPage,
     totalPages,
     totalDocs,
-    isPendingFilter,
-    setIsPendingFilter,
+    filterStatus,
+    setFilterStatus,
+    refetch,
+    isFetching,
   };
 }
 

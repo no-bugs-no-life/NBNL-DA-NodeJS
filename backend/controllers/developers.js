@@ -166,7 +166,21 @@ module.exports = {
         return developer;
     },
 
-    // DELETE - Soft delete developer
+    // PUT - Revoke developer (ADMIN only)
+    revokeDeveloper: async function (id, adminUserId, reason) {
+        let developer = await developerModel.findOne({ _id: id, isDeleted: false });
+        if (!developer) return { error: "Developer not found", code: 404 };
+        if (developer.status !== 'approved') return { error: "Chỉ có thể thu hồi developer đã được duyệt", code: 400 };
+
+        developer.status = 'rejected';
+        developer.rejectionReason = reason || "Bị thu hồi quyền";
+        await developer.save();
+        await developer.populate('userId', 'fullName email avatarUrl');
+        return developer;
+    },
+
+    // DELETE - Soft delete developer (DISABLED)
+    /*
     deleteDeveloper: async function (id, userId) {
         let developer = await developerModel.findOne({ _id: id, isDeleted: false });
         if (!developer) return { error: "Developer not found", code: 404 };
@@ -185,6 +199,7 @@ module.exports = {
         await developer.save();
         return developer;
     },
+    */
 
     // GET - Get developer by userId
     getDeveloperByUserId: async function (userId) {

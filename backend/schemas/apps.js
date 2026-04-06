@@ -18,7 +18,7 @@ const appSchema = new mongoose.Schema(
         },
         developerId: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "user",
+            ref: "developer",
             required: [true, "Developer ID is required"]
         },
         categoryId: {
@@ -63,11 +63,16 @@ const appSchema = new mongoose.Schema(
             default: false
         },
         screenshots: { type: [String], default: [] },
-        ratingScore: { type: Number, default: 0 },
-        ratingCount: { type: Number, default: 0 },
+        reviews: [{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "review"
+        }],
         size: { type: String, default: "" },
         platforms: { type: [String], default: [] },
-        tags: { type: [String], default: [] },
+        tags: [{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "tag"
+        }],
         systemRequirements: {
             min: { os: String, cpu: String, ram: String, graphics: String },
             recommended: { os: String, cpu: String, ram: String, graphics: String }

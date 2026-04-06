@@ -1,9 +1,11 @@
 "use client";
 import React, { useState } from "react";
 import { DeveloperItem } from "@/hooks/useDevelopers";
+import { useUsers } from "@/hooks/useUsers";
 
 interface Props {
-  developer: DeveloperItem;
+  developer?: DeveloperItem;
+  action: "create" | "edit";
   onClose: () => void;
   onSubmit: (data: Partial<DeveloperItem>) => void;
   loading: boolean;
@@ -11,19 +13,25 @@ interface Props {
 
 export function DeveloperFormModal({
   developer,
+  action,
   onClose,
   onSubmit,
   loading,
 }: Props) {
+  const { data: users = [], isLoading: isLoadingUsers } = useUsers();
+
   const [formData, setFormData] = useState({
-    name: developer.name || "",
-    bio: developer.bio || "",
-    website: developer.website || "",
+    name: developer?.name || "",
+    contactEmail: developer?.contactEmail || "",
+    avatarUrl: developer?.avatarUrl || "",
+    bio: developer?.bio || "",
+    website: developer?.website || "",
+    userId: "",
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(formData);
+    onSubmit(formData as any);
   };
 
   return (
@@ -32,11 +40,15 @@ export function DeveloperFormModal({
         <div className="p-6 border-b border-slate-100 flex items-center justify-between">
           <div>
             <h2 className="text-xl font-bold text-slate-800">
-              Chỉnh sửa Developer
+              {action === "create"
+                ? "Thêm mới Developer"
+                : "Chỉnh sửa Developer"}
             </h2>
-            <p className="text-xs text-slate-500 mt-1">
-              Gắn với Account: {developer.userId?.email}
-            </p>
+            {action === "edit" && developer?.userId && (
+              <p className="text-xs text-slate-500 mt-1">
+                Gắn với Account: {developer.userId.email}
+              </p>
+            )}
           </div>
           <button
             onClick={onClose}
@@ -52,6 +64,32 @@ export function DeveloperFormModal({
             onSubmit={handleSubmit}
             className="space-y-4"
           >
+            {action === "create" && (
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-1.5">
+                  Chọn người dùng <span className="text-red-500">*</span>
+                </label>
+                <select
+                  required
+                  value={formData.userId}
+                  onChange={(e) =>
+                    setFormData({ ...formData, userId: e.target.value })
+                  }
+                  disabled={isLoadingUsers}
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-sm bg-white"
+                >
+                  <option value="" disabled>
+                    -- Chọn tài khoản User --
+                  </option>
+                  {users.map((u) => (
+                    <option key={u._id} value={u._id}>
+                      {u.email} {u.fullName ? `(${u.fullName})` : ""}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-1.5">
                 Tên Developer
@@ -64,6 +102,36 @@ export function DeveloperFormModal({
                   setFormData({ ...formData, name: e.target.value })
                 }
                 className="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-sm"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-1.5">
+                Email Liên hệ <span className="text-red-500">*</span>
+              </label>
+              <input
+                required
+                type="email"
+                value={formData.contactEmail}
+                onChange={(e) =>
+                  setFormData({ ...formData, contactEmail: e.target.value })
+                }
+                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-sm"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-1.5">
+                Avatar URL
+              </label>
+              <input
+                type="url"
+                value={formData.avatarUrl}
+                onChange={(e) =>
+                  setFormData({ ...formData, avatarUrl: e.target.value })
+                }
+                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-sm"
+                placeholder="https://..."
               />
             </div>
 
