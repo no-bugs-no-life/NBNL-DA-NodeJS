@@ -1,7 +1,11 @@
 import type { Context } from "hono";
 import { BaseController } from "@/shared/base";
+import {
+	RegisterSchema,
+	UpdateProfileSchema,
+	UserQuerySchema,
+} from "./users.schema";
 import { UsersService } from "./users.service";
-import { RegisterSchema, UpdateProfileSchema, UserQuerySchema } from "./users.schema";
 import type { UserRole } from "./users.types";
 
 export class UsersController extends BaseController {
@@ -57,7 +61,12 @@ export class UsersController extends BaseController {
 		if (!payload) return c.json(this.fail("Chưa đăng nhập"), 401);
 
 		const { role } = await c.req.json<{ role: UserRole }>();
-		const user = await this.usersService.updateRole(payload.id, id, role, payload.role as UserRole);
+		const user = await this.usersService.updateRole(
+			payload.id,
+			id,
+			role,
+			payload.role as UserRole,
+		);
 		return c.json(this.ok(user, "Cập nhật vai trò thành công"));
 	}
 
@@ -66,7 +75,11 @@ export class UsersController extends BaseController {
 		const payload = c.get("jwtPayload");
 		if (!payload) return c.json(this.fail("Chưa đăng nhập"), 401);
 
-		await this.usersService.deleteUser(payload.id, id, payload.role as UserRole);
+		await this.usersService.deleteUser(
+			payload.id,
+			id,
+			payload.role as UserRole,
+		);
 		return c.json(this.ok(null, "Xóa người dùng thành công"));
 	}
 }

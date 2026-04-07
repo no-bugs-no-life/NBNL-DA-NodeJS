@@ -1,36 +1,69 @@
-import { AppError } from "@/shared/errors";
-import type { FileRecord, CreateFileDTO, FileQueryDTO } from "./files.types";
-import { FilesRepository } from "./files.repository";
+import { notFound } from "@/shared/errors";
+import type { IFileRepository } from "./files.repository";
+import type { CreateFileRequest, UpdateFileRequest } from "./files.schema";
+import type {
+	FilePublic,
+	FileType,
+	OwnerType,
+	PaginatedFiles,
+} from "./files.types";
+import { toPublicFile } from "./files.types";
 
 export class FilesService {
-	private repo: FilesRepository;
+	constructor(private readonly repository: IFileRepository) {}
 
-	constructor(repo?: FilesRepository) {
-		this.repo = repo || new FilesRepository();
+	async getFiles(
+		page: number,
+		limit: number,
+		filters: {
+			ownerType?: OwnerType;
+			ownerId?: string;
+			fileType?: FileType;
+		} = {},
+	): Promise<PaginatedFiles> {
+		const { docs, totalDocs } = await this.repository.findAll({
+			page,
+			limit,
+			...filters,
+		});
+		return {
+			docs: docs.map(toPublicFile),
+			totalDocs,
+			limit,
+			totalPages: Math.ceil(totalDocs / limit),
+			page,
+		};
 	}
 
-	async findAll(query: FileQueryDTO): Promise<FileRecord[]> {
-		return this.repo.findAll(query);
+	async getFileById(id: string): Promise<FilePublic> {
+		const file = await this.repository.findById(id);
+		if (!file) throw notFound("Không tìm thấy file");
+		return toPublicFile(file);
 	}
 
-	async findById(id: string): Promise<FileRecord> {
-		const file = await this.repo.findById(id);
-		if (!file) throw AppError.notFound("File not found");
-		return file;
+	async createFile(data: CreateFileRequest): Promise<FilePublic> {
+		const fileData = {
+			ownerType: data.ownerType,
+			ownerId: data.ownerId ?? "",
+			fileType: data.fileType,
+			url: data.url,
+			size: 0,
+		};
+		const file = await this.repository.create(fileData);
+		return toPublicFile(file);
 	}
 
-	async create(data: CreateFileDTO): Promise<FileRecord> {
-		return this.repo.create(data);
+	async updateFile(id: string, data: UpdateFileRequest): Promise<FilePublic> {
+		const existing = await this.repository.findById(id);
+		if (!existing) throw notFound("Không tìm thấy file");
+
+		const updated = await this.repository.update(id, data);
+		if (!updated) throw notFound("Không tìm thấy file");
+		return toPublicFile(updated);
 	}
 
-	async delete(id: string): Promise<void> {
-		const file = await this.repo.findById(id);
-		if (!file) throw AppError.notFound("File not found");
-		const deleted = await this.repo.delete(id);
-		if (!deleted) throw AppError.internal("Failed to delete file");
-	}
-
-	async deleteByUploader(uploaderId: string): Promise<number> {
-		return this.repo.deleteByUploader(uploaderId);
+	async deleteFile(id: string): Promise<void> {
+		const deleted = await this.repository.delete(id);
+		if (!deleted) throw notFound("Không tìm thấy file");
 	}
 }

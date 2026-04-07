@@ -1,5 +1,11 @@
 import mongoose from "mongoose";
-import type { Tag, CreateTagDTO, UpdateTagDTO } from "./tags.types";
+import type {
+	CreateTagDTO,
+	PaginatedTags,
+	Tag,
+	TagQueryRequest,
+	UpdateTagDTO,
+} from "./tags.types";
 
 const COLLECTION = "tags";
 
@@ -11,11 +17,33 @@ const tagSchema = new mongoose.Schema<Tag>(
 	{ timestamps: true, collection: COLLECTION },
 );
 
-const TagModel = mongoose.models[COLLECTION] || mongoose.model<Tag>(COLLECTION, tagSchema);
+const TagModel =
+	mongoose.models[COLLECTION] || mongoose.model<Tag>(COLLECTION, tagSchema);
 
 export class TagsRepository {
-	async findAll(): Promise<Tag[]> {
-		return TagModel.find().sort({ name: 1 }).lean();
+	async findAll(query: TagQueryRequest): Promise<PaginatedTags> {
+		const filter: Record<string, unknown> = {};
+		if (query.search) {
+			filter.name = { $regex: query.search, $options: "i" };
+		}
+
+		const skip = (query.page - 1) * query.limit;
+		const [docs, totalDocs] = await Promise.all([
+			TagModel.find(filter)
+				.sort({ name: 1 })
+				.skip(skip)
+				.limit(query.limit)
+				.lean(),
+			TagModel.countDocuments(filter),
+		]);
+
+		return {
+			docs,
+			totalDocs,
+			limit: query.limit,
+			totalPages: Math.ceil(totalDocs / query.limit),
+			page: query.page,
+		};
 	}
 
 	async findById(id: string): Promise<Tag | null> {

@@ -39,4 +39,4 @@ export const closeDatabase = async () => {
 // Initiate connection immediately (optional, or let index.ts await connectDB())
 connectDB();
 
-export { mongoose, connectDB };
+export { connectDB, mongoose };

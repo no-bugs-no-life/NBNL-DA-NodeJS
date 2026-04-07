@@ -1,19 +1,23 @@
 import mongoose from "mongoose";
 import type {
-	Version,
-	CreateVersionDTO,
-	UpdateVersionDTO,
-	VersionQueryDTO,
-	VersionFile,
 	AccessControl,
+	CreateVersionDTO,
+	Platform,
+	UpdateVersionDTO,
+	Version,
+	VersionFile,
+	VersionQueryDTO,
 } from "./versions.types";
-import type { VersionStatus, Platform } from "./versions.types";
 
 const COLLECTION = "versions";
 
 const versionFileSchema = new mongoose.Schema<VersionFile>(
 	{
-		platform: { type: String, enum: ["android", "ios", "windows", "macos", "linux", "web"], required: true },
+		platform: {
+			type: String,
+			enum: ["android", "ios", "windows", "macos", "linux", "web"],
+			required: true,
+		},
 		fileKey: { type: String, required: true },
 		fileName: { type: String, required: true },
 		fileSize: { type: Number, required: true, min: 0 },
@@ -27,7 +31,11 @@ const accessControlSchema = new mongoose.Schema<AccessControl>(
 	{
 		isFree: { type: Boolean, default: false },
 		requiresPurchase: { type: Boolean, default: true },
-		requiredSubscription: { type: String, enum: ["premium", "pro", null], default: null },
+		requiredSubscription: {
+			type: String,
+			enum: ["premium", "pro", null],
+			default: null,
+		},
 		allowedRoles: [{ type: String }],
 		allowedUserIds: [{ type: String, ref: "users" }],
 	},
@@ -43,7 +51,12 @@ const versionSchema = new mongoose.Schema<Version>(
 		changelog: { type: String, trim: true },
 		files: { type: [versionFileSchema], required: true },
 		accessControl: { type: accessControlSchema, default: () => ({}) },
-		status: { type: String, enum: ["draft", "published", "deprecated", "archived"], default: "draft", index: true },
+		status: {
+			type: String,
+			enum: ["draft", "published", "deprecated", "archived"],
+			default: "draft",
+			index: true,
+		},
 		isLatest: { type: Boolean, default: false, index: true },
 		publishedAt: { type: Date },
 		downloadCount: { type: Number, default: 0 },
@@ -71,7 +84,9 @@ versionSchema.pre("save", async function (next) {
 	next();
 });
 
-export const VersionModel = mongoose.models[COLLECTION] || mongoose.model<Version>(COLLECTION, versionSchema);
+export const VersionModel =
+	mongoose.models[COLLECTION] ||
+	mongoose.model<Version>(COLLECTION, versionSchema);
 
 interface PaginatedResult<T> {
 	data: T[];
@@ -94,7 +109,11 @@ export class VersionsRepository {
 		const skip = (page - 1) * limit;
 
 		const [data, total] = await Promise.all([
-			VersionModel.find(filter as Record<string, unknown>).sort({ versionCode: -1 }).skip(skip).limit(limit).lean(),
+			VersionModel.find(filter as Record<string, unknown>)
+				.sort({ versionCode: -1 })
+				.skip(skip)
+				.limit(limit)
+				.lean(),
 			VersionModel.countDocuments(filter),
 		]);
 
@@ -107,11 +126,18 @@ export class VersionsRepository {
 	}
 
 	async findByAppId(appId: string): Promise<Version[]> {
-		return VersionModel.find({ appId, isDeleted: false }).sort({ versionCode: -1 }).lean();
+		return VersionModel.find({ appId, isDeleted: false })
+			.sort({ versionCode: -1 })
+			.lean();
 	}
 
 	async findLatestByAppId(appId: string): Promise<Version | null> {
-		return VersionModel.findOne({ appId, isLatest: true, isDeleted: false, status: "published" }).lean();
+		return VersionModel.findOne({
+			appId,
+			isLatest: true,
+			isDeleted: false,
+			status: "published",
+		}).lean();
 	}
 
 	async findByPlatform(appId: string, platform: Platform): Promise<Version[]> {
@@ -120,7 +146,9 @@ export class VersionsRepository {
 			isDeleted: false,
 			status: "published",
 			"files.platform": platform,
-		}).sort({ versionCode: -1 }).lean();
+		})
+			.sort({ versionCode: -1 })
+			.lean();
 	}
 
 	async create(data: CreateVersionDTO): Promise<Version> {
@@ -130,11 +158,9 @@ export class VersionsRepository {
 
 	async update(id: string, data: UpdateVersionDTO): Promise<Version | null> {
 		if (!mongoose.Types.ObjectId.isValid(id)) return null;
-		return VersionModel.findOneAndUpdate(
-			{ _id: id, isDeleted: false },
-			data,
-			{ new: true },
-		).lean();
+		return VersionModel.findOneAndUpdate({ _id: id, isDeleted: false }, data, {
+			new: true,
+		}).lean();
 	}
 
 	async delete(id: string): Promise<boolean> {
@@ -148,7 +174,11 @@ export class VersionsRepository {
 
 	async incrementDownloadCount(id: string): Promise<Version | null> {
 		if (!mongoose.Types.ObjectId.isValid(id)) return null;
-		return VersionModel.findByIdAndUpdate(id, { $inc: { downloadCount: 1 } }, { new: true }).lean();
+		return VersionModel.findByIdAndUpdate(
+			id,
+			{ $inc: { downloadCount: 1 } },
+			{ new: true },
+		).lean();
 	}
 
 	async publish(id: string): Promise<Version | null> {
@@ -159,7 +189,11 @@ export class VersionsRepository {
 		return this.update(id, { status: "deprecated" });
 	}
 
-	async checkAccess(version: Version, userId?: string, userRole?: string): Promise<boolean> {
+	async checkAccess(
+		version: Version,
+		userId?: string,
+		userRole?: string,
+	): Promise<boolean> {
 		const { accessControl } = version;
 
 		// Free app - everyone can access

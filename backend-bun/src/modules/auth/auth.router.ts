@@ -1,6 +1,5 @@
 import { Hono } from "hono";
 import { jwt } from "hono/jwt";
-import { getCookie } from "hono/cookie";
 import { env } from "@/config/env";
 import { AuthController } from "./auth.controller";
 

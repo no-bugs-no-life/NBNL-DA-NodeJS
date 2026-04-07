@@ -1,62 +1,102 @@
+import { badRequest, notFound } from "@/shared/errors";
 import { CouponsRepository } from "./coupons.repository";
-import { badRequest, notFound, forbidden } from "@/shared/errors";
 import type {
+	CreateCouponRequest,
+	UpdateCouponRequest,
+} from "./coupons.schema";
+import type {
+	AppInfo,
+	CouponItemResponse,
 	ICoupon,
-	ICouponPublic,
-	ICouponCreate,
-	ICouponUpdate,
-	CouponQuery,
+	PaginatedCouponsResponse,
 } from "./coupons.types";
-import type { CreateCouponRequest, UpdateCouponRequest, ApplyCouponRequest } from "./coupons.schema";
 
 export interface ApplyResult {
 	success: boolean;
 	discount: number;
 	finalPrice: number;
-	coupon: ICouponPublic;
+	coupon: CouponItemResponse;
 }
 
 export class CouponsService {
 	private readonly repository = new CouponsRepository();
 
-	async create(data: CreateCouponRequest): Promise<ICouponPublic> {
+	async create(data: CreateCouponRequest): Promise<CouponItemResponse> {
 		const existing = await this.repository.findByCode(data.code.toUpperCase());
 		if (existing) throw badRequest("Mã coupon đã tồn tại");
 
 		const coupon = await this.repository.create({
-			...data,
 			code: data.code.toUpperCase(),
-			appIds: data.appIds ?? [],
+			discountType: data.discountType,
+			discountValue: data.discountValue,
+			startDate: new Date(data.startDate),
+			endDate: new Date(data.endDate),
+			usageLimit: data.usageLimit ?? 100,
+			appIds: (data.appIds ?? []) as unknown as ICoupon["appIds"],
 			isGlobal: !data.appIds?.length,
 			usedCount: 0,
 		});
 
-		return this.toPublic(coupon);
+		return this.toResponse(coupon);
 	}
 
-	async getById(id: string): Promise<ICouponPublic> {
+	async getById(id: string): Promise<CouponItemResponse> {
 		const coupon = await this.repository.findById(id);
 		if (!coupon) throw notFound("Coupon không tồn tại");
-		return this.toPublic(coupon);
+		return this.toResponse(coupon);
 	}
 
-	async getAll(query: CouponQuery): Promise<{ coupons: ICouponPublic[]; total: number }> {
-		const { coupons, total } = await this.repository.findAllPaginated(query);
-		return { coupons: coupons.map((c) => this.toPublic(c)), total };
+	async getAllPaginated(
+		page: number,
+		limit: number,
+	): Promise<PaginatedCouponsResponse> {
+		const { coupons, total } = await this.repository.findAllPaginated({
+			page,
+			limit,
+		});
+		return {
+			docs: coupons.map((c) => this.toResponse(c)),
+			totalDocs: total,
+			limit,
+			totalPages: Math.ceil(total / limit),
+			page,
+		};
 	}
 
-	async getValidCoupons(): Promise<ICouponPublic[]> {
+	async getValidCoupons(): Promise<CouponItemResponse[]> {
 		const coupons = await this.repository.findValidCoupons();
-		return coupons.map((c) => this.toPublic(c));
+		return coupons.map((c) => this.toResponse(c));
 	}
 
-	async update(id: string, data: UpdateCouponRequest): Promise<ICouponPublic> {
-		const coupon = await this.repository.update(id, data as Partial<ICoupon>);
+	async update(
+		id: string,
+		data: UpdateCouponRequest,
+	): Promise<CouponItemResponse> {
+		const updateData: Partial<ICoupon> = {};
+
+		if (data.discountType !== undefined)
+			updateData.discountType = data.discountType;
+		if (data.discountValue !== undefined)
+			updateData.discountValue = data.discountValue;
+		if (data.startDate !== undefined)
+			updateData.startDate = new Date(data.startDate);
+		if (data.endDate !== undefined) updateData.endDate = new Date(data.endDate);
+		if (data.usageLimit !== undefined) updateData.usageLimit = data.usageLimit;
+		if (data.appIds !== undefined) {
+			updateData.appIds = data.appIds as unknown as ICoupon["appIds"];
+			updateData.isGlobal = !data.appIds.length;
+		}
+
+		const coupon = await this.repository.update(id, updateData);
 		if (!coupon) throw notFound("Coupon không tồn tại");
-		return this.toPublic(coupon);
+		return this.toResponse(coupon);
 	}
 
-	async applyCoupon(code: string, originalPrice: number, appId?: string): Promise<ApplyResult> {
+	async applyCoupon(
+		code: string,
+		originalPrice: number,
+		appId?: string,
+	): Promise<ApplyResult> {
 		const coupon = await this.repository.findByCode(code.toUpperCase());
 		if (!coupon) throw notFound("Mã coupon không hợp lệ");
 
@@ -70,7 +110,11 @@ export class CouponsService {
 		if (coupon.usedCount >= coupon.usageLimit) {
 			throw badRequest("Coupon đã hết lượt sử dụng");
 		}
-		if (!coupon.isGlobal && appId && !coupon.appIds.includes(appId as any)) {
+		if (
+			!coupon.isGlobal &&
+			appId &&
+			!coupon.appIds.some((a) => a.toString() === appId)
+		) {
 			throw badRequest("Coupon không áp dụng cho ứng dụng này");
 		}
 
@@ -85,7 +129,7 @@ export class CouponsService {
 			success: true,
 			discount,
 			finalPrice: originalPrice - discount,
-			coupon: this.toPublic(coupon),
+			coupon: this.toResponse(coupon),
 		};
 	}
 
@@ -94,28 +138,31 @@ export class CouponsService {
 	}
 
 	async delete(id: string): Promise<boolean> {
-		const coupon = await this.repository.update(id, { isDisabled: true } as any);
+		const coupon = await this.repository.update(id, {
+			isDisabled: true,
+		} as Partial<ICoupon>);
 		if (!coupon) throw notFound("Coupon không tồn tại");
 		return true;
 	}
 
-	private toPublic(coupon: ICoupon): ICouponPublic {
-		const now = new Date();
-		const endDate = new Date(coupon.endDate);
-		const startDate = new Date(coupon.startDate);
+	private toResponse(coupon: ICoupon): CouponItemResponse {
+		const appIds: AppInfo[] = coupon.appIds.map((appId) => ({
+			_id: appId,
+			name: "",
+			iconUrl: undefined,
+		}));
 
 		return {
-			id: coupon._id?.toString() ?? "",
+			_id: coupon._id?.toString() ?? "",
 			code: coupon.code,
 			discountType: coupon.discountType,
 			discountValue: coupon.discountValue,
-			startDate: coupon.startDate!,
-			endDate: coupon.endDate!,
+			startDate: coupon.startDate?.toISOString() ?? new Date().toISOString(),
+			endDate: coupon.endDate?.toISOString() ?? new Date().toISOString(),
 			usageLimit: coupon.usageLimit,
 			usedCount: coupon.usedCount,
-			isGlobal: coupon.isGlobal,
-			isExpired: endDate < now,
-			isUsable: coupon.usedCount < coupon.usageLimit && startDate <= now && endDate >= now,
+			appIds,
+			createdAt: coupon.createdAt?.toISOString() ?? new Date().toISOString(),
 		};
 	}
 }

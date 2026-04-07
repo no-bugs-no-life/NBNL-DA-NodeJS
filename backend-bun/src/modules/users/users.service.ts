@@ -1,9 +1,8 @@
 import { hash } from "bcryptjs";
+import { badRequest, forbidden, notFound } from "@/shared/errors";
 import { UsersRepository } from "./users.repository";
-import { badRequest, notFound, forbidden } from "@/shared/errors";
-import type { IUser, IUserPublic, IUserUpdate, UserQuery } from "./users.types";
 import type { RegisterRequest, UpdateProfileRequest } from "./users.schema";
-import type { UserRole } from "./users.types";
+import type { IUser, IUserPublic, UserQuery, UserRole } from "./users.types";
 
 export class UsersService {
 	private readonly repository = new UsersRepository();
@@ -13,7 +12,9 @@ export class UsersService {
 		const existingEmail = await this.repository.findByEmail(data.email);
 		if (existingEmail) throw badRequest("Email đã được sử dụng");
 
-		const existingUsername = await this.repository.findByUsername(data.username);
+		const existingUsername = await this.repository.findByUsername(
+			data.username,
+		);
 		if (existingUsername) throw badRequest("Username đã được sử dụng");
 
 		const hashedPassword = await hash(data.password, this.SALT_ROUNDS);
@@ -41,18 +42,28 @@ export class UsersService {
 		return this.repository.findByEmail(email);
 	}
 
-	async getAll(query: UserQuery): Promise<{ users: IUserPublic[]; total: number }> {
+	async getAll(
+		query: UserQuery,
+	): Promise<{ users: IUserPublic[]; total: number }> {
 		const { users, total } = await this.repository.findAllPaginated(query);
 		return { users: users.map((u) => this.toPublic(u)), total };
 	}
 
-	async updateProfile(id: string, data: UpdateProfileRequest): Promise<IUserPublic> {
+	async updateProfile(
+		id: string,
+		data: UpdateProfileRequest,
+	): Promise<IUserPublic> {
 		const user = await this.repository.updateProfile(id, data);
 		if (!user) throw notFound("Người dùng không tồn tại");
 		return this.toPublic(user);
 	}
 
-	async updateRole(userId: string, targetId: string, newRole: UserRole, requestingUserRole: UserRole): Promise<IUserPublic> {
+	async updateRole(
+		_userId: string,
+		targetId: string,
+		newRole: UserRole,
+		requestingUserRole: UserRole,
+	): Promise<IUserPublic> {
 		if (!this.canManageRole(requestingUserRole, newRole)) {
 			throw forbidden("Bạn không có quyền gán vai trò này");
 		}
@@ -62,7 +73,11 @@ export class UsersService {
 		return this.toPublic(user);
 	}
 
-	async deleteUser(userId: string, targetId: string, requestingUserRole: UserRole): Promise<boolean> {
+	async deleteUser(
+		userId: string,
+		targetId: string,
+		requestingUserRole: UserRole,
+	): Promise<boolean> {
 		if (!this.canManageRole(requestingUserRole, "ADMIN")) {
 			throw forbidden("Bạn không có quyền xóa người dùng");
 		}
@@ -79,7 +94,10 @@ export class UsersService {
 		return pub as IUserPublic;
 	}
 
-	private canManageRole(requesterRole: UserRole, targetRole: UserRole): boolean {
+	private canManageRole(
+		requesterRole: UserRole,
+		targetRole: UserRole,
+	): boolean {
 		const roleHierarchy: Record<UserRole, number> = {
 			USER: 0,
 			DEVELOPER: 1,

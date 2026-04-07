@@ -7,20 +7,20 @@ const APP_STATUSES = ["pending", "published", "rejected", "archived"] as const;
 export const CreateAppSchema = z.object({
 	name: z.string().min(1).max(100),
 	slug: z.string().min(1).max(100).optional(),
-	description: z.string().min(1).max(5000),
-	iconUrl: z.string().url().or(z.literal("")),
+	description: z.string().max(5000).optional().default(""),
+	iconUrl: z.string().optional().default(""),
 	price: z.number().min(0).default(0),
-	status: z.enum(APP_STATUSES).optional().default("pending"),
+	status: z.enum(APP_STATUSES).optional(),
 	developerId: z.string().min(1),
 	categoryId: z.string().min(1),
-	tags: z.array(z.string()).optional().default([]),
+	tags: z.array(z.string()).optional(),
 });
 
 export const UpdateAppSchema = z.object({
 	name: z.string().min(1).max(100).optional(),
 	slug: z.string().min(1).max(100).optional(),
-	description: z.string().min(1).max(5000).optional(),
-	iconUrl: z.string().url().or(z.literal("")).optional(),
+	description: z.string().max(5000).optional(),
+	iconUrl: z.string().optional(),
 	price: z.number().min(0).optional(),
 	status: z.enum(APP_STATUSES).optional(),
 	categoryId: z.string().min(1).optional(),
@@ -40,7 +40,17 @@ export const AppQuerySchema = z.object({
 	developerId: z.string().optional(),
 	tags: z.string().optional(), // comma-separated
 	search: z.string().optional(),
-	sortBy: z.enum(["name", "price", "ratingScore", "createdAt"]).default("createdAt"),
+	isDisabled: z
+		.enum(["true", "false"])
+		.transform((v) => v === "true")
+		.optional(),
+	isDeleted: z
+		.enum(["true", "false"])
+		.transform((v) => v === "true")
+		.optional(),
+	sortBy: z
+		.enum(["name", "price", "ratingScore", "createdAt"])
+		.default("createdAt"),
 	sortOrder: z.enum(["asc", "desc"]).default("desc"),
 });
 

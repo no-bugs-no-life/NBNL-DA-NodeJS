@@ -1,11 +1,16 @@
 import type { Context } from "hono";
-import { SubscriptionsService } from "./subscriptions.service";
-import { apiSuccess, apiCreated, apiNoContent } from "@/shared/utils/api-response.util";
+import {
+	apiCreated,
+	apiNoContent,
+	apiSuccess,
+} from "@/shared/utils/api-response.util";
 import type {
 	CreateSubscriptionRequest,
-	UpdateSubscriptionRequest,
+	RenewSubscriptionRequest,
 	SubscriptionQueryRequest,
+	UpdateSubscriptionRequest,
 } from "./subscriptions.schema";
+import { SubscriptionsService } from "./subscriptions.service";
 
 export class SubscriptionsController {
 	private service: SubscriptionsService;
@@ -14,50 +19,97 @@ export class SubscriptionsController {
 		this.service = service || new SubscriptionsService();
 	}
 
-	list(c: Context) {
+	async list(c: Context) {
+		// @ts-expect-error
 		const query = c.req.valid("query") as SubscriptionQueryRequest;
-		return apiSuccess(c, this.service.findAll(query));
+		const { page, limit, userId, appId, subPackageId, status } = query;
+		return apiSuccess(
+			c,
+			await this.service.findAll({
+				userId,
+				appId,
+				subPackageId,
+				status,
+				page,
+				limit,
+			}),
+		);
 	}
 
-	getById(c: Context) {
-		const id = c.req.param("id");
-		return apiSuccess(c, this.service.findById(id));
+	async getById(c: Context) {
+		// biome-ignore lint/style/noNonNullAssertion: Guaranteed by Hono parameter
+		const id = c.req.param("id")!;
+		return apiSuccess(c, await this.service.findByIdWithRelations(id));
 	}
 
-	getByUser(c: Context) {
-		const userId = c.req.param("userId");
-		return apiSuccess(c, this.service.findByUserId(userId));
+	async getByUser(c: Context) {
+		// biome-ignore lint/style/noNonNullAssertion: Guaranteed by Hono parameter
+		const userId = c.req.param("userId")!;
+		return apiSuccess(c, await this.service.findByUserId(userId));
 	}
 
-	getActiveByUser(c: Context) {
-		const userId = c.req.param("userId");
-		return apiSuccess(c, this.service.findActiveByUserId(userId));
+	async getActiveByUser(c: Context) {
+		// biome-ignore lint/style/noNonNullAssertion: Guaranteed by Hono parameter
+		const userId = c.req.param("userId")!;
+		return apiSuccess(c, await this.service.findActiveByUserId(userId));
 	}
 
-	create(c: Context) {
+	async create(c: Context) {
+		// @ts-expect-error
 		const body = c.req.valid("json") as CreateSubscriptionRequest;
-		return apiCreated(c, this.service.create(body));
+		return apiCreated(
+			c,
+			await this.service.create({
+				userId: body.userId,
+				appId: body.appId || "",
+				subPackageId: body.subPackageId,
+				startDate: new Date(),
+				endDate: new Date(),
+			}),
+		);
 	}
 
-	update(c: Context) {
-		const id = c.req.param("id");
+	async update(c: Context) {
+		// biome-ignore lint/style/noNonNullAssertion: Guaranteed by Hono parameter
+		const id = c.req.param("id")!;
+		// @ts-expect-error
 		const body = c.req.valid("json") as UpdateSubscriptionRequest;
-		return apiSuccess(c, this.service.update(id, body));
+		return apiSuccess(
+			c,
+			await this.service.update(id, {
+				status: body.status,
+				endDate: body.endDate ? new Date(body.endDate) : undefined,
+				subPackageId: body.subPackageId,
+			}),
+		);
 	}
 
-	cancel(c: Context) {
-		const id = c.req.param("id");
-		return apiSuccess(c, this.service.cancel(id));
+	async cancel(c: Context) {
+		// biome-ignore lint/style/noNonNullAssertion: Guaranteed by Hono parameter
+		const id = c.req.param("id")!;
+		return apiSuccess(c, await this.service.cancel(id));
 	}
 
-	delete(c: Context) {
-		const id = c.req.param("id");
-		this.service.delete(id);
+	async renew(c: Context) {
+		// biome-ignore lint/style/noNonNullAssertion: Guaranteed by Hono parameter
+		const id = c.req.param("id")!;
+		// @ts-expect-error
+		const body = c.req.valid("json") as RenewSubscriptionRequest;
+		return apiSuccess(c, await this.service.renew(id, body));
+	}
+
+	async delete(c: Context) {
+		// biome-ignore lint/style/noNonNullAssertion: Guaranteed by Hono parameter
+		const id = c.req.param("id")!;
+		await this.service.delete(id);
 		return apiNoContent(c);
 	}
 
-	checkActive(c: Context) {
-		const userId = c.req.param("userId");
-		return apiSuccess(c, { hasActive: this.service.hasActiveSubscription(userId) });
+	async checkActive(c: Context) {
+		// biome-ignore lint/style/noNonNullAssertion: Guaranteed by Hono parameter
+		const userId = c.req.param("userId")!;
+		return apiSuccess(c, {
+			hasActive: await this.service.hasActiveSubscription(userId),
+		});
 	}
 }

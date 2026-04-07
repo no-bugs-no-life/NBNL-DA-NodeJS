@@ -1,6 +1,13 @@
 import { AppError } from "@/shared/errors";
-import type { Review, CreateReviewDTO, UpdateReviewDTO, ReviewQueryRequest } from "./reviews.types";
 import { ReviewsRepository } from "./reviews.repository";
+import type {
+	AdminReviewItem,
+	CreateReviewDTO,
+	PaginatedReviews,
+	Review,
+	ReviewQueryRequest,
+	UpdateReviewDTO,
+} from "./reviews.types";
 
 export class ReviewsService {
 	private repo: ReviewsRepository;
@@ -13,8 +20,25 @@ export class ReviewsService {
 		return this.repo.findAll(query);
 	}
 
+	async findAllAdmin(query: ReviewQueryRequest): Promise<PaginatedReviews> {
+		const result = await this.repo.findAllWithPopulate(query);
+		return {
+			docs: result.docs,
+			totalDocs: result.total,
+			limit: result.limit,
+			totalPages: result.totalPages,
+			page: result.page,
+		};
+	}
+
 	async findById(id: string): Promise<Review> {
 		const review = await this.repo.findById(id);
+		if (!review) throw AppError.notFound("Review not found");
+		return review;
+	}
+
+	async findByIdAdmin(id: string): Promise<AdminReviewItem> {
+		const review = await this.repo.findByIdWithPopulate(id);
 		if (!review) throw AppError.notFound("Review not found");
 		return review;
 	}
@@ -34,6 +58,12 @@ export class ReviewsService {
 		return this.repo.create(data);
 	}
 
+	async createAdmin(
+		data: CreateReviewDTO & { status?: "pending" | "approved" | "rejected" },
+	): Promise<Review> {
+		return this.repo.create(data);
+	}
+
 	async update(id: string, data: UpdateReviewDTO): Promise<Review> {
 		await this.findById(id);
 		const updated = await this.repo.update(id, data);
@@ -41,8 +71,23 @@ export class ReviewsService {
 		return updated;
 	}
 
-	async updateStatus(id: string, status: "pending" | "approved" | "rejected"): Promise<Review> {
+	async updateStatus(
+		id: string,
+		status: "pending" | "approved" | "rejected",
+	): Promise<Review> {
 		return this.update(id, { status });
+	}
+
+	async approve(id: string): Promise<Review> {
+		return this.updateStatus(id, "approved");
+	}
+
+	async reject(id: string): Promise<Review> {
+		return this.updateStatus(id, "rejected");
+	}
+
+	async reset(id: string): Promise<Review> {
+		return this.updateStatus(id, "pending");
 	}
 
 	async delete(id: string): Promise<void> {

@@ -30,7 +30,9 @@ export type UpdateOrderStatusRequest = z.infer<typeof UpdateOrderStatusSchema>;
 export const OrderQuerySchema = z.object({
 	page: z.coerce.number().int().positive().default(1),
 	limit: z.coerce.number().int().positive().max(100).default(20),
-	status: z.enum(["pending", "processing", "completed", "failed", "cancelled"]).optional(),
+	status: z
+		.enum(["pending", "processing", "completed", "failed", "cancelled"])
+		.optional(),
 	paymentMethod: z.nativeEnum(PaymentMethod).optional(),
 });
 

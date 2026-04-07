@@ -1,32 +1,64 @@
-export type NotificationType = "system" | "promotion" | "report_update" | "app_update" | "order" | "review";
+export type NotificationType =
+	| "app_approved"
+	| "app_rejected"
+	| "new_review"
+	| "new_download"
+	| "system"
+	| "promotion"
+	| "update"
+	| "sendmail";
 
-export interface INotification {
-	id: string;
+export type NotificationChannel = "inapp" | "email" | "firebase";
+
+export interface Notification {
+	_id: string;
 	userId: string;
-	title: string;
-	message: string;
 	type: NotificationType;
+	channel: NotificationChannel;
+	message: string;
 	isRead: boolean;
-	link?: string;
+	sentAt?: Date | null;
 	createdAt: Date;
+	updatedAt: Date;
 }
 
-export interface NotificationPublic {
-	id: string;
-	title: string;
-	message: string;
-	type: NotificationType;
-	isRead: boolean;
-	link?: string;
-	createdAt: Date;
+export interface UserInfo {
+	_id: string;
+	fullName: string;
+	email: string;
+	avatarUrl?: string;
 }
 
-export const toPublicNotification = (n: INotification): NotificationPublic => ({
-	id: n.id,
-	title: n.title,
-	message: n.message,
-	type: n.type,
-	isRead: n.isRead,
-	link: n.link,
-	createdAt: n.createdAt,
-});
+export interface NotificationWithUser extends Notification {
+	userId: UserInfo;
+}
+
+export interface CreateNotificationDTO {
+	userId: string;
+	type: NotificationType;
+	message: string;
+	channel?: NotificationChannel;
+}
+
+export interface UpdateNotificationDTO {
+	type?: NotificationType;
+	message?: string;
+	channel?: NotificationChannel;
+	isRead?: boolean;
+}
+
+export interface NotificationQueryDTO {
+	userId?: string;
+	type?: NotificationType;
+	isRead?: boolean;
+	page?: number;
+	limit?: number;
+}
+
+export interface PaginatedNotifications {
+	docs: NotificationWithUser[];
+	totalDocs: number;
+	limit: number;
+	totalPages: number;
+	page: number;
+}

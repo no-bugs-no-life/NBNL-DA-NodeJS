@@ -6,7 +6,7 @@ export const ok = <T>(data: T, msg = "Success"): ApiResponse<T> => ({
 	data,
 });
 
-export const fail = (msg: string, data: any = null): ApiResponse<null> => ({
+export const fail = (msg: string, data: unknown = null): ApiResponse<unknown> => ({
 	success: false,
 	msg,
 	data,
@@ -24,11 +24,13 @@ export const paginated = <T>(
 	data: { items, total, page, limit },
 });
 
+import type { Context } from "hono";
+
 // Aliases for convenience
-export const apiSuccess = <T>(c: any, data: T, msg?: string) =>
+export const apiSuccess = <T>(c: Context, data: T, msg?: string) =>
 	c.json(ok(data, msg));
 
-export const apiCreated = <T>(c: any, data: T, msg = "Created") =>
+export const apiCreated = <T>(c: Context, data: T, msg = "Created") =>
 	c.json(ok(data, msg), 201);
 
-export const apiNoContent = (c: any) => c.status(204);
+export const apiNoContent = (c: Context) => c.status(204);

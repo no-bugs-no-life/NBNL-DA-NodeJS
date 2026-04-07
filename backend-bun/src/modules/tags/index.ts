@@ -1,6 +1,6 @@
-export { tagsRouter } from "./tags.router";
 export { TagsController } from "./tags.controller";
-export { TagsService } from "./tags.service";
 export { TagsRepository } from "./tags.repository";
-export * from "./tags.types";
+export { tagsRouter } from "./tags.router";
 export * from "./tags.schema";
+export { TagsService } from "./tags.service";
+export * from "./tags.types";

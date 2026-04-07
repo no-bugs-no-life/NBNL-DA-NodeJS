@@ -1,11 +1,15 @@
 import type { Context } from "hono";
-import { SubPackagesService } from "./sub-packages.service";
-import { apiSuccess, apiCreated, apiNoContent } from "@/shared/utils/api-response.util";
+import {
+	apiCreated,
+	apiNoContent,
+	apiSuccess,
+} from "@/shared/utils/api-response.util";
 import type {
 	CreateSubPackageRequest,
-	UpdateSubPackageRequest,
 	SubPackageQueryRequest,
+	UpdateSubPackageRequest,
 } from "./sub-packages.schema";
+import { SubPackagesService } from "./sub-packages.service";
 
 export class SubPackagesController {
 	private service: SubPackagesService;
@@ -26,7 +30,10 @@ export class SubPackagesController {
 
 	getByApp(c: Context) {
 		const appId = c.req.param("appId");
-		return apiSuccess(c, this.service.findByAppId(appId === "global" ? null : appId));
+		return apiSuccess(
+			c,
+			this.service.findByAppId(appId === "global" ? null : appId),
+		);
 	}
 
 	getGlobal(c: Context) {

@@ -1,8 +1,8 @@
 import { sign, verify } from "hono/jwt";
 import { env } from "@/config/env";
-import { unauthorized, badRequest } from "@/shared/errors";
+import { badRequest, unauthorized } from "@/shared/errors";
 import type { LoginRequest } from "./auth.schema";
-import type { UserPayload, AuthResponse } from "./auth.types";
+import type { AuthResponse, UserPayload } from "./auth.types";
 
 export class AuthService {
 	/**
@@ -38,7 +38,7 @@ export class AuthService {
 		try {
 			const decoded = await verify(token, env.JWT_ACCESS_SECRET, "HS256");
 			return decoded as unknown as UserPayload;
-		} catch (error) {
+		} catch (_error) {
 			throw unauthorized("Access token không hợp lệ hoặc đã hết hạn");
 		}
 	}
@@ -49,7 +49,7 @@ export class AuthService {
 		try {
 			const decoded = await verify(token, env.JWT_REFRESH_SECRET, "HS256");
 			return decoded as unknown as { id: string; exp: number };
-		} catch (error) {
+		} catch (_error) {
 			throw unauthorized("Refresh token không hợp lệ hoặc đã hết hạn");
 		}
 	}

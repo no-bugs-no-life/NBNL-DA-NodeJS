@@ -1,72 +1,87 @@
+import { badRequest, notFound } from "@/shared/errors";
 import { ReportsRepository } from "./reports.repository";
-import { badRequest, notFound, forbidden } from "@/shared/errors";
-import type { IReport, IReportPublic, ReportQuery } from "./reports.types";
-import type { CreateReportRequest, UpdateReportRequest } from "./reports.schema";
+import type { CreateReportRequest } from "./reports.schema";
+import type {
+	IReport,
+	PaginatedReportsResponse,
+	ReportItemResponse,
+	ReportQuery,
+} from "./reports.types";
 import { ReportStatus } from "./reports.types";
 
 export class ReportsService {
 	private readonly repository = new ReportsRepository();
 
-	async create(data: CreateReportRequest, reporterId: string): Promise<IReportPublic> {
-		// Check for duplicate report
+	async create(
+		data: CreateReportRequest,
+		reporterId: string,
+	): Promise<ReportItemResponse> {
 		const existingReports = await this.repository.findByTarget(
 			data.targetType,
 			data.targetId,
 		);
 		const duplicate = existingReports.find(
-			(r) => r.reporterId.toString() === reporterId && r.status === ReportStatus.PENDING,
+			(r) =>
+				r.reporterId.toString() === reporterId &&
+				r.status === ReportStatus.PENDING,
 		);
 		if (duplicate) {
 			throw badRequest("Bạn đã báo cáo mục này rồi và đang chờ xử lý");
 		}
 
 		const report = await this.repository.create({
-			...data,
-			reporterId: reporterId as any,
+			reporterId: reporterId as unknown as IReport["reporterId"],
+			targetType: data.targetType,
+			targetId: data.targetId as unknown as IReport["targetId"],
+			reason: data.reason,
 			status: ReportStatus.PENDING,
 		});
 
-		return this.toPublic(report);
+		return this.toResponse(report);
 	}
 
-	async getById(id: string): Promise<IReportPublic> {
+	async getById(id: string): Promise<ReportItemResponse> {
 		const report = await this.repository.findById(id);
 		if (!report) throw notFound("Báo cáo không tồn tại");
-		return this.toPublic(report);
+		return this.toResponse(report);
 	}
 
-	async getByReporter(reporterId: string): Promise<IReportPublic[]> {
-		const reports = await this.repository.findByReporter(reporterId);
-		return reports.map((r) => this.toPublic(r));
-	}
+	async getAllPaginated(
+		page: number,
+		limit: number,
+		status?: string,
+		targetType?: string,
+	): Promise<PaginatedReportsResponse> {
+		const query: ReportQuery = { page, limit };
+		if (status) query.status = status as ReportStatus;
+		// biome-ignore lint/suspicious/noExplicitAny: Filter types
+		if (targetType) query.targetType = targetType as any;
 
-	async getAll(query: ReportQuery): Promise<{ reports: IReportPublic[]; total: number }> {
 		const { reports, total } = await this.repository.findAllPaginated(query);
-		return { reports: reports.map((r) => this.toPublic(r)), total };
+		return {
+			docs: reports.map((r) => this.toResponse(r)),
+			totalDocs: total,
+			limit,
+			totalPages: Math.ceil(total / limit),
+			page,
+		};
 	}
 
 	async updateStatus(
 		id: string,
-		data: UpdateReportRequest,
-		adminId: string,
-	): Promise<IReportPublic> {
+		status: ReportStatus,
+		adminNote?: string,
+	): Promise<ReportItemResponse> {
 		const report = await this.repository.findById(id);
 		if (!report) throw notFound("Báo cáo không tồn tại");
 
-		// Validate status transition
-		if (data.status === ReportStatus.PENDING) {
+		if (status === ReportStatus.PENDING) {
 			throw badRequest("Không thể chuyển về trạng thái đang chờ");
 		}
 
-		const updated = await this.repository.updateStatus(
-			id,
-			data.status ?? report.status,
-			data.adminNote,
-			adminId,
-		);
-
+		const updated = await this.repository.updateStatus(id, status, adminNote);
 		if (!updated) throw notFound("Báo cáo không tồn tại");
-		return this.toPublic(updated);
+		return this.toResponse(updated);
 	}
 
 	async delete(id: string): Promise<boolean> {
@@ -75,19 +90,22 @@ export class ReportsService {
 		return this.repository.delete(id);
 	}
 
-	private toPublic(report: IReport): IReportPublic {
+	private toResponse(report: IReport): ReportItemResponse {
 		return {
-			id: report._id?.toString() ?? "",
-			reporterId: report.reporterId.toString(),
+			_id: report._id?.toString() ?? "",
+			reporterId: {
+				_id: report.reporterId,
+				fullName: "",
+				email: "",
+				avatarUrl: undefined,
+			},
 			targetType: report.targetType,
-			targetId: report.targetId.toString(),
+			targetId: report.targetId,
 			reason: report.reason,
-			description: report.description,
 			status: report.status,
-			adminNote: report.adminNote,
-			resolvedBy: report.resolvedBy?.toString(),
-			createdAt: report.createdAt!,
-			updatedAt: report.updatedAt,
+			adminNote: report.adminNote ?? "",
+			createdAt: report.createdAt?.toISOString() ?? new Date().toISOString(),
+			updatedAt: report.updatedAt?.toISOString() ?? new Date().toISOString(),
 		};
 	}
 }

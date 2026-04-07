@@ -1,11 +1,9 @@
-import { setCookie, deleteCookie, getCookie } from "hono/cookie";
+import type { Context } from "hono";
+import { deleteCookie, getCookie, setCookie } from "hono/cookie";
 import { env } from "@/config/env";
 import { BaseController } from "@/shared/base";
-import { LoginSchema } from "./auth.schema";
-import { AuthService } from "./auth.service";
-import { badRequest } from "@/shared/errors";
 import type { LoginRequest } from "./auth.schema";
-import type { Context } from "hono";
+import { AuthService } from "./auth.service";
 
 export class AuthController extends BaseController {
 	private readonly authService = new AuthService();
@@ -68,9 +66,9 @@ export class AuthController extends BaseController {
 			});
 
 			return c.json(this.ok(result.user, "Làm mới token thành công"));
-		} catch (error: any) {
+		} catch (error: unknown) {
 			return c.json(
-				this.fail(error?.message || "Refresh token không hợp lệ"),
+				this.fail((error as Error)?.message || "Refresh token không hợp lệ"),
 				401,
 			);
 		}

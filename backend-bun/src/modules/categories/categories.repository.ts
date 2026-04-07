@@ -1,10 +1,19 @@
 import type { ICategory } from "./categories.types";
 
+export interface PaginationOptions {
+	page: number;
+	limit: number;
+}
+
 export interface ICategoryRepository {
-	findAll(): Promise<ICategory[]>;
+	findAll(
+		options: PaginationOptions,
+	): Promise<{ docs: ICategory[]; totalDocs: number }>;
 	findById(id: string): Promise<ICategory | null>;
 	findBySlug(slug: string): Promise<ICategory | null>;
-	create(data: Omit<ICategory, "id" | "createdAt" | "updatedAt">): Promise<ICategory>;
+	create(
+		data: Omit<ICategory, "_id" | "createdAt" | "updatedAt">,
+	): Promise<ICategory>;
 	update(id: string, data: Partial<ICategory>): Promise<ICategory | null>;
 	delete(id: string): Promise<boolean>;
 }
@@ -12,67 +21,80 @@ export interface ICategoryRepository {
 export class CategoryRepository implements ICategoryRepository {
 	private store: ICategory[] = [
 		{
-			id: "1",
+			_id: "1",
 			name: "Game",
-			slug: "game",
 			iconUrl: "https://cdn.example.com/icons/game.png",
-			createdAt: new Date(),
-			updatedAt: new Date(),
+			parentId: null,
 		},
 		{
-			id: "2",
+			_id: "2",
 			name: "Ứng dụng",
-			slug: "ung-dung",
 			iconUrl: "https://cdn.example.com/icons/app.png",
-			createdAt: new Date(),
-			updatedAt: new Date(),
+			parentId: null,
+		},
+		{
+			_id: "3",
+			name: "Công cụ",
+			iconUrl: "https://cdn.example.com/icons/tool.png",
+			parentId: null,
 		},
 	];
 
-	async findAll(): Promise<ICategory[]> {
-		return this.store;
+	async findAll(
+		options: PaginationOptions,
+	): Promise<{ docs: ICategory[]; totalDocs: number }> {
+		const { page, limit } = options;
+		const start = (page - 1) * limit;
+		const end = start + limit;
+		const docs = this.store.slice(start, end);
+		return { docs, totalDocs: this.store.length };
 	}
 
 	async findById(id: string): Promise<ICategory | null> {
-		return this.store.find((c) => c.id === id) ?? null;
+		return this.store.find((c) => c._id === id) ?? null;
 	}
 
 	async findBySlug(slug: string): Promise<ICategory | null> {
-		return this.store.find((c) => c.slug === slug) ?? null;
+		return (
+			this.store.find(
+				(c) => c.name.toLowerCase().replace(/\s+/g, "-") === slug,
+			) ?? null
+		);
 	}
 
-	async create(data: Omit<ICategory, "id" | "createdAt" | "updatedAt">): Promise<ICategory> {
+	async create(
+		data: Omit<ICategory, "_id" | "createdAt" | "updatedAt">,
+	): Promise<ICategory> {
 		const category: ICategory = {
-			id: Date.now().toString(),
+			_id: Date.now().toString(),
 			name: data.name,
-			slug: data.slug,
 			iconUrl: data.iconUrl,
-			createdAt: new Date(),
-			updatedAt: new Date(),
+			parentId: data.parentId ?? null,
 		};
 		this.store.push(category);
 		return category;
 	}
 
-	async update(id: string, data: Partial<ICategory>): Promise<ICategory | null> {
-		const index = this.store.findIndex((c) => c.id === id);
+	async update(
+		id: string,
+		data: Partial<ICategory>,
+	): Promise<ICategory | null> {
+		const index = this.store.findIndex((c) => c._id === id);
 		if (index === -1) return null;
 
-		const existing = this.store[index]!;
+		const existing = this.store[index] as ICategory;
 		const updated: ICategory = {
-			id: existing.id,
+			_id: existing._id,
 			name: data.name ?? existing.name,
-			slug: data.slug ?? existing.slug,
-			iconUrl: data.iconUrl !== undefined ? data.iconUrl : existing.iconUrl,
-			createdAt: existing.createdAt,
-			updatedAt: new Date(),
+			iconUrl: data.iconUrl ?? existing.iconUrl,
+			parentId: data.parentId !== undefined ? data.parentId : existing.parentId,
 		};
 		this.store[index] = updated;
 		return updated;
 	}
 
 	async delete(id: string): Promise<boolean> {
-		const index = this.store.findIndex((c) => c.id === id);
+		const index = this.store.findIndex((c) => c._id === id);
 		if (index === -1) return false;
 		this.store.splice(index, 1);
 		return true;

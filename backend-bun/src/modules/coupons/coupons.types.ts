@@ -1,14 +1,14 @@
-import { ObjectId } from "mongoose";
+import type { ObjectId } from "mongoose";
 
 export enum DiscountType {
 	PERCENTAGE = "percentage",
 	FIXED = "fixed",
 }
 
-export enum CouponStatus {
-	ACTIVE = "active",
-	EXPIRED = "expired",
-	DISABLED = "disabled",
+export interface AppInfo {
+	_id: ObjectId;
+	name: string;
+	iconUrl?: string;
 }
 
 export interface ICoupon {
@@ -26,42 +26,43 @@ export interface ICoupon {
 	updatedAt?: Date;
 }
 
-export interface ICouponPublic {
-	id: string;
+// API Response Types - matching frontend
+export interface CouponItemResponse {
+	_id: string;
 	code: string;
 	discountType: DiscountType;
 	discountValue: number;
-	startDate: Date;
-	endDate: Date;
+	startDate: string;
+	endDate: string;
 	usageLimit: number;
 	usedCount: number;
-	isGlobal: boolean;
-	isExpired: boolean;
-	isUsable: boolean;
+	appIds: AppInfo[];
+	createdAt: string;
 }
 
-export interface ICouponCreate {
+export interface PaginatedCouponsResponse {
+	docs: CouponItemResponse[];
+	totalDocs: number;
+	limit: number;
+	totalPages: number;
+	page: number;
+}
+
+export interface CreateCouponDTO {
 	code: string;
 	discountType: DiscountType;
 	discountValue: number;
-	startDate: Date;
-	endDate: Date;
-	usageLimit: number;
+	startDate: string;
+	endDate: string;
+	usageLimit?: number;
 	appIds?: string[];
 }
 
-export interface ICouponUpdate {
+export interface UpdateCouponDTO {
+	discountType?: DiscountType;
 	discountValue?: number;
-	startDate?: Date;
-	endDate?: Date;
+	startDate?: string;
+	endDate?: string;
 	usageLimit?: number;
-	isActive?: boolean;
-}
-
-export interface CouponQuery {
-	page?: number;
-	limit?: number;
-	search?: string;
-	status?: CouponStatus;
-	isGlobal?: boolean;
+	appIds?: string[];
 }

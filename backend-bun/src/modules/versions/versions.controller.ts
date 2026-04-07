@@ -1,10 +1,16 @@
 import type { Context } from "hono";
 import { AppError } from "@/shared/errors";
-import { jwt } from "hono/jwt";
-import { env } from "@/config/env";
+import {
+	apiCreated,
+	apiNoContent,
+	apiSuccess,
+} from "@/shared/utils/api-response.util";
+import type {
+	CreateVersionRequest,
+	UpdateVersionRequest,
+	VersionQueryRequest,
+} from "./versions.schema";
 import { VersionsService } from "./versions.service";
-import { apiSuccess, apiCreated, apiNoContent } from "@/shared/utils/api-response.util";
-import type { CreateVersionRequest, UpdateVersionRequest, VersionQueryRequest } from "./versions.schema";
 import type { Platform } from "./versions.types";
 
 interface AuthPayload {

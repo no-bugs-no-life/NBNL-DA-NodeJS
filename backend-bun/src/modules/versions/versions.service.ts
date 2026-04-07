@@ -1,10 +1,23 @@
 import { AppError } from "@/shared/errors";
-import type { Version, CreateVersionDTO, UpdateVersionDTO, VersionQueryDTO, Platform } from "./versions.types";
 import { VersionsRepository } from "./versions.repository";
+import type {
+	CreateVersionDTO,
+	Platform,
+	UpdateVersionDTO,
+	Version,
+	VersionQueryDTO,
+} from "./versions.types";
 
 export interface DownloadPermission {
 	allowed: boolean;
-	reason: "free" | "role_whitelist" | "user_whitelist" | "purchased" | "purchase_required" | "version_not_found" | "platform_not_supported";
+	reason:
+		| "free"
+		| "role_whitelist"
+		| "user_whitelist"
+		| "purchased"
+		| "purchase_required"
+		| "version_not_found"
+		| "platform_not_supported";
 	file?: {
 		fileName: string;
 		fileSize: number;
@@ -73,7 +86,7 @@ export class VersionsService {
 		return this.update(id, { status: "archived" });
 	}
 
-	async markAsLatest(id: string, appId: string): Promise<Version> {
+	async markAsLatest(id: string, _appId: string): Promise<Version> {
 		await this.findById(id);
 		return this.repo.update(id, { isLatest: true });
 	}
@@ -193,7 +206,13 @@ export class VersionsService {
 		expiresAt: Date;
 		reason: string;
 	}> {
-		const permission = await this.checkDownloadPermission(versionId, platform, userId, userRole, hasPurchased);
+		const permission = await this.checkDownloadPermission(
+			versionId,
+			platform,
+			userId,
+			userRole,
+			hasPurchased,
+		);
 
 		if (!permission.allowed) {
 			throw AppError.forbidden(`Download denied: ${permission.reason}`, {
@@ -202,17 +221,21 @@ export class VersionsService {
 			} as Record<string, unknown>);
 		}
 
-		const version = await this.findById(versionId);
+		const _version = await this.findById(versionId);
 
 		// Generate download token (10 phút)
-		const token = this.generateDownloadToken(versionId, platform, permission.file!.fileKey);
+		const token = this.generateDownloadToken(
+			versionId,
+			platform,
+			permission.file?.fileKey,
+		);
 		const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
 		return {
-			fileName: permission.file!.fileName,
-			fileSize: permission.file!.fileSize,
-			mimeType: permission.file!.mimeType,
-			checksum: permission.file!.checksum,
+			fileName: permission.file?.fileName,
+			fileSize: permission.file?.fileSize,
+			mimeType: permission.file?.mimeType,
+			checksum: permission.file?.checksum,
 			downloadUrl: `/api/versions/download/${versionId}?token=${token}&platform=${platform}`,
 			expiresAt,
 			reason: permission.reason,
@@ -222,7 +245,11 @@ export class VersionsService {
 	/**
 	 * Generate short-lived download token
 	 */
-	private generateDownloadToken(versionId: string, platform: Platform, fileKey: string): string {
+	private generateDownloadToken(
+		versionId: string,
+		platform: Platform,
+		fileKey: string,
+	): string {
 		const payload = {
 			versionId,
 			platform,
@@ -236,7 +263,9 @@ export class VersionsService {
 	/**
 	 * Verify download token
 	 */
-	verifyDownloadToken(token: string): { versionId: string; platform: Platform; fileKey: string } | null {
+	verifyDownloadToken(
+		token: string,
+	): { versionId: string; platform: Platform; fileKey: string } | null {
 		try {
 			const payload = JSON.parse(Buffer.from(token, "base64url").toString());
 			if (payload.exp < Math.floor(Date.now() / 1000)) {

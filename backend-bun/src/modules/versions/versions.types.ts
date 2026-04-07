@@ -1,4 +1,10 @@
-export type Platform = "android" | "ios" | "windows" | "macos" | "linux" | "web";
+export type Platform =
+	| "android"
+	| "ios"
+	| "windows"
+	| "macos"
+	| "linux"
+	| "web";
 
 export type VersionStatus = "draft" | "published" | "deprecated" | "archived";
 

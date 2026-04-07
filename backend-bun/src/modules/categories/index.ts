@@ -1,9 +1,9 @@
 // Public API - Barrel export
 export { categoriesRouter } from "./categories.router";
-export { CategoriesService } from "./categories.service";
-export type { ICategory, CategoryPublic } from "./categories.types";
 export type {
+	CategoryParams,
 	CreateCategoryRequest,
 	UpdateCategoryRequest,
-	CategoryParams,
 } from "./categories.schema";
+export { CategoriesService } from "./categories.service";
+export type { CategoryPublic, ICategory } from "./categories.types";

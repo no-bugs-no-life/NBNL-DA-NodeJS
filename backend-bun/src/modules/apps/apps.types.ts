@@ -25,9 +25,9 @@ export type AppStatus = "pending" | "published" | "rejected" | "archived";
 export interface CreateAppDTO {
 	name: string;
 	slug?: string;
-	description: string;
-	iconUrl: string;
-	price: number;
+	description?: string;
+	iconUrl?: string;
+	price?: number;
 	status?: AppStatus;
 	developerId: string;
 	categoryId: string;
@@ -52,24 +52,53 @@ export interface AppFilters {
 	developerId?: string;
 	tags?: string[];
 	isDisabled?: boolean;
+	isDeleted?: boolean;
 	search?: string;
+	page?: number;
+	limit?: number;
 }
 
-export interface AppWithRelations extends App {
-	developer?: {
-		_id: string;
-		username: string;
-		fullName: string;
-		avatar?: string;
-	};
-	category?: {
-		_id: string;
-		name: string;
-		slug: string;
-	};
-	categoryTags?: Array<{
-		_id: string;
-		name: string;
-		slug: string;
-	}>;
+// Populated types for API responses
+export interface DeveloperInfo {
+	_id: string;
+	name: string;
+	contactEmail: string;
+	avatarUrl?: string;
+}
+
+export interface CategoryInfo {
+	_id: string;
+	name: string;
+}
+
+export interface TagInfo {
+	_id: string;
+	name: string;
+}
+
+export interface AppWithRelations {
+	_id: string;
+	name: string;
+	slug: string;
+	description?: string;
+	iconUrl?: string;
+	price: number;
+	status: AppStatus;
+	developerId: DeveloperInfo;
+	categoryId: CategoryInfo;
+	tags?: TagInfo[];
+	ratingScore?: number;
+	ratingCount?: number;
+	isDisabled?: boolean;
+	isDeleted?: boolean;
+	createdAt: string;
+	updatedAt: string;
+}
+
+export interface PaginatedApps {
+	docs: AppWithRelations[];
+	totalDocs: number;
+	limit: number;
+	totalPages: number;
+	page: number;
 }

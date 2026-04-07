@@ -36,7 +36,7 @@ export const CacheHelper = {
 		return data ? (JSON.parse(data) as T) : null;
 	},
 
-	async set(key: string, value: any, ttlSeconds = 3600): Promise<void> {
+	async set(key: string, value: unknown, ttlSeconds = 3600): Promise<void> {
 		await redisClient.set(key, JSON.stringify(value), "EX", ttlSeconds);
 	},
 

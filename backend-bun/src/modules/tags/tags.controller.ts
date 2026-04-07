@@ -1,7 +1,15 @@
 import type { Context } from "hono";
+import {
+	apiCreated,
+	apiNoContent,
+	apiSuccess,
+} from "@/shared/utils/api-response.util";
+import type {
+	CreateTagRequest,
+	TagQueryRequest,
+	UpdateTagRequest,
+} from "./tags.schema";
 import { TagsService } from "./tags.service";
-import { apiSuccess, apiCreated, apiNoContent } from "@/shared/utils/api-response.util";
-import type { CreateTagRequest, UpdateTagRequest } from "./tags.schema";
 
 export class TagsController {
 	private service: TagsService;
@@ -11,8 +19,8 @@ export class TagsController {
 	}
 
 	list(c: Context) {
-		const tags = this.service.findAll();
-		return apiSuccess(c, tags);
+		const query = c.req.valid("query") as TagQueryRequest;
+		return apiSuccess(c, this.service.findAll(query));
 	}
 
 	getById(c: Context) {

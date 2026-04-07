@@ -1,6 +1,12 @@
 import { AppError } from "@/shared/errors";
-import type { Tag, CreateTagDTO, UpdateTagDTO } from "./tags.types";
 import { TagsRepository } from "./tags.repository";
+import type {
+	CreateTagDTO,
+	PaginatedTags,
+	Tag,
+	TagQueryRequest,
+	UpdateTagDTO,
+} from "./tags.types";
 
 export class TagsService {
 	private repo: TagsRepository;
@@ -10,11 +16,14 @@ export class TagsService {
 	}
 
 	private slugify(text: string): string {
-		return text.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
+		return text
+			.toLowerCase()
+			.replace(/\s+/g, "-")
+			.replace(/[^a-z0-9-]/g, "");
 	}
 
-	async findAll(): Promise<Tag[]> {
-		return this.repo.findAll();
+	async findAll(query: TagQueryRequest): Promise<PaginatedTags> {
+		return this.repo.findAll(query);
 	}
 
 	async findById(id: string): Promise<Tag> {

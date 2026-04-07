@@ -1,19 +1,22 @@
 import { Hono } from "hono";
+import { appsRouter } from "@/modules/apps";
 import { authRouter } from "@/modules/auth";
+import { cartsRouter } from "@/modules/carts";
 import { categoriesRouter } from "@/modules/categories";
+import { couponsRouter } from "@/modules/coupons";
+import { dashboardRouter } from "@/modules/dashboard";
+import { developersRouter } from "@/modules/developers";
+import { filesRouter } from "@/modules/files";
+import { notificationsRouter } from "@/modules/notifications";
+import { ordersRouter } from "@/modules/orders";
+import { reportsRouter } from "@/modules/reports";
+import { reviewsRouter } from "@/modules/reviews";
+import { subPackagesRouter } from "@/modules/sub-packages";
+import { subscriptionsRouter } from "@/modules/subscriptions";
 import { tagsRouter } from "@/modules/tags";
 import { usersRouter } from "@/modules/users";
-import { reviewsRouter } from "@/modules/reviews";
-import { couponsRouter } from "@/modules/coupons";
-import { appsRouter } from "@/modules/apps";
-import { subPackagesRouter } from "@/modules/sub-packages";
-import { reportsRouter } from "@/modules/reports";
-import { notificationsRouter } from "@/modules/notifications";
-import { filesRouter } from "@/modules/files";
-import { cartsRouter } from "@/modules/carts";
-import { ordersRouter } from "@/modules/orders";
-import { subscriptionsRouter } from "@/modules/subscriptions";
 import { versionsRouter } from "@/modules/versions";
+import { wishlistsRouter } from "@/modules/wishlists";
 
 export const appRouter = new Hono();
 
@@ -33,5 +36,8 @@ appRouter.route("/carts", cartsRouter);
 appRouter.route("/orders", ordersRouter);
 appRouter.route("/subscriptions", subscriptionsRouter);
 appRouter.route("/versions", versionsRouter);
+appRouter.route("/dashboard", dashboardRouter);
+appRouter.route("/developers", developersRouter);
+appRouter.route("/wishlists", wishlistsRouter);
 
 // Export router tổng để nhúng vào app chính

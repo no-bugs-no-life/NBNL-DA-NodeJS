@@ -1,13 +1,30 @@
 import mongoose from "mongoose";
-import type { SubPackage, CreateSubPackageDTO, UpdateSubPackageDTO, SubPackageQueryRequest } from "./sub-packages.types";
+import type { SubPackageQueryRequest } from "./sub-packages.schema";
+import type {
+	CreateSubPackageDTO,
+	SubPackage,
+	UpdateSubPackageDTO,
+} from "./sub-packages.types";
 
 const COLLECTION = "sub_packages";
+
+export interface PaginatedSubPackageResult {
+	docs: SubPackage[];
+	totalDocs: number;
+	limit: number;
+	totalPages: number;
+	page: number;
+}
 
 const subPackageSchema = new mongoose.Schema<SubPackage>(
 	{
 		name: { type: String, required: true },
 		appId: { type: String, default: null },
-		type: { type: String, enum: ["monthly", "yearly", "lifetime"], required: true },
+		type: {
+			type: String,
+			enum: ["monthly", "yearly", "lifetime"],
+			required: true,
+		},
 		price: { type: Number, required: true, min: 0 },
 		durationDays: { type: Number, required: true, min: 1 },
 		description: { type: String, default: "" },
@@ -18,17 +35,38 @@ const subPackageSchema = new mongoose.Schema<SubPackage>(
 );
 
 export const SubPackageModel =
-	(mongoose.models[COLLECTION] as mongoose.Model<SubPackage> & { findActive: () => mongoose.Query<SubPackage[], SubPackage> }) ||
-	mongoose.model<SubPackage>(COLLECTION, subPackageSchema);
+	(mongoose.models[COLLECTION] as mongoose.Model<SubPackage> & {
+		findActive: () => mongoose.Query<SubPackage[], SubPackage>;
+	}) || mongoose.model<SubPackage>(COLLECTION, subPackageSchema);
 
 export class SubPackagesRepository {
-	async findAll(query: SubPackageQueryRequest): Promise<SubPackage[]> {
+	async findAll(
+		query: SubPackageQueryRequest,
+	): Promise<PaginatedSubPackageResult> {
 		const filter: Record<string, unknown> = { isDeleted: false };
 		if (query.appId) filter.appId = query.appId;
 		if (query.type) filter.type = query.type;
 		if (query.isActive !== undefined) filter.isActive = query.isActive;
 
-		return SubPackageModel.find(filter as Record<string, unknown>).sort({ price: 1 }).lean();
+		const { page = 1, limit = 10 } = query;
+		const skip = (page - 1) * limit;
+
+		const [docs, totalDocs] = await Promise.all([
+			SubPackageModel.find(filter as Record<string, unknown>)
+				.sort({ createdAt: -1 })
+				.skip(skip)
+				.limit(limit)
+				.lean(),
+			SubPackageModel.countDocuments(filter as Record<string, unknown>),
+		]);
+
+		return {
+			docs,
+			totalDocs,
+			limit,
+			totalPages: Math.ceil(totalDocs / limit),
+			page,
+		};
 	}
 
 	async findById(id: string): Promise<SubPackage | null> {
@@ -37,7 +75,9 @@ export class SubPackagesRepository {
 	}
 
 	async findByAppId(appId: string | null): Promise<SubPackage[]> {
-		const filter = appId ? { appId, isDeleted: false } : { appId: null, isDeleted: false };
+		const filter = appId
+			? { appId, isDeleted: false }
+			: { appId: null, isDeleted: false };
 		return SubPackageModel.find(filter).sort({ price: 1 }).lean();
 	}
 
@@ -46,7 +86,10 @@ export class SubPackagesRepository {
 		return subPackage.toObject();
 	}
 
-	async update(id: string, data: UpdateSubPackageDTO): Promise<SubPackage | null> {
+	async update(
+		id: string,
+		data: UpdateSubPackageDTO,
+	): Promise<SubPackage | null> {
 		if (!mongoose.Types.ObjectId.isValid(id)) return null;
 		return SubPackageModel.findOneAndUpdate(
 			{ _id: id, isDeleted: false },
@@ -66,8 +109,15 @@ export class SubPackagesRepository {
 
 	async toggleActive(id: string): Promise<SubPackage | null> {
 		if (!mongoose.Types.ObjectId.isValid(id)) return null;
-		const subPackage = await SubPackageModel.findOne({ _id: id, isDeleted: false });
+		const subPackage = await SubPackageModel.findOne({
+			_id: id,
+			isDeleted: false,
+		});
 		if (!subPackage) return null;
-		return SubPackageModel.findByIdAndUpdate(id, { isActive: !subPackage.isActive }, { new: true }).lean();
+		return SubPackageModel.findByIdAndUpdate(
+			id,
+			{ isActive: !subPackage.isActive },
+			{ new: true },
+		).lean();
 	}
 }

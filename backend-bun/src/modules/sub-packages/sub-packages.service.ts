@@ -1,6 +1,12 @@
 import { AppError } from "@/shared/errors";
-import type { SubPackage, CreateSubPackageDTO, UpdateSubPackageDTO, SubPackageQueryRequest } from "./sub-packages.types";
+import type { PaginatedSubPackageResult } from "./sub-packages.repository";
 import { SubPackagesRepository } from "./sub-packages.repository";
+import type { SubPackageQueryRequest } from "./sub-packages.schema";
+import type {
+	CreateSubPackageDTO,
+	SubPackage,
+	UpdateSubPackageDTO,
+} from "./sub-packages.types";
 
 export class SubPackagesService {
 	private repo: SubPackagesRepository;
@@ -9,7 +15,9 @@ export class SubPackagesService {
 		this.repo = repo || new SubPackagesRepository();
 	}
 
-	async findAll(query: SubPackageQueryRequest): Promise<SubPackage[]> {
+	async findAll(
+		query: SubPackageQueryRequest,
+	): Promise<PaginatedSubPackageResult> {
 		return this.repo.findAll(query);
 	}
 

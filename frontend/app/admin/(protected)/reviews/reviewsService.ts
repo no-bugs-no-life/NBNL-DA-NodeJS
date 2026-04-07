@@ -8,10 +8,22 @@ export interface PaginatedResult<T> {
   page: number;
 }
 
+export interface ReviewApp {
+  _id: string;
+  name: string;
+}
+
+export interface ReviewUser {
+  _id: string;
+  fullName: string;
+  email?: string;
+  avatarUrl?: string;
+}
+
 export interface ReviewItem {
   _id: string;
-  appId: { _id: string; name: string };
-  userId: { _id: string; fullName: string; email?: string; avatarUrl?: string };
+  appId: ReviewApp;
+  userId: ReviewUser;
   rating: number;
   comment: string;
   status: "pending" | "approved" | "rejected";
@@ -31,7 +43,7 @@ export const fetchReviews = async (
   limit = 20,
   isPending = false,
 ): Promise<PaginatedResult<ReviewItem>> => {
-  const endpoint = isPending ? "/api/v1/reviews/pending" : "/api/v1/reviews";
+  const endpoint = isPending ? "/api/v1/reviews/pending" : "/api/v1/reviews/admin";
   const res = await api.get(`${endpoint}?page=${page}&limit=${limit}`);
   return res.data;
 };
@@ -57,7 +69,7 @@ export const rejectReview = async (id: string) => {
 };
 
 export const deleteReview = async (id: string) => {
-  const res = await api.delete(`/api/v1/reviews/${id}`);
+  const res = await api.delete(`/api/v1/reviews/admin/${id}`);
   return res.data;
 };
 

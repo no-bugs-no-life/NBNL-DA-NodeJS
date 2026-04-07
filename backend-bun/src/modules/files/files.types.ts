@@ -1,22 +1,56 @@
-export interface FileRecord {
+export type OwnerType = "app" | "user" | "developer";
+export type FileType =
+	| "apk"
+	| "ipa"
+	| "icon"
+	| "banner"
+	| "screenshot"
+	| "avatar"
+	| "other";
+
+export interface IFile {
 	_id: string;
-	uploaderId: string;
+	ownerType: OwnerType;
+	ownerId: string;
+	fileType: FileType;
 	url: string;
-	fileKey: string;
-	mimeType: string;
 	size: number;
-	createdAt: Date;
-}
-
-export interface CreateFileDTO {
-	uploaderId: string;
-	url: string;
-	fileKey: string;
-	mimeType: string;
-	size: number;
-}
-
-export interface FileQueryDTO {
-	uploaderId?: string;
 	mimeType?: string;
+	fileKey?: string;
+	uploaderId?: string;
+	isDeleted: boolean;
+	createdAt: Date;
+	updatedAt: Date;
 }
+
+export interface FilePublic {
+	_id: string;
+	ownerType: OwnerType;
+	ownerId: string;
+	fileType: FileType;
+	url: string;
+	size: number;
+	isDeleted: boolean;
+	createdAt: Date;
+	updatedAt: Date;
+}
+
+export interface PaginatedFiles {
+	docs: FilePublic[];
+	totalDocs: number;
+	limit: number;
+	totalPages: number;
+	page: number;
+}
+
+export const toPublicFile = (f: IFile): FilePublic => ({
+	_id: f._id,
+	ownerType: f.ownerType,
+	ownerId: f.ownerId,
+	fileType: f.fileType,
+	url: f.url,
+	size: f.size,
+	isDeleted: f.isDeleted,
+	createdAt: f.createdAt,
+	updatedAt: f.updatedAt,
+});

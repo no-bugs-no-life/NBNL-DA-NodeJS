@@ -1,13 +1,12 @@
 import { Hono } from "hono";
+import { cors } from "hono/cors";
 import { logger as honoLogger } from "hono/logger";
 import { env } from "@/config/env";
 import { logger } from "@/infra/logger/logger";
 import { AppError } from "@/shared/errors";
-import { fail } from "@/shared/utils";
 
 import { tokenBucketRateLimiter } from "@/shared/middlewares";
-
-import { cors } from "hono/cors";
+import { fail } from "@/shared/utils";
 
 const app = new Hono();
 
@@ -41,6 +40,7 @@ app.onError((err, c) => {
 			{ err: err.message, status: err.statusCode },
 			"Operational Error",
 		);
+		// biome-ignore lint/suspicious/noExplicitAny: Hono expects specific status codes
 		return c.json(fail(err.message), err.statusCode as any);
 	}
 
@@ -57,9 +57,9 @@ app.get("/", (c) => {
 	return c.json({ message: "Hello via Bun & Hono!" });
 });
 
+import { closeRedis } from "@/infra/cache/redis";
 // 4. Bootstrap Server & Graceful Shutdown
 import { closeDatabase } from "@/infra/db/connection";
-import { closeRedis } from "@/infra/cache/redis";
 
 const gracefulShutdown = async (signal: string) => {
 	logger.info(`🛑 Received ${signal}, starting graceful shutdown...`);

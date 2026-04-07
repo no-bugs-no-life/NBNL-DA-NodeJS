@@ -2,16 +2,18 @@ import { z } from "zod";
 
 const slugRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
+// Frontend gửi name + iconUrl, slug có thể optional (tự tạo từ name)
 export const CreateCategorySchema = z.object({
 	name: z.string().min(1).max(100),
-	slug: z.string().min(1).max(100).regex(slugRegex, "Slug phải là chữ thường và số, ngăn cách bằng dấu gạch ngang"),
-	iconUrl: z.string().url().optional(),
+	iconUrl: z.string().url().optional().or(z.literal("")),
+	parentId: z.string().optional().nullable(),
+	slug: z.string().regex(slugRegex, "Slug không hợp lệ").optional(),
 });
 
 export const UpdateCategorySchema = z.object({
 	name: z.string().min(1).max(100).optional(),
-	slug: z.string().min(1).max(100).regex(slugRegex).optional(),
-	iconUrl: z.string().url().optional().nullable(),
+	iconUrl: z.string().url().optional().nullable().or(z.literal("")),
+	parentId: z.string().optional().nullable(),
 });
 
 export const CategoryParamsSchema = z.object({

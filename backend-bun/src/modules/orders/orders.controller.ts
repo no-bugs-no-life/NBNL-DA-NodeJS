@@ -1,7 +1,11 @@
 import type { Context } from "hono";
 import { BaseController } from "@/shared/base";
+import {
+	CreateOrderSchema,
+	OrderQuerySchema,
+	UpdateOrderStatusSchema,
+} from "./orders.schema";
 import { OrdersService } from "./orders.service";
-import { CreateOrderSchema, UpdateOrderStatusSchema, OrderQuerySchema } from "./orders.schema";
 
 export class OrdersController extends BaseController {
 	private readonly ordersService = new OrdersService();

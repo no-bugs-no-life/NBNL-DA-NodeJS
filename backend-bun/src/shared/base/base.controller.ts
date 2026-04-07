@@ -1,5 +1,5 @@
-import { ok, fail, paginated } from "../utils";
 import type { ApiResponse, PaginatedData } from "../types";
+import { fail, ok, paginated } from "../utils";
 
 /**
  * Abstract Base Controller
@@ -16,7 +16,7 @@ export abstract class BaseController {
 	/**
 	 * Standardized error response
 	 */
-	protected fail(message: string, data: any = null): ApiResponse<null> {
+	protected fail(message: string, data: unknown = null): ApiResponse<unknown> {
 		return fail(message, data);
 	}
 

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ReportTargetType, ReportStatus } from "./reports.types";
+import { ReportStatus, ReportTargetType } from "./reports.types";
 
 // Create Report Schema
 export const CreateReportSchema = z
@@ -9,36 +9,30 @@ export const CreateReportSchema = z
 		reason: z
 			.string()
 			.min(5, "Lý do báo cáo tối thiểu 5 ký tự")
-			.max(200, "Lý do báo cáo tối đa 200 ký tự"),
-		description: z
-			.string()
-			.max(1000, "Mô tả tối đa 1000 ký tự")
-			.optional(),
+			.max(500, "Lý do báo cáo tối đa 500 ký tự"),
 	})
 	.strict();
 
 export type CreateReportRequest = z.infer<typeof CreateReportSchema>;
 
-// Update Report Schema (Admin only)
-export const UpdateReportSchema = z
+// Update Report Status Schema (PUT /status)
+export const UpdateReportStatusSchema = z
 	.object({
-		status: z.nativeEnum(ReportStatus).optional(),
-		adminNote: z
-			.string()
-			.max(500, "Ghi chú admin tối đa 500 ký tự")
-			.optional(),
+		status: z.nativeEnum(ReportStatus),
+		adminNote: z.string().max(500).optional(),
 	})
 	.strict();
 
-export type UpdateReportRequest = z.infer<typeof UpdateReportSchema>;
+export type UpdateReportStatusRequest = z.infer<
+	typeof UpdateReportStatusSchema
+>;
 
 // Query Schema
 export const ReportQuerySchema = z.object({
 	page: z.coerce.number().int().positive().default(1),
-	limit: z.coerce.number().int().positive().max(100).default(20),
-	reporterId: z.string().optional(),
-	targetType: z.nativeEnum(ReportTargetType).optional(),
+	limit: z.coerce.number().int().positive().max(100).default(10),
 	status: z.nativeEnum(ReportStatus).optional(),
+	targetType: z.nativeEnum(ReportTargetType).optional(),
 });
 
 export type ReportQueryRequest = z.infer<typeof ReportQuerySchema>;

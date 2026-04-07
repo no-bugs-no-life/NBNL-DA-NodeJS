@@ -1,11 +1,26 @@
 import { z } from "zod";
 
+const ownerTypes = ["app", "user", "developer"] as const;
+const fileTypes = [
+	"apk",
+	"ipa",
+	"icon",
+	"banner",
+	"screenshot",
+	"avatar",
+	"other",
+] as const;
+
 export const CreateFileSchema = z.object({
-	uploaderId: z.string().min(1),
+	ownerType: z.enum(ownerTypes),
+	ownerId: z.string().optional(),
+	fileType: z.enum(fileTypes),
 	url: z.string().url(),
-	fileKey: z.string().min(1),
-	mimeType: z.string().min(1),
-	size: z.number().int().nonnegative(),
+});
+
+export const UpdateFileSchema = z.object({
+	fileType: z.enum(fileTypes).optional(),
+	url: z.string().url().optional(),
 });
 
 export const FileParamsSchema = z.object({
@@ -13,9 +28,14 @@ export const FileParamsSchema = z.object({
 });
 
 export const FileQuerySchema = z.object({
-	uploaderId: z.string().optional(),
-	mimeType: z.string().optional(),
+	page: z.coerce.number().min(1).default(1),
+	limit: z.coerce.number().min(1).max(100).default(20),
+	ownerType: z.enum(ownerTypes).optional(),
+	ownerId: z.string().optional(),
+	fileType: z.enum(fileTypes).optional(),
 });
 
 export type CreateFileRequest = z.infer<typeof CreateFileSchema>;
-export type FileQueryRequest = z.infer<typeof FileQuerySchema>;
+export type UpdateFileRequest = z.infer<typeof UpdateFileSchema>;
+export type FileParams = z.infer<typeof FileParamsSchema>;
+export type FileQuery = z.infer<typeof FileQuerySchema>;

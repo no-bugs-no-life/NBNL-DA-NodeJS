@@ -25,6 +25,23 @@ export const ReviewQuerySchema = z.object({
 	limit: z.coerce.number().int().positive().max(100).default(10),
 });
 
+// Admin schemas
+export const AdminCreateReviewSchema = CreateReviewSchema.extend({
+	status: z.enum(["pending", "approved", "rejected"]).default("pending"),
+});
+
+export const AdminUpdateReviewSchema = UpdateReviewSchema;
+
+export const AdminReviewQuerySchema = ReviewQuerySchema.extend({
+	isPending: z
+		.enum(["true", "false"])
+		.optional()
+		.transform((val) => val === "true"),
+}).transform((data) => ({
+	...data,
+	status: data.isPending === true ? "pending" : data.status,
+}));
+
 export type CreateReviewRequest = z.infer<typeof CreateReviewSchema>;
 export type UpdateReviewRequest = z.infer<typeof UpdateReviewSchema>;
 export type ReviewQueryRequest = z.infer<typeof ReviewQuerySchema>;

@@ -1,6 +1,6 @@
 import { Hono } from "hono";
-import { CategoriesController } from "./categories.controller";
 import { validateBody } from "@/shared/middlewares/validate";
+import { CategoriesController } from "./categories.controller";
 import {
 	CreateCategorySchema,
 	UpdateCategorySchema,

@@ -1,18 +1,26 @@
-import { OrdersRepository } from "./orders.repository";
+import { Types } from "mongoose";
 import { CartsService } from "@/modules/carts/carts.service";
 import { CouponsService } from "@/modules/coupons/coupons.service";
 import { badRequest, notFound } from "@/shared/errors";
-import type { IOrder, IOrderPublic, OrderQuery, OrderStatus } from "./orders.types";
+import { OrdersRepository } from "./orders.repository";
 import type { CreateOrderRequest } from "./orders.schema";
-import { PaymentMethod, OrderStatus as OrdStatus } from "./orders.types";
-import { ObjectId } from "mongoose";
+import type {
+	IOrder,
+	IOrderPublic,
+	OrderQuery,
+	OrderStatus,
+} from "./orders.types";
+import { OrderStatus as OrdStatus } from "./orders.types";
 
 export class OrdersService {
 	private readonly repository = new OrdersRepository();
 	private readonly cartsService = new CartsService();
 	private readonly couponsService = new CouponsService();
 
-	async create(userId: string, data: CreateOrderRequest): Promise<IOrderPublic> {
+	async create(
+		userId: string,
+		data: CreateOrderRequest,
+	): Promise<IOrderPublic> {
 		if (data.items.length === 0) {
 			throw badRequest("Đơn hàng phải có ít nhất 1 sản phẩm");
 		}
@@ -30,9 +38,9 @@ export class OrdersService {
 		}
 
 		const order = await this.repository.create({
-			userId: new ObjectId(userId) as any,
+			userId: new Types.ObjectId(userId) as unknown as IOrder["userId"],
 			items: data.items.map((item) => ({
-				appId: new ObjectId(item.appId),
+				appId: new Types.ObjectId(item.appId) as unknown as IOrder["items"][0]["appId"],
 				name: item.name,
 				price: item.price,
 				iconUrl: item.iconUrl,
@@ -59,7 +67,9 @@ export class OrdersService {
 		return orders.map((o) => this.toPublic(o));
 	}
 
-	async getAll(query: OrderQuery): Promise<{ orders: IOrderPublic[]; total: number }> {
+	async getAll(
+		query: OrderQuery,
+	): Promise<{ orders: IOrderPublic[]; total: number }> {
 		const { orders, total } = await this.repository.findAllPaginated(query);
 		return { orders: orders.map((o) => this.toPublic(o)), total };
 	}
@@ -87,11 +97,20 @@ export class OrdersService {
 	async confirmPayment(id: string, paymentId: string): Promise<IOrderPublic> {
 		const order = await this.repository.findById(id);
 		if (!order) throw notFound("Đơn hàng không tồn tại");
-		if (order.status !== OrdStatus.PENDING && order.status !== OrdStatus.PROCESSING) {
-			throw badRequest("Không thể xác nhận thanh toán cho đơn hàng đã hoàn thành");
+		if (
+			order.status !== OrdStatus.PENDING &&
+			order.status !== OrdStatus.PROCESSING
+		) {
+			throw badRequest(
+				"Không thể xác nhận thanh toán cho đơn hàng đã hoàn thành",
+			);
 		}
 
-		const updated = await this.repository.updatePayment(id, paymentId, new Date());
+		const updated = await this.repository.updatePayment(
+			id,
+			paymentId,
+			new Date(),
+		);
 		if (!updated) throw notFound("Đơn hàng không tồn tại");
 
 		// Increment coupon usage if applied
@@ -123,7 +142,7 @@ export class OrdersService {
 			paymentMethod: order.paymentMethod,
 			paymentId: order.paymentId,
 			paidAt: order.paidAt,
-			createdAt: order.createdAt!,
+			createdAt: order.createdAt as Date,
 		};
 	}
 }

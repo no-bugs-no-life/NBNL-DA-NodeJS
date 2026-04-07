@@ -1,7 +1,19 @@
 import { z } from "zod";
 
-const platformEnum = z.enum(["android", "ios", "windows", "macos", "linux", "web"]);
-const versionStatusEnum = z.enum(["draft", "published", "deprecated", "archived"]);
+const platformEnum = z.enum([
+	"android",
+	"ios",
+	"windows",
+	"macos",
+	"linux",
+	"web",
+]);
+const versionStatusEnum = z.enum([
+	"draft",
+	"published",
+	"deprecated",
+	"archived",
+]);
 const subscriptionTierEnum = z.enum(["premium", "pro"]);
 
 export const VersionFileSchema = z.object({
@@ -52,7 +64,10 @@ export const VersionQuerySchema = z.object({
 	appId: z.string().optional(),
 	status: versionStatusEnum.optional(),
 	platform: platformEnum.optional(),
-	isLatest: z.enum(["true", "false"]).transform((v) => v === "true").optional(),
+	isLatest: z
+		.enum(["true", "false"])
+		.transform((v) => v === "true")
+		.optional(),
 	page: z.coerce.number().int().positive().default(1),
 	limit: z.coerce.number().int().positive().max(100).default(10),
 });

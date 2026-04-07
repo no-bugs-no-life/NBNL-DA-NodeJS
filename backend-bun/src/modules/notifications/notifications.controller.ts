@@ -1,91 +1,144 @@
-import { BaseController } from "@/shared/base";
-import { NotificationsService } from "./notifications.service";
-import { NotificationRepository } from "./notifications.repository";
 import type { Context } from "hono";
+import {
+	apiCreated,
+	apiNoContent,
+	apiSuccess,
+} from "@/shared/utils/api-response.util";
 import type {
 	CreateNotificationRequest,
+	NotificationQueryRequest,
 	UpdateNotificationRequest,
 } from "./notifications.schema";
+import { NotificationsService } from "./notifications.service";
 
-export class NotificationsController extends BaseController {
-	private readonly notificationsService = new NotificationsService(
-		new NotificationRepository(),
-	);
+export class NotificationsController {
+	private service: NotificationsService;
 
-	// GET /notifications - Get user's notifications
+	constructor(service?: NotificationsService) {
+		this.service = service || new NotificationsService();
+	}
+
+	private getUserId(c: Context): string | undefined {
+		try {
+			const payload = c.get("jwtPayload") as
+				| { sub?: string; id?: string }
+				| undefined;
+			return payload?.sub || payload?.id;
+		} catch {
+			return undefined;
+		}
+	}
+
+	/**
+	 * GET /notifications/all - Admin: Get all notifications with pagination
+	 */
+	async getAllAdmin(c: Context) {
+		const query = c.req.valid("query") as NotificationQueryRequest;
+		const result = await this.service.getAllNotifications({
+			type: query.type,
+			isRead: query.isRead,
+			page: query.page,
+			limit: query.limit,
+		});
+		return apiSuccess(c, result);
+	}
+
+	/**
+	 * GET /notifications - User: Get own notifications
+	 */
 	async getAll(c: Context) {
 		const userId = this.getUserId(c);
-		if (!userId) return c.json(this.fail("Chưa đăng nhập"), 401);
-
-		const notifications = await this.notificationsService.getUserNotifications(userId);
-		return c.json(this.ok(notifications, "Lấy danh sách thông báo thành công"));
+		if (!userId)
+			return apiSuccess(c, {
+				docs: [],
+				totalDocs: 0,
+				limit: 20,
+				totalPages: 0,
+				page: 1,
+			});
+		const result = await this.service.getAllNotifications({
+			userId,
+			page: 1,
+			limit: 50,
+		});
+		return apiSuccess(c, result);
 	}
 
-	// GET /notifications/unread-count
+	/**
+	 * GET /notifications/unread-count
+	 */
 	async getUnreadCount(c: Context) {
 		const userId = this.getUserId(c);
-		if (!userId) return c.json(this.fail("Chưa đăng nhập"), 401);
-
-		const count = await this.notificationsService.getUnreadCount(userId);
-		return c.json(this.ok({ count }, "Số thông báo chưa đọc"));
+		if (!userId) return apiSuccess(c, { count: 0 });
+		const count = await this.service.getUnreadCount(userId);
+		return apiSuccess(c, { count });
 	}
 
-	// GET /notifications/:id
+	/**
+	 * GET /notifications/:id
+	 */
 	async getById(c: Context) {
-		const userId = this.getUserId(c);
-		if (!userId) return c.json(this.fail("Chưa đăng nhập"), 401);
-
 		const id = c.req.param("id");
-		if (!id) return c.json(this.fail("Thiếu tham số id"), 400);
-
-		const notification = await this.notificationsService.getNotificationById(id, userId);
-		return c.json(this.ok(notification, "Lấy thông tin thông báo thành công"));
+		const userId = this.getUserId(c);
+		const notification = await this.service.getNotificationById(id, userId);
+		return apiSuccess(c, notification);
 	}
 
-	// POST /notifications (Admin only - create system notification)
+	/**
+	 * POST /notifications - Admin: Create notification
+	 */
 	async create(c: Context) {
-		// @ts-expect-error
-		const data = c.req.valid("json") as CreateNotificationRequest;
-		const notification = await this.notificationsService.createNotification(data);
-		return c.json(this.ok(notification, "Tạo thông báo thành công"), 201);
+		const body = c.req.valid("json") as CreateNotificationRequest;
+		const notification = await this.service.createNotification(body);
+		return apiCreated(c, notification);
 	}
 
-	// PATCH /notifications/:id/read
-	async markAsRead(c: Context) {
-		const userId = this.getUserId(c);
-		if (!userId) return c.json(this.fail("Chưa đăng nhập"), 401);
-
+	/**
+	 * PATCH /notifications/:id - Update notification
+	 */
+	async update(c: Context) {
 		const id = c.req.param("id");
-		if (!id) return c.json(this.fail("Thiếu tham số id"), 400);
-
-		const notification = await this.notificationsService.markAsRead(id, userId);
-		return c.json(this.ok(notification, "Đánh dấu đã đọc"));
+		const body = c.req.valid("json") as UpdateNotificationRequest;
+		const notification = await this.service.updateNotification(id, body);
+		return apiSuccess(c, notification);
 	}
 
-	// PATCH /notifications/read-all
+	/**
+	 * PUT /notifications/:id/read - Mark as read
+	 */
+	async markAsRead(c: Context) {
+		const id = c.req.param("id");
+		const userId = this.getUserId(c);
+		const notification = await this.service.markAsRead(id, userId);
+		return apiSuccess(c, notification);
+	}
+
+	/**
+	 * PATCH /notifications/read-all
+	 */
 	async markAllAsRead(c: Context) {
 		const userId = this.getUserId(c);
-		if (!userId) return c.json(this.fail("Chưa đăng nhập"), 401);
-
-		const count = await this.notificationsService.markAllAsRead(userId);
-		return c.json(this.ok({ count }, `Đã đánh dấu ${count} thông báo là đã đọc`));
+		if (!userId) return apiSuccess(c, { count: 0 });
+		const count = await this.service.markAllAsRead(userId);
+		return apiSuccess(c, { count });
 	}
 
-	// DELETE /notifications/:id
-	async delete(c: Context) {
-		const userId = this.getUserId(c);
-		if (!userId) return c.json(this.fail("Chưa đăng nhập"), 401);
-
+	/**
+	 * DELETE /notifications/:id/admin - Admin delete
+	 */
+	async deleteAdmin(c: Context) {
 		const id = c.req.param("id");
-		if (!id) return c.json(this.fail("Thiếu tham số id"), 400);
-
-		await this.notificationsService.deleteNotification(id, userId);
-		return c.json(this.ok(null, "Xóa thông báo thành công"));
+		await this.service.deleteNotification(id);
+		return apiNoContent(c);
 	}
 
-	// Helper: Get userId from JWT payload
-	private getUserId(c: Context): string | undefined {
-		const payload = c.get("jwtPayload") as { id?: string } | undefined;
-		return payload?.id;
+	/**
+	 * DELETE /notifications/:id - User delete own notification
+	 */
+	async delete(c: Context) {
+		const id = c.req.param("id");
+		const userId = this.getUserId(c);
+		await this.service.deleteNotification(id, userId);
+		return apiNoContent(c);
 	}
 }

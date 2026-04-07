@@ -1,4 +1,4 @@
-import { ObjectId } from "mongoose";
+import type { ObjectId } from "mongoose";
 
 export enum ReportTargetType {
 	APP = "app",
@@ -18,7 +18,6 @@ export interface IReport {
 	targetType: ReportTargetType;
 	targetId: ObjectId;
 	reason: string;
-	description?: string;
 	status: ReportStatus;
 	adminNote?: string;
 	resolvedBy?: ObjectId;
@@ -26,29 +25,41 @@ export interface IReport {
 	updatedAt?: Date;
 }
 
-export interface IReportPublic {
-	id: string;
-	reporterId: string;
+// API Response Types - matching frontend
+export interface ReporterInfo {
+	_id: ObjectId;
+	fullName: string;
+	email: string;
+	avatarUrl?: string;
+}
+
+export interface ReportItemResponse {
+	_id: string;
+	reporterId: ReporterInfo;
 	targetType: ReportTargetType;
-	targetId: string;
+	targetId: unknown;
 	reason: string;
-	description?: string;
 	status: ReportStatus;
-	adminNote?: string;
-	resolvedBy?: string;
-	createdAt: Date;
-	updatedAt?: Date;
+	adminNote: string;
+	createdAt: string;
+	updatedAt: string;
 }
 
-export interface IReportCreate {
-	reporterId: string;
+export interface PaginatedReportsResponse {
+	docs: ReportItemResponse[];
+	totalDocs: number;
+	limit: number;
+	totalPages: number;
+	page: number;
+}
+
+export interface CreateReportDTO {
 	targetType: ReportTargetType;
 	targetId: string;
 	reason: string;
-	description?: string;
 }
 
-export interface IReportUpdate {
+export interface UpdateReportDTO {
 	status?: ReportStatus;
 	adminNote?: string;
 }
@@ -56,7 +67,6 @@ export interface IReportUpdate {
 export interface ReportQuery {
 	page?: number;
 	limit?: number;
-	reporterId?: string;
-	targetType?: ReportTargetType;
 	status?: ReportStatus;
+	targetType?: ReportTargetType;
 }

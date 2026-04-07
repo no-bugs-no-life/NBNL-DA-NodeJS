@@ -11,7 +11,7 @@ export interface PaginatedResult<T> {
 export interface SubPackageItem {
   _id: string;
   name: string;
-  appId?: { _id: string; name: string; iconUrl?: string } | string;
+  appId: string | null;
   type: "monthly" | "yearly" | "lifetime";
   price: number;
   durationDays: number;
@@ -24,17 +24,16 @@ export interface SubPackageItem {
 
 export interface CreateSubPackageInput {
   name: string;
-  appId: string;
-  type: string;
+  appId?: string | null;
+  type: "monthly" | "yearly" | "lifetime";
   price: number;
-  durationDays?: number;
+  durationDays: number;
   description?: string;
 }
 
 export interface UpdateSubPackageInput {
   name?: string;
-  appId?: string;
-  type?: string;
+  type?: "monthly" | "yearly" | "lifetime";
   price?: number;
   durationDays?: number;
   description?: string;
@@ -45,7 +44,6 @@ export const fetchSubPackages = async (params: {
   page?: number;
   limit?: number;
   type?: string;
-  isActive?: string;
 } = {}): Promise<PaginatedResult<SubPackageItem>> => {
   const cleanParams: Record<string, string> = {};
   Object.entries(params).forEach(([k, v]) => {
@@ -55,7 +53,8 @@ export const fetchSubPackages = async (params: {
   });
   const qs = new URLSearchParams(cleanParams).toString();
   const res = await api.get(`/api/v1/sub-packages?${qs}`);
-  return res.data;
+  // Backend returns { success, msg, data: { docs, totalDocs, ... } }
+  return res.data.data;
 };
 
 export const createSubPackage = async (data: CreateSubPackageInput) => {

@@ -1,26 +1,34 @@
 export interface ICategory {
-	id: string;
+	_id: string;
 	name: string;
-	slug: string;
-	iconUrl?: string;
-	createdAt: Date;
-	updatedAt: Date;
+	iconUrl: string;
+	parentId?: string | null;
+	createdAt?: Date;
+	updatedAt?: Date;
 }
 
 export interface CategoryPublic {
-	id: string;
+	_id: string;
 	name: string;
-	slug: string;
-	iconUrl?: string;
-	createdAt: Date;
-	updatedAt: Date;
+	iconUrl: string;
+	parentId?: string | null;
+	createdAt?: Date;
+	updatedAt?: Date;
+}
+
+export interface PaginatedCategories {
+	docs: CategoryPublic[];
+	totalDocs: number;
+	limit: number;
+	totalPages: number;
+	page: number;
 }
 
 export const toPublicCategory = (cat: ICategory): CategoryPublic => ({
-	id: cat.id,
+	_id: cat._id,
 	name: cat.name,
-	slug: cat.slug,
 	iconUrl: cat.iconUrl,
+	parentId: cat.parentId,
 	createdAt: cat.createdAt,
 	updatedAt: cat.updatedAt,
 });

@@ -1,7 +1,11 @@
 import type { Context } from "hono";
 import { BaseController } from "@/shared/base";
+import {
+	CreateReportSchema,
+	ReportQuerySchema,
+	UpdateReportStatusSchema,
+} from "./reports.schema";
 import { ReportsService } from "./reports.service";
-import { CreateReportSchema, UpdateReportSchema, ReportQuerySchema } from "./reports.schema";
 
 export class ReportsController extends BaseController {
 	private readonly reportsService = new ReportsService();
@@ -22,17 +26,19 @@ export class ReportsController extends BaseController {
 		const payload = c.get("jwtPayload");
 		if (!payload) return c.json(this.fail("Chưa đăng nhập"), 401);
 
-		const reports = await this.reportsService.getByReporter(payload.id);
+		const reports = await this.reportsService.getAllPaginated(1, 20);
 		return c.json(this.ok(reports));
 	}
 
 	async getAll(c: Context) {
 		const query = ReportQuerySchema.parse(c.req.query());
-		const { reports, total } = await this.reportsService.getAll(query);
-
-		return c.json(
-			this.paginated(reports, total, query.page ?? 1, query.limit ?? 20),
+		const result = await this.reportsService.getAllPaginated(
+			query.page,
+			query.limit,
+			query.status,
+			query.targetType,
 		);
+		return c.json(this.ok(result));
 	}
 
 	async getById(c: Context) {
@@ -41,17 +47,18 @@ export class ReportsController extends BaseController {
 		return c.json(this.ok(report));
 	}
 
-	async update(c: Context) {
-		const payload = c.get("jwtPayload");
-		if (!payload) return c.json(this.fail("Chưa đăng nhập"), 401);
-
+	async updateStatus(c: Context) {
 		const { id } = c.req.param();
 		// @ts-expect-error
 		const data = c.req.valid("json");
-		const validated = UpdateReportSchema.parse(data);
+		const validated = UpdateReportStatusSchema.parse(data);
 
-		const report = await this.reportsService.updateStatus(id, validated, payload.id);
-		return c.json(this.ok(report, "Cập nhật báo cáo thành công"));
+		const report = await this.reportsService.updateStatus(
+			id,
+			validated.status,
+			validated.adminNote,
+		);
+		return c.json(this.ok(report, "Cập nhật trạng thái thành công"));
 	}
 
 	async delete(c: Context) {

@@ -1,12 +1,12 @@
 import type { Context } from "hono";
 import { BaseController } from "@/shared/base";
-import { CouponsService } from "./coupons.service";
 import {
-	CreateCouponSchema,
-	UpdateCouponSchema,
 	ApplyCouponSchema,
 	CouponQuerySchema,
+	CreateCouponSchema,
+	UpdateCouponSchema,
 } from "./coupons.schema";
+import { CouponsService } from "./coupons.service";
 
 export class CouponsController extends BaseController {
 	private readonly couponsService = new CouponsService();
@@ -22,11 +22,12 @@ export class CouponsController extends BaseController {
 
 	async getAll(c: Context) {
 		const query = CouponQuerySchema.parse(c.req.query());
-		const { coupons, total } = await this.couponsService.getAll(query);
-
-		return c.json(
-			this.paginated(coupons, total, query.page ?? 1, query.limit ?? 20),
+		const result = await this.couponsService.getAllPaginated(
+			query.page,
+			query.limit,
 		);
+
+		return c.json(this.ok(result));
 	}
 
 	async getValidCoupons(c: Context) {
@@ -55,7 +56,10 @@ export class CouponsController extends BaseController {
 		const data = c.req.valid("json");
 		const validated = ApplyCouponSchema.parse(data);
 
-		const { price, appId } = await c.req.json<{ price: number; appId?: string }>();
+		const { price, appId } = await c.req.json<{
+			price: number;
+			appId?: string;
+		}>();
 
 		if (!price || price <= 0) {
 			return c.json(this.fail("Giá không hợp lệ"), 400);

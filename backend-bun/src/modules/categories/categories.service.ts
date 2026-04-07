@@ -1,18 +1,34 @@
+import { notFound } from "@/shared/errors";
 import type { ICategoryRepository } from "./categories.repository";
-import type { ICategory, CategoryPublic } from "./categories.types";
-import { toPublicCategory } from "./categories.types";
-import { notFound, conflict } from "@/shared/errors";
 import type {
 	CreateCategoryRequest,
 	UpdateCategoryRequest,
 } from "./categories.schema";
+import type {
+	CategoryPublic,
+	ICategory,
+	PaginatedCategories,
+} from "./categories.types";
+import { toPublicCategory } from "./categories.types";
+
+type CreateData = Pick<ICategory, "name" | "iconUrl" | "parentId">;
+type UpdateData = Partial<Pick<ICategory, "name" | "iconUrl" | "parentId">>;
 
 export class CategoriesService {
 	constructor(private readonly repository: ICategoryRepository) {}
 
-	async getAllCategories(): Promise<CategoryPublic[]> {
-		const categories = await this.repository.findAll();
-		return categories.map(toPublicCategory);
+	async getCategories(
+		page: number,
+		limit: number,
+	): Promise<PaginatedCategories> {
+		const { docs, totalDocs } = await this.repository.findAll({ page, limit });
+		return {
+			docs: docs.map(toPublicCategory),
+			totalDocs,
+			limit,
+			totalPages: Math.ceil(totalDocs / limit),
+			page,
+		};
 	}
 
 	async getCategoryById(id: string): Promise<CategoryPublic> {
@@ -27,13 +43,13 @@ export class CategoriesService {
 		return toPublicCategory(category);
 	}
 
-	async createCategory(
-		data: CreateCategoryRequest,
-	): Promise<CategoryPublic> {
-		const existing = await this.repository.findBySlug(data.slug);
-		if (existing) throw conflict("Slug đã tồn tại");
-
-		const category = await this.repository.create(data);
+	async createCategory(data: CreateCategoryRequest): Promise<CategoryPublic> {
+		const createData: CreateData = {
+			name: data.name,
+			iconUrl: data.iconUrl ?? "",
+			parentId: data.parentId ?? null,
+		};
+		const category = await this.repository.create(createData);
 		return toPublicCategory(category);
 	}
 
@@ -44,12 +60,12 @@ export class CategoriesService {
 		const existing = await this.repository.findById(id);
 		if (!existing) throw notFound("Không tìm thấy danh mục");
 
-		if (data.slug && data.slug !== existing.slug) {
-			const slugExists = await this.repository.findBySlug(data.slug);
-			if (slugExists) throw conflict("Slug đã tồn tại");
-		}
+		const updateData: UpdateData = {};
+		if (data.name !== undefined) updateData.name = data.name;
+		if (data.iconUrl !== undefined) updateData.iconUrl = data.iconUrl || "";
+		if (data.parentId !== undefined) updateData.parentId = data.parentId;
 
-		const updated = await this.repository.update(id, data as Partial<ICategory>);
+		const updated = await this.repository.update(id, updateData);
 		if (!updated) throw notFound("Không tìm thấy danh mục");
 		return toPublicCategory(updated);
 	}

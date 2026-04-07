@@ -1,22 +1,26 @@
-import { BaseController } from "@/shared/base";
-import { CategoriesService } from "./categories.service";
-import { CategoryRepository } from "./categories.repository";
 import type { Context } from "hono";
+import { BaseController } from "@/shared/base";
+import { CategoryRepository } from "./categories.repository";
 import type {
 	CreateCategoryRequest,
 	UpdateCategoryRequest,
 } from "./categories.schema";
+import { CategoriesService } from "./categories.service";
 
 export class CategoriesController extends BaseController {
 	private readonly categoriesService = new CategoriesService(
 		new CategoryRepository(),
 	);
 
+	// GET /categories?page=1&limit=20
 	async getAll(c: Context) {
-		const categories = await this.categoriesService.getAllCategories();
-		return c.json(this.ok(categories, "Lấy danh sách danh mục thành công"));
+		const page = parseInt(c.req.query("page") ?? "1", 10);
+		const limit = parseInt(c.req.query("limit") ?? "20", 10);
+		const data = await this.categoriesService.getCategories(page, limit);
+		return c.json(this.ok(data, "Lấy danh sách danh mục thành công"));
 	}
 
+	// GET /categories/:id
 	async getById(c: Context) {
 		const id = c.req.param("id");
 		if (!id) return c.json(this.fail("Thiếu tham số id"), 400);
@@ -24,6 +28,7 @@ export class CategoriesController extends BaseController {
 		return c.json(this.ok(category, "Lấy thông tin danh mục thành công"));
 	}
 
+	// GET /categories/slug/:slug
 	async getBySlug(c: Context) {
 		const slug = c.req.param("slug");
 		if (!slug) return c.json(this.fail("Thiếu tham số slug"), 400);
@@ -31,6 +36,7 @@ export class CategoriesController extends BaseController {
 		return c.json(this.ok(category, "Lấy thông tin danh mục thành công"));
 	}
 
+	// POST /categories
 	async create(c: Context) {
 		// @ts-expect-error
 		const data = c.req.valid("json") as CreateCategoryRequest;
@@ -38,6 +44,7 @@ export class CategoriesController extends BaseController {
 		return c.json(this.ok(category, "Tạo danh mục thành công"), 201);
 	}
 
+	// PUT /categories/:id
 	async update(c: Context) {
 		const id = c.req.param("id");
 		if (!id) return c.json(this.fail("Thiếu tham số id"), 400);
@@ -47,6 +54,7 @@ export class CategoriesController extends BaseController {
 		return c.json(this.ok(category, "Cập nhật danh mục thành công"));
 	}
 
+	// DELETE /categories/:id
 	async delete(c: Context) {
 		const id = c.req.param("id");
 		if (!id) return c.json(this.fail("Thiếu tham số id"), 400);
