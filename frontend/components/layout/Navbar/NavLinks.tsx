@@ -8,8 +8,8 @@ import { useEffect, useState } from "react";
 export default function NavLinks() {
   const pathname = usePathname();
   const { data: categories = [], isLoading } = useCategories();
-  const user = useAuthStore(state => state.user);
-  const isAuthenticated = useAuthStore(state => state.isAuthenticated);
+  const user = useAuthStore((state) => state.user);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
   const roleName = (user?.role as any)?.name || user?.role || "";
   const isAdmin = roleName === "ADMIN" || roleName === "MODERATOR";

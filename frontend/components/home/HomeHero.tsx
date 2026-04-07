@@ -12,9 +12,11 @@ export default function HomeHero() {
   const { data: heroApps = [] } = useQuery({
     queryKey: ["home", "hero"],
     queryFn: async () => {
-      const response = await axios.get(`${API_URL}/api/v1/apps?flags=hero&sortBy=priority&sortOrder=desc&limit=5`);
+      const response = await axios.get(
+        `${API_URL}/api/v1/apps?flags=hero&sortBy=priority&sortOrder=desc&limit=5`,
+      );
       const payload = response.data?.data;
-      return Array.isArray(payload) ? payload : (payload?.docs || []);
+      return Array.isArray(payload) ? payload : payload?.docs || [];
     },
   });
 
@@ -42,15 +44,15 @@ export default function HomeHero() {
   const slides =
     heroApps.length > 0
       ? heroApps.map((app: HeroAppPayload) => ({
-        image:
-          app.screenshots && app.screenshots.length > 0
-            ? app.screenshots[0]
-            : app.iconUrl || "",
-        subtitle: app.categoryId?.name || "Nổi Bật",
-        title: app.name,
-        description: app.description,
-        slug: app.slug,
-      }))
+          image:
+            app.screenshots && app.screenshots.length > 0
+              ? app.screenshots[0]
+              : app.iconUrl || "",
+          subtitle: app.categoryId?.name || "Nổi Bật",
+          title: app.name,
+          description: app.description,
+          slug: app.slug,
+        }))
       : fallbackSlides;
 
   useEffect(() => {

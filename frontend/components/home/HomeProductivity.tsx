@@ -11,7 +11,7 @@ export default function HomeProductivity() {
     queryFn: async () => {
       const response = await axios.get(`${API_URL}/api/v1/apps?limit=3`);
       const payload = response.data?.data;
-      return Array.isArray(payload) ? payload : (payload?.docs || []);
+      return Array.isArray(payload) ? payload : payload?.docs || [];
     },
   });
 

@@ -40,11 +40,13 @@ export interface UpdateSubPackageInput {
   isActive?: boolean;
 }
 
-export const fetchSubPackages = async (params: {
-  page?: number;
-  limit?: number;
-  type?: string;
-} = {}): Promise<PaginatedResult<SubPackageItem>> => {
+export const fetchSubPackages = async (
+  params: {
+    page?: number;
+    limit?: number;
+    type?: string;
+  } = {},
+): Promise<PaginatedResult<SubPackageItem>> => {
   const cleanParams: Record<string, string> = {};
   Object.entries(params).forEach(([k, v]) => {
     if (v !== undefined && v !== null && v !== "") {

@@ -43,7 +43,9 @@ export const fetchReviews = async (
   limit = 20,
   isPending = false,
 ): Promise<PaginatedResult<ReviewItem>> => {
-  const endpoint = isPending ? "/api/v1/reviews/pending" : "/api/v1/reviews/admin";
+  const endpoint = isPending
+    ? "/api/v1/reviews/pending"
+    : "/api/v1/reviews/admin";
   const res = await api.get(`${endpoint}?page=${page}&limit=${limit}`);
   return res.data;
 };
@@ -53,7 +55,10 @@ export const createReviewAdmin = async (data: ReviewInput) => {
   return res.data;
 };
 
-export const updateReviewAdmin = async (id: string, data: Partial<ReviewInput>) => {
+export const updateReviewAdmin = async (
+  id: string,
+  data: Partial<ReviewInput>,
+) => {
   const res = await api.put(`/api/v1/reviews/admin/${id}`, data);
   return res.data;
 };

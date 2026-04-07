@@ -13,7 +13,7 @@ export default function HomeGames() {
         `${API_URL}/api/v1/apps?type=game&flag=bestseller&limit=6`,
       );
       const payload = response.data?.data;
-      return Array.isArray(payload) ? payload : (payload?.docs || []);
+      return Array.isArray(payload) ? payload : payload?.docs || [];
     },
   });
 

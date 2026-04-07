@@ -191,7 +191,10 @@ export function WishlistUpdateModal({
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-1.5">
                 Ứng dụng
-                <span className="font-normal text-slate-400"> (chọn nhiều)</span>
+                <span className="font-normal text-slate-400">
+                  {" "}
+                  (chọn nhiều)
+                </span>
               </label>
               {isLoadingApps ? (
                 <div className="text-sm text-slate-400 py-2">
@@ -259,7 +262,9 @@ export function WishlistUpdateModal({
           <button
             type="submit"
             form="wishlist-update-form"
-            disabled={loading || !formData.userId || formData.appIds.length === 0}
+            disabled={
+              loading || !formData.userId || formData.appIds.length === 0
+            }
             className="px-6 py-2.5 rounded-xl text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-colors flex items-center gap-2 disabled:opacity-50"
           >
             {loading && (

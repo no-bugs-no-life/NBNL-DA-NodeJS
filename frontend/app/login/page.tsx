@@ -46,7 +46,7 @@ export default function LoginPage() {
       };
       setErrorStr(
         errorResponse.response?.data?.msg ||
-        "Sai thông tin đăng nhập. Vui lòng thử lại.",
+          "Sai thông tin đăng nhập. Vui lòng thử lại.",
       );
     } finally {
       setLoading(false);

@@ -262,25 +262,38 @@ export function AppFormModal({
                 </label>
                 <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto p-2 border border-slate-200 rounded-xl bg-slate-50">
                   {isLoadingTags ? (
-                    <span className="text-sm text-slate-500 px-2">Đang tải tags...</span>
+                    <span className="text-sm text-slate-500 px-2">
+                      Đang tải tags...
+                    </span>
                   ) : tagsList.length === 0 ? (
-                    <span className="text-sm text-slate-500 px-2">Chưa có tag nào</span>
-                  ) : tagsList.map((tag: any) => (
-                    <label key={tag._id} className="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-50 transition-colors">
-                      <input
-                        type="checkbox"
-                        checked={formData.tags?.includes(tag._id) || false}
-                        onChange={(e) => {
-                          const newTags = e.target.checked
-                            ? [...(formData.tags || []), tag._id]
-                            : (formData.tags || []).filter(id => id !== tag._id);
-                          setFormData({ ...formData, tags: newTags });
-                        }}
-                        className="rounded text-blue-600 focus:ring-blue-500 w-4 h-4 cursor-pointer"
-                      />
-                      <span className="text-sm font-medium text-slate-700 select-none">{tag.name}</span>
-                    </label>
-                  ))}
+                    <span className="text-sm text-slate-500 px-2">
+                      Chưa có tag nào
+                    </span>
+                  ) : (
+                    tagsList.map((tag: any) => (
+                      <label
+                        key={tag._id}
+                        className="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-50 transition-colors"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={formData.tags?.includes(tag._id) || false}
+                          onChange={(e) => {
+                            const newTags = e.target.checked
+                              ? [...(formData.tags || []), tag._id]
+                              : (formData.tags || []).filter(
+                                  (id) => id !== tag._id,
+                                );
+                            setFormData({ ...formData, tags: newTags });
+                          }}
+                          className="rounded text-blue-600 focus:ring-blue-500 w-4 h-4 cursor-pointer"
+                        />
+                        <span className="text-sm font-medium text-slate-700 select-none">
+                          {tag.name}
+                        </span>
+                      </label>
+                    ))
+                  )}
                 </div>
               </div>
 

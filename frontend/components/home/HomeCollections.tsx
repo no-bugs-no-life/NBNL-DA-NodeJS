@@ -11,7 +11,7 @@ export default function HomeCollections() {
     queryFn: async () => {
       const response = await axios.get(`${API_URL}/api/v1/categories`);
       const payload = response.data?.data;
-      const arr = Array.isArray(payload) ? payload : (payload?.docs || []);
+      const arr = Array.isArray(payload) ? payload : payload?.docs || [];
       return arr.filter((c: CategoryItem) => c.parentId == null).slice(0, 2);
     },
   });

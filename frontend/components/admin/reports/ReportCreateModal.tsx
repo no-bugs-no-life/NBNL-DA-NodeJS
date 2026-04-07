@@ -145,10 +145,11 @@ export function ReportCreateModal({ onClose, onSubmit, loading }: ModalProps) {
                   setSearchQuery("");
                   setSearchResults([]);
                 }}
-                className={`px-4 py-2.5 rounded-xl text-sm font-semibold border-2 transition-all ${targetType === "app"
-                  ? "bg-purple-50 border-purple-300 text-purple-700"
-                  : "bg-slate-50 border-transparent text-slate-500 hover:bg-slate-100"
-                  }`}
+                className={`px-4 py-2.5 rounded-xl text-sm font-semibold border-2 transition-all ${
+                  targetType === "app"
+                    ? "bg-purple-50 border-purple-300 text-purple-700"
+                    : "bg-slate-50 border-transparent text-slate-500 hover:bg-slate-100"
+                }`}
               >
                 <span className="material-symbols-outlined text-sm mr-1">
                   apps
@@ -163,10 +164,11 @@ export function ReportCreateModal({ onClose, onSubmit, loading }: ModalProps) {
                   setSearchQuery("");
                   setSearchResults([]);
                 }}
-                className={`px-4 py-2.5 rounded-xl text-sm font-semibold border-2 transition-all ${targetType === "review"
-                  ? "bg-orange-50 border-orange-300 text-orange-700"
-                  : "bg-slate-50 border-transparent text-slate-500 hover:bg-slate-100"
-                  }`}
+                className={`px-4 py-2.5 rounded-xl text-sm font-semibold border-2 transition-all ${
+                  targetType === "review"
+                    ? "bg-orange-50 border-orange-300 text-orange-700"
+                    : "bg-slate-50 border-transparent text-slate-500 hover:bg-slate-100"
+                }`}
               >
                 <span className="material-symbols-outlined text-sm mr-1">
                   star
@@ -200,10 +202,11 @@ export function ReportCreateModal({ onClose, onSubmit, loading }: ModalProps) {
                         key={app._id}
                         type="button"
                         onClick={() => setTargetId(isSelected ? "" : app._id)}
-                        className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl border text-left transition-all text-sm ${isSelected
+                        className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl border text-left transition-all text-sm ${
+                          isSelected
                             ? "border-blue-400 bg-blue-50"
                             : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50"
-                          }`}
+                        }`}
                       >
                         <AppIcon iconUrl={app.iconUrl} name={app.name} />
                         <span className="font-medium text-slate-700 truncate flex-1">
@@ -238,8 +241,8 @@ export function ReportCreateModal({ onClose, onSubmit, loading }: ModalProps) {
                 <span className="text-sm text-green-700 font-medium flex-1 truncate">
                   {searchResults.find((r) => r._id === targetId)
                     ? getItemLabel(
-                      searchResults.find((r) => r._id === targetId),
-                    )
+                        searchResults.find((r) => r._id === targetId),
+                      )
                     : targetId}
                 </span>
                 <button

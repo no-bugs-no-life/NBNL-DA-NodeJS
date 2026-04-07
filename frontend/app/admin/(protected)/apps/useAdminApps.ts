@@ -42,7 +42,12 @@ export function useAdminApps() {
     setTimeout(() => setToast(null), 3000);
   };
 
-  const { data: appsData, isLoading, refetch, isFetching } = useQuery({
+  const {
+    data: appsData,
+    isLoading,
+    refetch,
+    isFetching,
+  } = useQuery({
     queryKey: ["apps", page, limit, filterStatus],
     queryFn: () => fetchApps(page, limit, filterStatus, token),
   });

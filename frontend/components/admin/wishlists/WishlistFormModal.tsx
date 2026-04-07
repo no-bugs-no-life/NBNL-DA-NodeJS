@@ -272,7 +272,9 @@ export function WishlistFormModal({ onClose, onSubmit, loading }: Props) {
           <button
             type="submit"
             form="wishlist-form"
-            disabled={loading || !formData.userId || formData.appIds.length === 0}
+            disabled={
+              loading || !formData.userId || formData.appIds.length === 0
+            }
             className="px-6 py-2.5 rounded-xl text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-colors flex items-center gap-2 disabled:opacity-50 "
           >
             {" "}

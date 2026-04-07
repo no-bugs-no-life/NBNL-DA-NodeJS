@@ -1,6 +1,9 @@
 "use client";
 import { useState } from "react";
-import { ReviewInput, ReviewItem } from "@/app/admin/(protected)/reviews/reviewsService";
+import {
+  ReviewInput,
+  ReviewItem,
+} from "@/app/admin/(protected)/reviews/reviewsService";
 import { useAdminApps } from "@/hooks/useAdminApps";
 import { useAdminUsers } from "@/hooks/useAdminUsers";
 import { API_URL } from "@/configs/api";
@@ -74,23 +77,31 @@ function AppIcon({ iconUrl, name }: { iconUrl?: string; name: string }) {
     </div>
   );
 }
-export function ReviewFormModal({ onClose, onSubmit, loading, action = "create", review }: Props) {
+export function ReviewFormModal({
+  onClose,
+  onSubmit,
+  loading,
+  action = "create",
+  review,
+}: Props) {
   const { data: apps = [], isLoading: isLoadingApps } = useAdminApps();
   const { data: users = [], isLoading: isLoadingUsers } = useAdminUsers();
   const [formData, setFormData] = useState<ReviewInput>(
-    review ? {
-      appId: review.appId?._id || "",
-      userId: review.userId?._id || "",
-      rating: review.rating || 5,
-      comment: review.comment || "",
-      status: review.status || "pending",
-    } : {
-      appId: "",
-      userId: "",
-      rating: 5,
-      comment: "",
-      status: "pending",
-    }
+    review
+      ? {
+          appId: review.appId?._id || "",
+          userId: review.userId?._id || "",
+          rating: review.rating || 5,
+          comment: review.comment || "",
+          status: review.status || "pending",
+        }
+      : {
+          appId: "",
+          userId: "",
+          rating: 5,
+          comment: "",
+          status: "pending",
+        },
   );
   const selectedApp = apps.find((a) => a._id === formData.appId);
   const selectedUser = users.find((u) => u._id === formData.userId);
@@ -164,10 +175,11 @@ export function ReviewFormModal({ onClose, onSubmit, loading, action = "create",
                             }
                           }}
                           disabled={isLoadingApps || action === "edit"}
-                          className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl border text-left transition-all text-sm disabled:opacity-50 ${isSelected
-                            ? "border-blue-400 bg-blue-50"
-                            : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50"
-                            }`}
+                          className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl border text-left transition-all text-sm disabled:opacity-50 ${
+                            isSelected
+                              ? "border-blue-400 bg-blue-50"
+                              : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50"
+                          }`}
                         >
                           <AppIcon iconUrl={app.iconUrl} name={app.name} />
                           <span className="font-medium text-slate-700 truncate flex-1">
@@ -195,7 +207,6 @@ export function ReviewFormModal({ onClose, onSubmit, loading, action = "create",
                   </div>
                 )}
               </div>
-
               {/* User selector */}
               <div>
                 <label className="block text-sm font-semibold text-slate-700 mb-1.5">
@@ -256,7 +267,9 @@ export function ReviewFormModal({ onClose, onSubmit, loading, action = "create",
             </div>{" "}
             {action === "edit" && (
               <p className="text-xs text-amber-600 mt-2 bg-amber-50 p-2 rounded-lg border border-amber-100">
-                Lưu ý: Không thể thay đổi người dùng và ứng dụng khi sửa đánh giá. Khi lưu đánh giá này, trạng thái sẽ tự động được đưa về "Chờ duyệt".
+                Lưu ý: Không thể thay đổi người dùng và ứng dụng khi sửa đánh
+                giá. Khi lưu đánh giá này, trạng thái sẽ tự động được đưa về
+                "Chờ duyệt".
               </p>
             )}
             {/* Star rating */}{" "}

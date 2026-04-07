@@ -5,10 +5,7 @@ import { useAdminSubPackages } from "@/app/admin/(protected)/sub-packages/useAdm
 
 interface Props {
   onClose: () => void;
-  onSubmit: (data: {
-    userId: string;
-    packageId: string;
-  }) => void;
+  onSubmit: (data: { userId: string; packageId: string }) => void;
   loading?: boolean;
 }
 

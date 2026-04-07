@@ -21,29 +21,23 @@ export function CategoryTable({
 }: Props) {
   return (
     <div className="bg-transparent md:bg-white md:rounded-2xl md:overflow-hidden">
-      {" "}
-      {/* DESKTOP TABLE VIEW */}{" "}
+      {/* DESKTOP TABLE VIEW */}
       <div className="hidden md:block">
-        {" "}
         <table className="w-full text-sm">
-          {" "}
           <thead>
-            {" "}
             <tr className="text-slate-500 bg-slate-50/50 border-b border-slate-100/50">
-              {" "}
               <th className="text-left px-6 py-4 font-semibold text-slate-600">
                 Tên danh mục
-              </th>{" "}
+              </th>
               <th className="text-left px-6 py-4 font-semibold text-slate-600">
                 Icon URL
-              </th>{" "}
+              </th>
               <th className="text-right px-6 py-4 font-semibold text-slate-600">
                 Thao tác
-              </th>{" "}
-            </tr>{" "}
-          </thead>{" "}
+              </th>
+            </tr>
+          </thead>
           <tbody>
-            {" "}
             {isLoading ? (
               <LoadingRows />
             ) : (
@@ -52,13 +46,12 @@ export function CategoryTable({
                 onEdit={onEdit}
                 onDelete={onDelete}
               />
-            )}{" "}
-          </tbody>{" "}
-        </table>{" "}
-      </div>{" "}
-      {/* MOBILE CARDS VIEW */}{" "}
+            )}
+          </tbody>
+        </table>
+      </div>
+      {/* MOBILE CARDS VIEW */}
       <div className="block md:hidden space-y-4">
-        {" "}
         {isLoading ? (
           <LoadingCards />
         ) : (
@@ -67,30 +60,28 @@ export function CategoryTable({
             onEdit={onEdit}
             onDelete={onDelete}
           />
-        )}{" "}
-      </div>{" "}
+        )}
+      </div>
       {!isLoading && (
         <Pagination
           currentPage={page}
           totalPages={totalPages}
           onPageChange={onPageChange}
         />
-      )}{" "}
+      )}
     </div>
   );
 }
 function LoadingRows() {
   return (
     <>
-      {" "}
       {Array.from({ length: 5 }).map((_, i) => (
         <tr key={i} className="animate-pulse border-b border-slate-50">
-          {" "}
           <td colSpan={3} className="px-6 py-4">
             <div className="h-4 bg-slate-100 rounded w-full" />
-          </td>{" "}
+          </td>
         </tr>
-      ))}{" "}
+      ))}
     </>
   );
 }
@@ -224,30 +215,27 @@ function DataRows({
   }
   return (
     <>
-      {" "}
       {categories.map((cat) => (
         <tr
           key={cat._id}
           className="hover:bg-slate-50/50 transition-colors group border-b border-slate-50"
         >
-          {" "}
           <td className="px-6 py-4 font-semibold text-slate-800 capitalize">
             {cat.name}
-          </td>{" "}
+          </td>
           <td className="px-6 py-4 text-slate-400 max-w-[200px] truncate text-xs font-mono">
             {cat.iconUrl || "—"}
-          </td>{" "}
+          </td>
           <td className="px-6 py-4 text-right">
-            {" "}
             <ActionButtons
               item={cat}
               onEdit={onEdit}
               onDelete={onDelete}
               showLabels={false}
-            />{" "}
-          </td>{" "}
+            />
+          </td>
         </tr>
-      ))}{" "}
+      ))}
     </>
   );
 }

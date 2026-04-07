@@ -416,7 +416,10 @@ export function AppInfoPage({
             <MetaChip label="Slug" value={app.slug} />
             <MetaChip label="Danh mục" value={app.categoryId?.name} />
             <MetaChip label="Trạng thái" value={app.status} />
-            <MetaChip label="Đánh giá" value={`${app.ratingScore?.toFixed(1) || "0"} ⭐ (${app.ratingCount || 0})`} />
+            <MetaChip
+              label="Đánh giá"
+              value={`${app.ratingScore?.toFixed(1) || "0"} ⭐ (${app.ratingCount || 0})`}
+            />
           </div>
           {/* Developer */}
           <SectionCard title="Nhà phát triển">
@@ -467,7 +470,12 @@ export function AppInfoPage({
                 }
               />
               <InfoRow label="Trạng thái" value={app.status} />
-              <InfoRow label="Tags" value={app.tags?.map((t: any) => t.name).join(", ") || "Chưa có"} />
+              <InfoRow
+                label="Tags"
+                value={
+                  app.tags?.map((t: any) => t.name).join(", ") || "Chưa có"
+                }
+              />
               <InfoRow
                 label="Vô hiệu hoá"
                 value={isDisabled ? "Có" : "Không"}

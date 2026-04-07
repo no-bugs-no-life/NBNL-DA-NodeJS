@@ -59,7 +59,7 @@ export function useDevelopers(
       const response = await axios.get(`${API_URL}/api/v1/developers`, {
         params,
       });
-      return response.data;
+      return response.data?.data || response.data;
     },
   });
 }
@@ -72,7 +72,7 @@ export function useMyDeveloper() {
       const response = await axios.get(`${API_URL}/api/v1/developers/my`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      return response.data as DeveloperItem | null;
+      return (response.data?.data || response.data) as DeveloperItem | null;
     },
   });
 }
@@ -85,7 +85,7 @@ export function useMyApps() {
       const response = await axios.get(`${API_URL}/api/v1/developers/my/apps`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      return response.data;
+      return response.data?.data || response.data;
     },
   });
 }

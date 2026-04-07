@@ -4,7 +4,11 @@ import { API_URL } from "@/configs/api";
 
 const getImageUrl = (url?: string) => {
   if (!url) return "";
-  if (url.startsWith("http") || url.startsWith("blob:") || url.startsWith("data:"))
+  if (
+    url.startsWith("http") ||
+    url.startsWith("blob:") ||
+    url.startsWith("data:")
+  )
     return url;
   if (/^[a-fA-F0-9]{24}$/.test(url)) return "https://i.sstatic.net/l60Hf.png";
   return `${API_URL}/${url.replace(/\\/g, "/")}`;
@@ -63,7 +67,11 @@ function ModalHeader({
       <div className="flex items-center gap-3">
         <div className="w-10 h-10 rounded-full bg-slate-100 overflow-hidden shrink-0 border border-slate-200">
           {avatarUrl ? (
-            <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
+            <img
+              src={avatarUrl}
+              alt=""
+              className="w-full h-full object-cover"
+            />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-slate-400">
               <span className="material-symbols-outlined text-lg">person</span>
@@ -71,7 +79,9 @@ function ModalHeader({
           )}
         </div>
         <div>
-          <h2 className="text-xl font-bold text-slate-800">Chi tiết Wishlist</h2>
+          <h2 className="text-xl font-bold text-slate-800">
+            Chi tiết Wishlist
+          </h2>
           <p className="text-xs text-slate-500 mt-0.5">
             {user?.fullName || "Người dùng ẩn"} · {user?.email}
           </p>
@@ -93,9 +103,7 @@ function EmptyState() {
       <span className="material-symbols-outlined text-5xl text-slate-200 mb-3">
         favorite_border
       </span>
-      <p className="text-slate-500 text-sm">
-        Không có app nào trong wishlist
-      </p>
+      <p className="text-slate-500 text-sm">Không có app nào trong wishlist</p>
     </div>
   );
 }

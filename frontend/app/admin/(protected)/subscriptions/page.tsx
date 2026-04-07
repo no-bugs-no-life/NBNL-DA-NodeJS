@@ -117,7 +117,13 @@ export default function AdminSubscriptionsPage() {
       {s.showCreate && (
         <SubscriptionModal
           onClose={() => s.setShowCreate(false)}
-          onSubmit={(data) => s.mCreate.mutate({ userId: data.userId, appId: "", subPackageId: data.packageId })}
+          onSubmit={(data) =>
+            s.mCreate.mutate({
+              userId: data.userId,
+              appId: "",
+              subPackageId: data.packageId,
+            })
+          }
           loading={s.mCreate.isPending}
         />
       )}

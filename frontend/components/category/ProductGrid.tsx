@@ -8,13 +8,16 @@ import ProductCard from "./ProductCard";
 import { AppItem } from "./types";
 import { API_URL } from "@/configs/api";
 
-export default function ProductGrid() {
+export default function ProductGrid({ categoryId }: { categoryId?: string }) {
   const [displayedCount, setDisplayedCount] = useState(8);
 
   const { data: apps = [], isLoading } = useQuery({
-    queryKey: ["apps", "all"],
+    queryKey: categoryId ? ["apps", "category", categoryId] : ["apps", "all"],
     queryFn: async () => {
-      const response = await axios.get(`${API_URL}/api/v1/apps?limit=50`);
+      const url = categoryId
+        ? `${API_URL}/api/v1/apps?category=${categoryId}&limit=50`
+        : `${API_URL}/api/v1/apps?limit=50`;
+      const response = await axios.get(url);
       interface ApiApp {
         _id: string;
         slug: string;
@@ -23,7 +26,12 @@ export default function ProductGrid() {
         price: number;
         iconUrl?: string;
       }
-      const arr = response.data?.docs || response.data;
+      const rawData =
+        response.data?.data?.docs ||
+        response.data?.data ||
+        response.data?.docs ||
+        response.data;
+      const arr = Array.isArray(rawData) ? rawData : [];
       return arr.map((item: ApiApp) => ({
         id: item._id,
         slug: item.slug,

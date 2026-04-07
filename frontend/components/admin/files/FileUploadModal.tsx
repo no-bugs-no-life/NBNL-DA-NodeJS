@@ -4,14 +4,14 @@ import { useUsers } from "@/hooks/useUsers";
 export type CreatePayload =
   | { type: "multipart"; formData: FormData }
   | {
-    type: "manual";
-    data: {
-      ownerType: string;
-      ownerId?: string;
-      fileType: string;
-      url: string;
+      type: "manual";
+      data: {
+        ownerType: string;
+        ownerId?: string;
+        fileType: string;
+        url: string;
+      };
     };
-  };
 const FILE_TYPES = [
   "apk",
   "ipa",
@@ -30,7 +30,13 @@ interface Props {
   onSubmit: (payload: CreatePayload) => void;
   loading?: boolean;
 }
-export function FileUploadModal({ onClose, onSubmit, loading, action = "create", file }: Props) {
+export function FileUploadModal({
+  onClose,
+  onSubmit,
+  loading,
+  action = "create",
+  file,
+}: Props) {
   const [activeTab, setActiveTab] = useState<"upload" | "url">("upload");
   const [fileType, setFileType] = useState<string>("icon");
   const [ownerType, setOwnerType] = useState<string>("user");
@@ -340,7 +346,11 @@ export function FileUploadModal({ onClose, onSubmit, loading, action = "create",
                 />{" "}
               </svg>
             )}{" "}
-            {loading ? "Đang xử lý..." : action === "edit" ? "Cập nhật" : "Tải lên"}{" "}
+            {loading
+              ? "Đang xử lý..."
+              : action === "edit"
+                ? "Cập nhật"
+                : "Tải lên"}{" "}
           </button>{" "}
         </div>{" "}
       </div>{" "}

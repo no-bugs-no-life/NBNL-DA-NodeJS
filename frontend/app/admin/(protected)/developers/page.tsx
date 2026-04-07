@@ -131,7 +131,9 @@ export default function DevelopersPage() {
     if (action === "edit") {
       setFormTarget({ dev, action: "edit" });
     } else if (action === "revoke") {
-      if (confirm(`Bạn có chắc muốn thu hồi tài khoản developer "${dev.name}"?`)) {
+      if (
+        confirm(`Bạn có chắc muốn thu hồi tài khoản developer "${dev.name}"?`)
+      ) {
         revokeMutation
           .mutateAsync({ id: dev._id })
           .then(() => {
@@ -160,8 +162,8 @@ export default function DevelopersPage() {
     } catch (error: any) {
       showToast(
         error.response?.data?.message ||
-        error.response?.data?.error ||
-        "Đã xảy ra lỗi",
+          error.response?.data?.error ||
+          "Đã xảy ra lỗi",
         "error",
       );
     }

@@ -73,10 +73,15 @@ export function SubPackageModal({
       setDurationDays(String(initialData.durationDays));
       setDescription(initialData.description || "");
       setIsActive(initialData.isActive);
-      setAppId(typeof initialData.appId === "object" && initialData.appId !== null ? (initialData.appId as { _id: string })._id : (initialData.appId as string) || "");
+      setAppId(
+        typeof initialData.appId === "object" && initialData.appId !== null
+          ? (initialData.appId as { _id: string })._id
+          : (initialData.appId as string) || "",
+      );
     }
   }, [initialData]);
-  const isValid = name.trim() && price !== "" && Number(price) >= 0 && appId !== "";
+  const isValid =
+    name.trim() && price !== "" && Number(price) >= 0 && appId !== "";
   const handleTypeChange = (newType: string) => {
     setType(newType);
     const opt = TYPE_OPTIONS.find((t) => t.value === newType);
@@ -139,10 +144,11 @@ export function SubPackageModal({
                       key={app._id}
                       type="button"
                       onClick={() => setAppId(app._id)}
-                      className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl border text-left transition-all text-sm ${isSelected
-                        ? "border-blue-400 bg-blue-50"
-                        : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50"
-                        }`}
+                      className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl border text-left transition-all text-sm ${
+                        isSelected
+                          ? "border-blue-400 bg-blue-50"
+                          : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50"
+                      }`}
                     >
                       <AppIcon iconUrl={app.iconUrl} name={app.name} />
                       <span className="font-medium text-slate-700 truncate flex-1">
@@ -170,7 +176,6 @@ export function SubPackageModal({
               </div>
             )}
           </div>
-
           {/* Name */}
           <div>
             {" "}
