@@ -3,11 +3,20 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCategories } from "@/hooks/useCategories";
 import useAuthStore from "@/store/useAuthStore";
+import { useEffect, useState } from "react";
 
 export default function NavLinks() {
   const pathname = usePathname();
   const { data: categories = [], isLoading } = useCategories();
-  const { isAdmin, isAuthenticated } = useAuthStore();
+  const user = useAuthStore(state => state.user);
+  const isAuthenticated = useAuthStore(state => state.isAuthenticated);
+
+  const roleName = (user?.role as any)?.name || user?.role || "";
+  const isAdmin = roleName === "ADMIN" || roleName === "MODERATOR";
+
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => setMounted(true), []);
 
   const isActive = (path: string) => {
     if (path === "/") {
@@ -85,7 +94,7 @@ export default function NavLinks() {
         Khuyến mãi
       </Link>
 
-      {isAuthenticated && isAdmin() && (
+      {mounted && isAuthenticated && isAdmin && (
         <Link
           href="/admin/dashboard"
           className="ml-2 flex items-center gap-1.5 px-4 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-600 hover:text-white rounded-full font-bold transition-all border border-blue-200 hover:border-blue-600 shadow-sm"

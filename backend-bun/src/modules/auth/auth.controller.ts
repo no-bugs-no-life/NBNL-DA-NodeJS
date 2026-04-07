@@ -32,7 +32,12 @@ export class AuthController extends BaseController {
 			path: "/",
 		});
 
-		return c.json(this.ok(result.user, "Đăng nhập thành công"));
+		return c.json(
+			this.ok(
+				{ user: result.user, token: result.accessToken },
+				"Đăng nhập thành công"
+			)
+		);
 	}
 
 	async logout(c: Context) {

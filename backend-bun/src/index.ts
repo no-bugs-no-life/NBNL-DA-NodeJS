@@ -33,6 +33,8 @@ app.use(
 	}),
 );
 
+import { HTTPException } from "hono/http-exception";
+
 // 2. Global Error Handler
 app.onError((err, c) => {
 	if (err instanceof AppError) {
@@ -42,6 +44,10 @@ app.onError((err, c) => {
 		);
 		// biome-ignore lint/suspicious/noExplicitAny: Hono expects specific status codes
 		return c.json(fail(err.message), err.statusCode as any);
+	}
+
+	if (err instanceof HTTPException) {
+		return c.json(fail(err.message), err.status);
 	}
 
 	logger.error(err, "Unhandled Application Error");

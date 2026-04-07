@@ -21,16 +21,18 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const { data } = await apiClient.post(`/api/v1/auth/login`, {
+      const response = await apiClient.post(`/api/v1/auth/login`, {
         username,
         password,
       });
 
-      // Backend yields literal token string
-      login(data);
-      await checkAuth(); // Load data seamlessly
+      const payload = response.data?.data;
+      if (payload?.token) {
+        login(payload.token);
+      }
 
-      // Đọc role từ store sau khi checkAuth() đã set user
+      await checkAuth();
+
       const { user } = useAuthStore.getState();
       const roleName = (user?.role as any)?.name || user?.role || "";
       if (roleName === "ADMIN" || roleName === "MODERATOR") {
@@ -40,11 +42,11 @@ export default function LoginPage() {
       }
     } catch (err) {
       const errorResponse = err as {
-        response?: { data?: { message?: string } };
+        response?: { data?: { msg?: string } };
       };
       setErrorStr(
-        errorResponse.response?.data?.message ||
-          "Sai thông tin đăng nhập. Vui lòng thử lại.",
+        errorResponse.response?.data?.msg ||
+        "Sai thông tin đăng nhập. Vui lòng thử lại.",
       );
     } finally {
       setLoading(false);

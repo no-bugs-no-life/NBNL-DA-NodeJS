@@ -14,6 +14,8 @@ export interface App {
 	ratingCount: number;
 	isDisabled: boolean;
 	isDeleted: boolean;
+	flags?: string[];
+	priority?: number;
 	createdAt: Date;
 	updatedAt: Date;
 }
@@ -32,6 +34,8 @@ export interface CreateAppDTO {
 	developer: string;
 	category: string;
 	tags?: string[];
+	flags?: string[];
+	priority?: number;
 }
 
 export interface UpdateAppDTO {
@@ -44,6 +48,8 @@ export interface UpdateAppDTO {
 	category?: string;
 	tags?: string[];
 	isDisabled?: boolean;
+	flags?: string[];
+	priority?: number;
 }
 
 export interface AppFilters {
@@ -56,6 +62,10 @@ export interface AppFilters {
 	search?: string;
 	page?: number;
 	limit?: number;
+	flags?: string[];
+	priority?: number;
+	sortBy?: string;
+	sortOrder?: "asc" | "desc";
 }
 
 // Populated types for API responses
@@ -91,6 +101,8 @@ export interface AppWithRelations {
 	ratingCount?: number;
 	isDisabled?: boolean;
 	isDeleted?: boolean;
+	flags?: string[];
+	priority?: number;
 	createdAt: string;
 	updatedAt: string;
 }

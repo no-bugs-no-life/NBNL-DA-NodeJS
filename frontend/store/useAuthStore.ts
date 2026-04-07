@@ -78,8 +78,9 @@ const useAuthStore = create<AuthState>((set, get) => ({
 
     try {
       set({ isLoading: true });
-      const { data } = await api.get(`/api/v1/auth/me`);
-      set({ user: data, token, isAuthenticated: true, isLoading: false });
+      const response = await api.get(`/api/v1/auth/me`);
+      const payload = response.data?.data || response.data;
+      set({ user: payload, token, isAuthenticated: true, isLoading: false });
     } catch (error) {
       console.error("Auth check failed:", error);
       localStorage.removeItem("token");

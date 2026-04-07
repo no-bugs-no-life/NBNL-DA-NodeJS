@@ -84,11 +84,18 @@ export class AppsRepository {
 			];
 		}
 
+		if (filters?.flags?.length) {
+			query.flags = { $in: filters.flags };
+		}
+
+		const sortField = filters?.sortBy || "createdAt";
+		const sortOrder = filters?.sortOrder === "asc" ? 1 : -1;
+
 		const skip = (page - 1) * limit;
 		const [docs, totalDocs] = await Promise.all([
 			this.collection
 				.find(query)
-				.sort({ createdAt: -1 })
+				.sort({ [sortField]: sortOrder })
 				.skip(skip)
 				.limit(limit)
 				.toArray(),
@@ -152,6 +159,8 @@ export class AppsRepository {
 			developer: data.developer,
 			category: data.category,
 			tags: data.tags || [],
+			flags: data.flags || [],
+			priority: data.priority || 0,
 			ratingScore: 0,
 			ratingCount: 0,
 			isDisabled: false,
@@ -302,6 +311,8 @@ export class AppsRepository {
 				ratingCount: app.ratingCount,
 				isDisabled: app.isDisabled,
 				isDeleted: app.isDeleted,
+				flags: app.flags,
+				priority: app.priority,
 				createdAt:
 					app.createdAt instanceof Date
 						? app.createdAt.toISOString()

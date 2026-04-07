@@ -14,6 +14,8 @@ export const CreateAppSchema = z.object({
 	developer: z.string().min(1),
 	category: z.string().min(1),
 	tags: z.array(z.string()).optional(),
+	flags: z.array(z.string()).optional(),
+	priority: z.number().int().optional().default(0),
 });
 
 export const UpdateAppSchema = z.object({
@@ -26,6 +28,8 @@ export const UpdateAppSchema = z.object({
 	category: z.string().min(1).optional(),
 	tags: z.array(z.string()).optional(),
 	isDisabled: z.boolean().optional(),
+	flags: z.array(z.string()).optional(),
+	priority: z.number().int().optional(),
 });
 
 export const AppParamsSchema = z.object({
@@ -48,8 +52,12 @@ export const AppQuerySchema = z.object({
 		.enum(["true", "false"])
 		.transform((v) => v === "true")
 		.optional(),
+	flags: z
+		.string()
+		.optional()
+		.transform((v) => (v ? v.split(",") : undefined)),
 	sortBy: z
-		.enum(["name", "price", "ratingScore", "createdAt"])
+		.enum(["name", "price", "ratingScore", "createdAt", "priority"])
 		.default("createdAt"),
 	sortOrder: z.enum(["asc", "desc"]).default("desc"),
 });

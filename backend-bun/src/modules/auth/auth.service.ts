@@ -3,17 +3,27 @@ import { env } from "@/config/env";
 import { badRequest, unauthorized } from "@/shared/errors";
 import type { LoginRequest } from "./auth.schema";
 import type { AuthResponse, UserPayload } from "./auth.types";
+import { mongoose } from "../../infra/db/connection";
 
 export class AuthService {
 	/**
 	 * Placeholder: Verify user logic using a real DB.
 	 */
 	async authenticate(data: LoginRequest): Promise<UserPayload> {
-		// 🔥 TODO: Check DB using UserRepository
-		if (data.email === "admin@example.com" && data.password === "123456") {
-			return { id: "1", email: data.email, role: "ADMIN" };
+		const db = mongoose.connection.db;
+		if (!db) throw badRequest("Database not connected");
+
+		const user = await db.collection("users").findOne({ username: data.username });
+		if (!user) {
+			throw badRequest("Tài khoản không tồn tại");
 		}
-		throw badRequest("Mật khẩu hoặc email không hợp lệ");
+
+		const isMatch = await Bun.password.verify(data.password, user.password as string);
+		if (!isMatch) {
+			throw badRequest("Mật khẩu không hợp lệ");
+		}
+
+		return { id: user._id.toString(), email: user.email, role: user.role };
 	}
 
 	async generateTokens(
