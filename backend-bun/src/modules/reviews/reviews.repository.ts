@@ -11,8 +11,8 @@ const COLLECTION = "reviews";
 
 const reviewSchema = new mongoose.Schema<Review>(
 	{
-		appId: { type: String, required: true, index: true },
-		userId: { type: String, required: true, index: true },
+		app: { type: String, required: true, index: true },
+		user: { type: String, required: true, index: true },
 		rating: { type: Number, required: true, min: 1, max: 5 },
 		comment: { type: String, required: true },
 		status: {
@@ -25,10 +25,10 @@ const reviewSchema = new mongoose.Schema<Review>(
 );
 
 // Compound index for user-app unique constraint
-reviewSchema.index({ userId: 1, appId: 1 }, { unique: true });
+reviewSchema.index({ user: 1, app: 1 }, { unique: true });
 
 export const ReviewModel =
-	mongoose.models[COLLECTION] ||
+	(mongoose.models[COLLECTION] as mongoose.Model<Review>) ||
 	mongoose.model<Review>(COLLECTION, reviewSchema);
 
 interface PaginatedResult<T> {
@@ -43,21 +43,21 @@ interface PaginatedResult<T> {
 const populateReview = (doc: unknown): AdminReviewItem | null => {
 	if (!doc || typeof doc !== "object") return null;
 	const d = doc as Record<string, unknown>;
-	const appId = d.appId as Record<string, unknown>;
-	const userId = d.userId as Record<string, unknown>;
+	const app = d.app as Record<string, unknown>;
+	const user = d.user as Record<string, unknown>;
 
 	return {
 		_id: d._id as string,
-		appId: appId
-			? { _id: appId._id as string, name: appId.name as string }
+		app: app
+			? { _id: app._id as string, name: app.name as string }
 			: { _id: "", name: "" },
-		userId: userId
+		user: user
 			? {
-					_id: userId._id as string,
-					fullName: userId.fullName as string,
-					email: userId.email as string | undefined,
-					avatarUrl: userId.avatarUrl as string | undefined,
-				}
+				_id: user._id as string,
+				fullName: user.fullName as string,
+				email: user.email as string | undefined,
+				avatarUrl: user.avatarUrl as string | undefined,
+			}
 			: { _id: "", fullName: "" },
 		rating: d.rating as number,
 		comment: d.comment as string,
@@ -69,8 +69,8 @@ const populateReview = (doc: unknown): AdminReviewItem | null => {
 export class ReviewsRepository {
 	async findAll(query: ReviewQueryRequest): Promise<PaginatedResult<Review>> {
 		const filter: Record<string, unknown> = {};
-		if (query.appId) filter.appId = query.appId;
-		if (query.userId) filter.userId = query.userId;
+		if (query.app) filter.app = query.app;
+		if (query.user) filter.user = query.user;
 		if (query.status) filter.status = query.status;
 
 		const skip = (query.page - 1) * query.limit;
@@ -100,8 +100,8 @@ export class ReviewsRepository {
 		totalPages: number;
 	}> {
 		const filter: Record<string, unknown> = {};
-		if (query.appId) filter.appId = query.appId;
-		if (query.userId) filter.userId = query.userId;
+		if (query.app) filter.app = query.app;
+		if (query.user) filter.user = query.user;
 		if (query.status) filter.status = query.status;
 
 		const skip = (query.page - 1) * query.limit;
@@ -110,8 +110,8 @@ export class ReviewsRepository {
 				.sort({ createdAt: -1 })
 				.skip(skip)
 				.limit(query.limit)
-				.populate("appId", "_id name")
-				.populate("userId", "_id fullName email avatarUrl")
+				.populate("app", "_id name")
+				.populate("user", "_id fullName email avatarUrl")
 				.lean(),
 			ReviewModel.countDocuments(filter),
 		]);
@@ -133,20 +133,20 @@ export class ReviewsRepository {
 	async findByIdWithPopulate(id: string): Promise<AdminReviewItem | null> {
 		if (!mongoose.Types.ObjectId.isValid(id)) return null;
 		const doc = await ReviewModel.findById(id)
-			.populate("appId", "_id name")
-			.populate("userId", "_id fullName email avatarUrl")
+			.populate("app", "_id name")
+			.populate("user", "_id fullName email avatarUrl")
 			.lean();
 		return doc ? populateReview(doc) : null;
 	}
 
-	async findByAppId(appId: string): Promise<Review[]> {
-		return ReviewModel.find({ appId, status: "approved" })
+	async findByAppId(app: string): Promise<Review[]> {
+		return ReviewModel.find({ app, status: "approved" })
 			.sort({ createdAt: -1 })
 			.lean();
 	}
 
-	async findByUserId(userId: string): Promise<Review[]> {
-		return ReviewModel.find({ userId }).sort({ createdAt: -1 }).lean();
+	async findByUserId(user: string): Promise<Review[]> {
+		return ReviewModel.find({ user }).sort({ createdAt: -1 }).lean();
 	}
 
 	async create(data: CreateReviewDTO): Promise<Review> {
@@ -165,16 +165,16 @@ export class ReviewsRepository {
 		return result !== null;
 	}
 
-	async existsByUserAndApp(userId: string, appId: string): Promise<boolean> {
-		const count = await ReviewModel.countDocuments({ userId, appId });
+	async existsByUserAndApp(user: string, app: string): Promise<boolean> {
+		const count = await ReviewModel.countDocuments({ user, app });
 		return count > 0;
 	}
 
 	async getAverageRating(
-		appId: string,
+		app: string,
 	): Promise<{ average: number; count: number }> {
 		const result = await ReviewModel.aggregate([
-			{ $match: { appId, status: "approved" } },
+			{ $match: { app, status: "approved" } },
 			{
 				$group: { _id: null, average: { $avg: "$rating" }, count: { $sum: 1 } },
 			},

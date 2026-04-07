@@ -18,7 +18,7 @@ export class OrdersService {
 	private readonly couponsService = new CouponsService();
 
 	async create(
-		userId: string,
+		user: string,
 		data: CreateOrderRequest,
 	): Promise<IOrderPublic> {
 		if (data.items.length === 0) {
@@ -38,9 +38,9 @@ export class OrdersService {
 		}
 
 		const order = await this.repository.create({
-			userId: new Types.ObjectId(userId) as unknown as IOrder["userId"],
+			user: new Types.ObjectId(user) as unknown as IOrder["user"],
 			items: data.items.map((item) => ({
-				appId: new Types.ObjectId(item.appId) as unknown as IOrder["items"][0]["appId"],
+				app: new Types.ObjectId(item.app) as unknown as IOrder["items"][0]["app"],
 				name: item.name,
 				price: item.price,
 				iconUrl: item.iconUrl,
@@ -62,8 +62,8 @@ export class OrdersService {
 		return this.toPublic(order);
 	}
 
-	async getUserOrders(userId: string): Promise<IOrderPublic[]> {
-		const orders = await this.repository.findByUserId(userId);
+	async getUserOrders(user: string): Promise<IOrderPublic[]> {
+		const orders = await this.repository.findByUserId(user);
 		return orders.map((o) => this.toPublic(o));
 	}
 
@@ -80,11 +80,11 @@ export class OrdersService {
 
 		// If completed, clear user's cart
 		if (status === OrdStatus.COMPLETED) {
-			const userId = order.userId.toString();
-			const appIds = order.items.map((i) => i.appId.toString());
-			for (const appId of appIds) {
+			const user = order.user.toString();
+			const apps = order.items.map((i) => i.app.toString());
+			for (const app of apps) {
 				try {
-					await this.cartsService.removeItem(userId, appId);
+					await this.cartsService.removeItem(user, app);
 				} catch {
 					// Ignore if item not in cart
 				}
@@ -127,9 +127,9 @@ export class OrdersService {
 	private toPublic(order: IOrder): IOrderPublic {
 		return {
 			id: order._id?.toString() ?? "",
-			userId: order.userId.toString(),
+			user: order.user.toString(),
 			items: order.items.map((item) => ({
-				appId: item.appId.toString(),
+				app: item.app.toString(),
 				name: item.name,
 				price: item.price,
 				iconUrl: item.iconUrl,

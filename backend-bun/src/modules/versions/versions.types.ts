@@ -29,7 +29,7 @@ export interface AccessControl {
 
 export interface Version {
 	_id: string;
-	appId: string;
+	app: string;
 	versionNumber: string;
 	versionCode: number;
 	releaseName?: string;
@@ -46,7 +46,7 @@ export interface Version {
 }
 
 export interface CreateVersionDTO {
-	appId: string;
+	app: string;
 	versionNumber: string;
 	versionCode: number;
 	releaseName?: string;
@@ -69,7 +69,7 @@ export interface UpdateVersionDTO {
 }
 
 export interface VersionQueryDTO {
-	appId?: string;
+	app?: string;
 	status?: VersionStatus;
 	platform?: Platform;
 	isLatest?: boolean;
@@ -77,7 +77,7 @@ export interface VersionQueryDTO {
 	limit?: number;
 }
 
-export interface VersionWithApp extends Version {
+export interface VersionWithApp extends Omit<Version, "app"> {
 	app?: {
 		_id: string;
 		name: string;

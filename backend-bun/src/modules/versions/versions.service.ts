@@ -25,7 +25,7 @@ export interface DownloadPermission {
 		checksum?: string;
 		fileKey: string;
 	};
-	appId?: string;
+	app?: string;
 }
 
 export class VersionsService {
@@ -45,16 +45,16 @@ export class VersionsService {
 		return version;
 	}
 
-	async findByAppId(appId: string): Promise<Version[]> {
-		return this.repo.findByAppId(appId);
+	async findByAppId(app: string): Promise<Version[]> {
+		return this.repo.findByAppId(app);
 	}
 
-	async findLatestByAppId(appId: string): Promise<Version | null> {
-		return this.repo.findLatestByAppId(appId);
+	async findLatestByAppId(app: string): Promise<Version | null> {
+		return this.repo.findLatestByAppId(app);
 	}
 
-	async findByPlatform(appId: string, platform: Platform): Promise<Version[]> {
-		return this.repo.findByPlatform(appId, platform);
+	async findByPlatform(app: string, platform: Platform): Promise<Version[]> {
+		return this.repo.findByPlatform(app, platform);
 	}
 
 	async create(data: CreateVersionDTO): Promise<Version> {
@@ -86,7 +86,7 @@ export class VersionsService {
 		return this.update(id, { status: "archived" });
 	}
 
-	async markAsLatest(id: string, _appId: string): Promise<Version> {
+	async markAsLatest(id: string, _app: string): Promise<Version> {
 		await this.findById(id);
 		return this.repo.update(id, { isLatest: true });
 	}
@@ -106,7 +106,7 @@ export class VersionsService {
 	async checkDownloadPermission(
 		versionId: string,
 		platform: Platform,
-		userId?: string,
+		user?: string,
 		userRole?: string,
 		hasPurchased?: boolean,
 	): Promise<DownloadPermission> {
@@ -151,7 +151,7 @@ export class VersionsService {
 			};
 		}
 
-		if (userId && version.accessControl.allowedUserIds.includes(userId)) {
+		if (user && version.accessControl.allowedUserIds.includes(user)) {
 			return {
 				allowed: true,
 				reason: "user_whitelist",
@@ -184,7 +184,7 @@ export class VersionsService {
 		return {
 			allowed: false,
 			reason: "purchase_required",
-			appId: version.appId,
+			app: version.app,
 		};
 	}
 
@@ -194,7 +194,7 @@ export class VersionsService {
 	async getDownloadInfo(
 		versionId: string,
 		platform: Platform,
-		userId?: string,
+		user?: string,
 		userRole?: string,
 		hasPurchased?: boolean,
 	): Promise<{
@@ -209,7 +209,7 @@ export class VersionsService {
 		const permission = await this.checkDownloadPermission(
 			versionId,
 			platform,
-			userId,
+			user,
 			userRole,
 			hasPurchased,
 		);
@@ -217,7 +217,7 @@ export class VersionsService {
 		if (!permission.allowed) {
 			throw AppError.forbidden(`Download denied: ${permission.reason}`, {
 				code: permission.reason,
-				appId: permission.appId,
+				app: permission.app,
 			} as Record<string, unknown>);
 		}
 

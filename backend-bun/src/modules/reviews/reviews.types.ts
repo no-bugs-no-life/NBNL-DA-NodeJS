@@ -1,7 +1,7 @@
 export interface Review {
 	_id: string;
-	appId: string;
-	userId: string;
+	app: string;
+	user: string;
 	rating: number;
 	comment: string;
 	status: ReviewStatus;
@@ -12,8 +12,8 @@ export interface Review {
 export type ReviewStatus = "pending" | "approved" | "rejected";
 
 export interface CreateReviewDTO {
-	appId: string;
-	userId: string;
+	app: string;
+	user: string;
 	rating: number;
 	comment: string;
 }
@@ -24,7 +24,7 @@ export interface UpdateReviewDTO {
 	status?: ReviewStatus;
 }
 
-export interface ReviewWithUser extends Review {
+export interface ReviewWithUser extends Omit<Review, "user" | "app"> {
 	user?: {
 		_id: string;
 		fullName: string;
@@ -47,8 +47,8 @@ export interface ReviewUser {
 
 export interface AdminReviewItem {
 	_id: string;
-	appId: ReviewApp;
-	userId: ReviewUser;
+	app: ReviewApp;
+	user: ReviewUser;
 	rating: number;
 	comment: string;
 	status: ReviewStatus;
@@ -61,4 +61,12 @@ export interface PaginatedReviews {
 	limit: number;
 	totalPages: number;
 	page: number;
+}
+
+export interface ReviewQueryRequest {
+	app?: string;
+	user?: string;
+	status?: ReviewStatus;
+	page?: number;
+	limit?: number;
 }

@@ -10,7 +10,8 @@ export default function HomeTrending() {
     queryKey: ["apps", "trending"],
     queryFn: async () => {
       const response = await axios.get(`${API_URL}/api/v1/apps?limit=5`);
-      return response.data?.docs || response.data;
+      const payload = response.data?.data;
+      return Array.isArray(payload) ? payload : (payload?.docs || []);
     },
   });
 

@@ -11,8 +11,8 @@ export const CreateAppSchema = z.object({
 	iconUrl: z.string().optional().default(""),
 	price: z.number().min(0).default(0),
 	status: z.enum(APP_STATUSES).optional(),
-	developerId: z.string().min(1),
-	categoryId: z.string().min(1),
+	developer: z.string().min(1),
+	category: z.string().min(1),
 	tags: z.array(z.string()).optional(),
 });
 
@@ -23,7 +23,7 @@ export const UpdateAppSchema = z.object({
 	iconUrl: z.string().optional(),
 	price: z.number().min(0).optional(),
 	status: z.enum(APP_STATUSES).optional(),
-	categoryId: z.string().min(1).optional(),
+	category: z.string().min(1).optional(),
 	tags: z.array(z.string()).optional(),
 	isDisabled: z.boolean().optional(),
 });
@@ -36,8 +36,8 @@ export const AppQuerySchema = z.object({
 	page: z.coerce.number().min(1).default(1),
 	limit: z.coerce.number().min(1).max(100).default(20),
 	status: z.enum(APP_STATUSES).optional(),
-	categoryId: z.string().optional(),
-	developerId: z.string().optional(),
+	category: z.string().optional(),
+	developer: z.string().optional(),
 	tags: z.string().optional(), // comma-separated
 	search: z.string().optional(),
 	isDisabled: z

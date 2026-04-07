@@ -2,8 +2,8 @@ import type { IBaseRepository } from "@/shared/base";
 import type { IReport, ReportQuery, ReportStatus } from "./reports.types";
 
 export interface IReportRepository extends IBaseRepository<IReport> {
-	findByReporter(reporterId: string): Promise<IReport[]>;
-	findByTarget(targetType: string, targetId: string): Promise<IReport[]>;
+	findByReporter(reporter: string): Promise<IReport[]>;
+	findByTarget(targetType: string, target: string): Promise<IReport[]>;
 	findAllPaginated(
 		query: ReportQuery,
 	): Promise<{ reports: IReport[]; total: number }>;
@@ -26,14 +26,14 @@ export class ReportsRepository implements IReportRepository {
 		return null;
 	}
 
-	async findByReporter(_reporterId: string): Promise<IReport[]> {
+	async findByReporter(_reporter: string): Promise<IReport[]> {
 		// TODO: Implement with MongoDB
 		return [];
 	}
 
 	async findByTarget(
 		_targetType: string,
-		_targetId: string,
+		_target: string,
 	): Promise<IReport[]> {
 		// TODO: Implement with MongoDB - find all reports for specific target
 		return [];

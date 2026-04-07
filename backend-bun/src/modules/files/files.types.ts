@@ -17,7 +17,7 @@ export interface IFile {
 	size: number;
 	mimeType?: string;
 	fileKey?: string;
-	uploaderId?: string;
+	uploader?: string;
 	isDeleted: boolean;
 	createdAt: Date;
 	updatedAt: Date;

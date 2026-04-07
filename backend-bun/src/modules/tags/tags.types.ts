@@ -3,7 +3,7 @@ export interface Tag {
 	name: string;
 	slug: string;
 	isDeleted?: boolean;
-	appIds?: string[];
+	apps?: string[];
 	createdAt: Date;
 	updatedAt: Date;
 }
@@ -19,7 +19,7 @@ export interface UpdateTagDTO {
 }
 
 export interface TagWithRelations extends Tag {
-	appIds: string[];
+	apps: string[];
 }
 
 export interface PaginatedTags {
@@ -28,4 +28,10 @@ export interface PaginatedTags {
 	limit: number;
 	totalPages: number;
 	page: number;
+}
+
+export interface TagQueryRequest {
+	search?: string;
+	page: number;
+	limit: number;
 }

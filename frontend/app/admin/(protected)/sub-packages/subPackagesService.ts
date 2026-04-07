@@ -11,7 +11,7 @@ export interface PaginatedResult<T> {
 export interface SubPackageItem {
   _id: string;
   name: string;
-  appId: string | null;
+  appId: string | { _id: string } | null;
   type: "monthly" | "yearly" | "lifetime";
   price: number;
   durationDays: number;

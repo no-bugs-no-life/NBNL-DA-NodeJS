@@ -56,9 +56,9 @@ export class CouponsController extends BaseController {
 		const data = c.req.valid("json");
 		const validated = ApplyCouponSchema.parse(data);
 
-		const { price, appId } = await c.req.json<{
+		const { price, app } = await c.req.json<{
 			price: number;
-			appId?: string;
+			app?: string;
 		}>();
 
 		if (!price || price <= 0) {
@@ -68,7 +68,7 @@ export class CouponsController extends BaseController {
 		const result = await this.couponsService.applyCoupon(
 			validated.code,
 			price,
-			appId,
+			app,
 		);
 		return c.json(this.ok(result, "Áp dụng coupon thành công"));
 	}

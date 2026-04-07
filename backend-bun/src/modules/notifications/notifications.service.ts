@@ -22,18 +22,18 @@ export class NotificationsService {
 		return this.repo.findAll(options);
 	}
 
-	async getUserNotifications(userId: string): Promise<NotificationWithUser[]> {
-		const result = await this.repo.findAll({ userId, page: 1, limit: 50 });
+	async getUserNotifications(user: string): Promise<NotificationWithUser[]> {
+		const result = await this.repo.findAll({ user, page: 1, limit: 50 });
 		return result.docs;
 	}
 
 	async getNotificationById(
 		id: string,
-		userId?: string,
+		user?: string,
 	): Promise<NotificationWithUser> {
 		const notification = await this.repo.findById(id);
 		if (!notification) throw AppError.notFound("Notification not found");
-		if (userId && notification.userId !== userId) {
+		if (user && notification.user !== user) {
 			throw AppError.forbidden("Access denied");
 		}
 
@@ -60,10 +60,10 @@ export class NotificationsService {
 		return updated;
 	}
 
-	async markAsRead(id: string, userId?: string): Promise<Notification> {
+	async markAsRead(id: string, user?: string): Promise<Notification> {
 		const notification = await this.repo.findById(id);
 		if (!notification) throw AppError.notFound("Notification not found");
-		if (userId && notification.userId !== userId) {
+		if (user && notification.user !== user) {
 			throw AppError.forbidden("Access denied");
 		}
 		const updated = await this.repo.markAsRead(id);
@@ -71,22 +71,22 @@ export class NotificationsService {
 		return updated;
 	}
 
-	async markAllAsRead(userId: string): Promise<number> {
-		return this.repo.markAllAsRead(userId);
+	async markAllAsRead(user: string): Promise<number> {
+		return this.repo.markAllAsRead(user);
 	}
 
-	async deleteNotification(id: string, userId?: string): Promise<void> {
+	async deleteNotification(id: string, user?: string): Promise<void> {
 		const notification = await this.repo.findById(id);
 		if (!notification) throw AppError.notFound("Notification not found");
-		if (userId && notification.userId !== userId) {
+		if (user && notification.user !== user) {
 			throw AppError.forbidden("Access denied");
 		}
 		const deleted = await this.repo.delete(id);
 		if (!deleted) throw AppError.internal("Failed to delete notification");
 	}
 
-	async getUnreadCount(userId: string): Promise<number> {
-		return this.repo.getUnreadCount(userId);
+	async getUnreadCount(user: string): Promise<number> {
+		return this.repo.getUnreadCount(user);
 	}
 
 	/**

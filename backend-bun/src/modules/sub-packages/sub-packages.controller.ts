@@ -29,10 +29,10 @@ export class SubPackagesController {
 	}
 
 	getByApp(c: Context) {
-		const appId = c.req.param("appId");
+		const app = c.req.param("app");
 		return apiSuccess(
 			c,
-			this.service.findByAppId(appId === "global" ? null : appId),
+			this.service.findByAppId(app === "global" ? null : app),
 		);
 	}
 

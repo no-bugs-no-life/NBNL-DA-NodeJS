@@ -14,7 +14,7 @@ const notificationTypes = [
 const channels = ["inapp", "email", "firebase"] as const;
 
 export const CreateNotificationSchema = z.object({
-	userId: z.string().min(1, "User ID is required"),
+	user: z.string().min(1, "User ID is required"),
 	type: z.enum(notificationTypes),
 	message: z.string().min(1).max(1000),
 	channel: z.enum(channels).default("inapp"),
@@ -39,7 +39,7 @@ export const NotificationQuerySchema = z.object({
 		.enum(["true", "false"])
 		.transform((v) => v === "true")
 		.optional(),
-	userId: z.string().optional(),
+	user: z.string().optional(),
 });
 
 export type CreateNotificationRequest = z.infer<

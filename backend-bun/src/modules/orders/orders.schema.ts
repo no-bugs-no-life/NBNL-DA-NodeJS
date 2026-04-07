@@ -6,7 +6,7 @@ export const CreateOrderSchema = z
 		items: z
 			.array(
 				z.object({
-					appId: z.string().min(1),
+					app: z.string().min(1),
 					name: z.string().min(1),
 					price: z.number().positive(),
 					iconUrl: z.string().url().optional(),

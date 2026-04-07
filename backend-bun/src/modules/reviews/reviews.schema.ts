@@ -1,8 +1,8 @@
 import { z } from "zod";
 
 export const CreateReviewSchema = z.object({
-	appId: z.string().min(1, "App ID is required"),
-	userId: z.string().min(1, "User ID is required"),
+	app: z.string().min(1, "App ID is required"),
+	user: z.string().min(1, "User ID is required"),
 	rating: z.number().int().min(1).max(5),
 	comment: z.string().min(1).max(2000),
 });
@@ -18,8 +18,8 @@ export const ReviewParamsSchema = z.object({
 });
 
 export const ReviewQuerySchema = z.object({
-	appId: z.string().optional(),
-	userId: z.string().optional(),
+	app: z.string().optional(),
+	user: z.string().optional(),
 	status: z.enum(["pending", "approved", "rejected"]).optional(),
 	page: z.coerce.number().int().positive().default(1),
 	limit: z.coerce.number().int().positive().max(100).default(10),

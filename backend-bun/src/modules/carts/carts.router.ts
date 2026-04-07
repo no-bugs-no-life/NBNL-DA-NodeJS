@@ -38,16 +38,16 @@ cartsRouter.post("/items", requireAuth, validateBody(AddToCartSchema), (c) =>
 	controller.addItem(c),
 );
 
-// PUT /carts/items/:appId - Update cart item
+// PUT /carts/items/:app - Update cart item
 cartsRouter.put(
-	"/items/:appId",
+	"/items/:app",
 	requireAuth,
 	validateBody(UpdateCartItemSchema),
 	(c) => controller.updateItem(c),
 );
 
-// DELETE /carts/items/:appId - Remove item from cart
-cartsRouter.delete("/items/:appId", requireAuth, (c) =>
+// DELETE /carts/items/:app - Remove item from cart
+cartsRouter.delete("/items/:app", requireAuth, (c) =>
 	controller.removeItem(c),
 );
 
@@ -58,9 +58,9 @@ cartsRouter.delete("/", requireAuth, (c) => controller.clearCart(c));
 // GET /carts/all - Get all carts (paginated)
 cartsRouter.get("/all", requireAdmin, (c) => controller.getAllCarts(c));
 
-// POST /carts/admin/:userId/items - Admin creates cart for user
+// POST /carts/admin/:user/items - Admin creates cart for user
 cartsRouter.post(
-	"/admin/:userId/items",
+	"/admin/:user/items",
 	requireAdmin,
 	validateBody(CreateCartSchema),
 	(c) => controller.createCart(c),

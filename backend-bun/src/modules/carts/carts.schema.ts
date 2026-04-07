@@ -3,7 +3,7 @@ import { CartItemType, SubscriptionPlan } from "./carts.types";
 
 // Add item to cart
 export const AddToCartSchema = z.object({
-	appId: z.string().min(1, "App ID không được để trống"),
+	app: z.string().min(1, "App ID không được để trống"),
 	itemType: z.nativeEnum(CartItemType).default(CartItemType.ONE_TIME),
 	plan: z.nativeEnum(SubscriptionPlan).optional(),
 	quantity: z.number().int().positive().default(1),
@@ -21,8 +21,8 @@ export type UpdateCartItemRequest = z.infer<typeof UpdateCartItemSchema>;
 
 // Create cart (Admin)
 export const CreateCartSchema = z.object({
-	userId: z.string().min(1, "User ID không được để trống"),
-	appId: z.string().min(1, "App ID không được để trống"),
+	user: z.string().min(1, "User ID không được để trống"),
+	app: z.string().min(1, "App ID không được để trống"),
 	itemType: z.nativeEnum(CartItemType).default(CartItemType.ONE_TIME),
 });
 

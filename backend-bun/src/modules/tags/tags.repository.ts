@@ -18,7 +18,7 @@ const tagSchema = new mongoose.Schema<Tag>(
 );
 
 const TagModel =
-	mongoose.models[COLLECTION] || mongoose.model<Tag>(COLLECTION, tagSchema);
+	(mongoose.models[COLLECTION] as mongoose.Model<Tag>) || mongoose.model<Tag>(COLLECTION, tagSchema);
 
 export class TagsRepository {
 	async findAll(query: TagQueryRequest): Promise<PaginatedTags> {

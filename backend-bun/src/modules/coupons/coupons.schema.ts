@@ -14,7 +14,7 @@ export const CreateCouponSchema = z
 		startDate: z.string(),
 		endDate: z.string(),
 		usageLimit: z.number().int().positive().optional().default(100),
-		appIds: z.array(z.string()).optional(),
+		apps: z.array(z.string()).optional(),
 	})
 	.refine((data) => new Date(data.endDate) > new Date(data.startDate), {
 		message: "Ngày kết thúc phải sau ngày bắt đầu",
@@ -31,7 +31,7 @@ export const UpdateCouponSchema = z
 		startDate: z.string().optional(),
 		endDate: z.string().optional(),
 		usageLimit: z.number().int().positive().optional(),
-		appIds: z.array(z.string()).optional(),
+		apps: z.array(z.string()).optional(),
 	})
 	.strict();
 
@@ -40,7 +40,7 @@ export type UpdateCouponRequest = z.infer<typeof UpdateCouponSchema>;
 // Apply Coupon Schema
 export const ApplyCouponSchema = z.object({
 	code: z.string().min(1, "Mã coupon không được để trống"),
-	appId: z.string().optional(),
+	app: z.string().optional(),
 });
 
 export type ApplyCouponRequest = z.infer<typeof ApplyCouponSchema>;

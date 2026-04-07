@@ -27,8 +27,8 @@ export class SubPackagesService {
 		return subPackage;
 	}
 
-	async findByAppId(appId: string | null): Promise<SubPackage[]> {
-		return this.repo.findByAppId(appId);
+	async findByAppId(app: string | null): Promise<SubPackage[]> {
+		return this.repo.findByAppId(app);
 	}
 
 	async create(data: CreateSubPackageDTO): Promise<SubPackage> {

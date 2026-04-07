@@ -29,8 +29,8 @@ export class ReviewsController {
 	}
 
 	getByApp(c: Context) {
-		const appId = c.req.param("appId");
-		return apiSuccess(c, this.service.findByAppId(appId));
+		const app = c.req.param("app");
+		return apiSuccess(c, this.service.findByAppId(app));
 	}
 
 	create(c: Context) {

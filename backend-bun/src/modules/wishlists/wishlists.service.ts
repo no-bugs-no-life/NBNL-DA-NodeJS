@@ -35,17 +35,17 @@ export class WishlistsService {
 		return wishlist;
 	}
 
-	async findByUserId(userId: string): Promise<Wishlist> {
-		let wishlist = await this.repo.findByUserId(userId);
+	async findByUserId(user: string): Promise<Wishlist> {
+		let wishlist = await this.repo.findByUserId(user);
 		if (!wishlist) {
 			// Create empty wishlist for user if not exists
-			wishlist = await this.repo.create({ userId, appIds: [] });
+			wishlist = await this.repo.create({ user, apps: [] });
 		}
 		return wishlist;
 	}
 
-	async findByUserIdAdmin(userId: string): Promise<WishlistWithRelations> {
-		const wishlist = await this.repo.findByUserId(userId);
+	async findByUserIdAdmin(user: string): Promise<WishlistWithRelations> {
+		const wishlist = await this.repo.findByUserId(user);
 		if (!wishlist) throw AppError.notFound("Wishlist not found");
 		return this.repo.findByIdWithPopulate(
 			wishlist._id.toString(),
@@ -53,7 +53,7 @@ export class WishlistsService {
 	}
 
 	async create(data: CreateWishlistDTO): Promise<Wishlist> {
-		const existing = await this.repo.findByUserId(data.userId);
+		const existing = await this.repo.findByUserId(data.user);
 		if (existing) {
 			throw AppError.conflict("Wishlist already exists for this user");
 		}
@@ -73,20 +73,20 @@ export class WishlistsService {
 		if (!deleted) throw AppError.internal("Failed to delete wishlist");
 	}
 
-	async addApp(userId: string, appId: string): Promise<Wishlist> {
-		const wishlist = await this.repo.addApp(userId, appId);
+	async addApp(user: string, app: string): Promise<Wishlist> {
+		const wishlist = await this.repo.addApp(user, app);
 		if (!wishlist) throw AppError.internal("Failed to add app to wishlist");
 		return wishlist;
 	}
 
-	async removeApp(userId: string, appId: string): Promise<Wishlist> {
-		const wishlist = await this.repo.removeApp(userId, appId);
+	async removeApp(user: string, app: string): Promise<Wishlist> {
+		const wishlist = await this.repo.removeApp(user, app);
 		if (!wishlist) throw AppError.notFound("Wishlist not found");
 		return wishlist;
 	}
 
-	async clearApps(userId: string): Promise<Wishlist> {
-		const wishlist = await this.repo.clearApps(userId);
+	async clearApps(user: string): Promise<Wishlist> {
+		const wishlist = await this.repo.clearApps(user);
 		if (!wishlist) throw AppError.notFound("Wishlist not found");
 		return wishlist;
 	}

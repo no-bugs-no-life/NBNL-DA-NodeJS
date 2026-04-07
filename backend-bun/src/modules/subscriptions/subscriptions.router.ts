@@ -59,13 +59,13 @@ subscriptionsRouter.patch(
 );
 
 // User Routes (Authenticated)
-subscriptionsRouter.get("/user/:userId", requireAuth, (c) =>
+subscriptionsRouter.get("/user/:user", requireAuth, (c) =>
 	controller.getByUser(c),
 );
-subscriptionsRouter.get("/user/:userId/active", requireAuth, (c) =>
+subscriptionsRouter.get("/user/:user/active", requireAuth, (c) =>
 	controller.getActiveByUser(c),
 );
-subscriptionsRouter.get("/user/:userId/check", requireAuth, (c) =>
+subscriptionsRouter.get("/user/:user/check", requireAuth, (c) =>
 	controller.checkActive(c),
 );
 

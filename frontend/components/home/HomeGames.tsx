@@ -12,7 +12,8 @@ export default function HomeGames() {
       const response = await axios.get(
         `${API_URL}/api/v1/apps?type=game&flag=bestseller&limit=6`,
       );
-      return response.data?.docs || response.data;
+      const payload = response.data?.data;
+      return Array.isArray(payload) ? payload : (payload?.docs || []);
     },
   });
 

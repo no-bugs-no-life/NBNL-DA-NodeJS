@@ -12,7 +12,7 @@ export type NotificationChannel = "inapp" | "email" | "firebase";
 
 export interface Notification {
 	_id: string;
-	userId: string;
+	user: string;
 	type: NotificationType;
 	channel: NotificationChannel;
 	message: string;
@@ -29,12 +29,12 @@ export interface UserInfo {
 	avatarUrl?: string;
 }
 
-export interface NotificationWithUser extends Notification {
-	userId: UserInfo;
+export interface NotificationWithUser extends Omit<Notification, "user"> {
+	user: UserInfo;
 }
 
 export interface CreateNotificationDTO {
-	userId: string;
+	user: string;
 	type: NotificationType;
 	message: string;
 	channel?: NotificationChannel;
@@ -48,7 +48,7 @@ export interface UpdateNotificationDTO {
 }
 
 export interface NotificationQueryDTO {
-	userId?: string;
+	user?: string;
 	type?: NotificationType;
 	isRead?: boolean;
 	page?: number;

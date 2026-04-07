@@ -19,7 +19,7 @@ export interface PaginatedSubPackageResult {
 const subPackageSchema = new mongoose.Schema<SubPackage>(
 	{
 		name: { type: String, required: true },
-		appId: { type: String, default: null },
+		app: { type: String, default: null },
 		type: {
 			type: String,
 			enum: ["monthly", "yearly", "lifetime"],
@@ -44,7 +44,7 @@ export class SubPackagesRepository {
 		query: SubPackageQueryRequest,
 	): Promise<PaginatedSubPackageResult> {
 		const filter: Record<string, unknown> = { isDeleted: false };
-		if (query.appId) filter.appId = query.appId;
+		if (query.app) filter.app = query.app;
 		if (query.type) filter.type = query.type;
 		if (query.isActive !== undefined) filter.isActive = query.isActive;
 
@@ -74,10 +74,10 @@ export class SubPackagesRepository {
 		return SubPackageModel.findOne({ _id: id, isDeleted: false }).lean();
 	}
 
-	async findByAppId(appId: string | null): Promise<SubPackage[]> {
-		const filter = appId
-			? { appId, isDeleted: false }
-			: { appId: null, isDeleted: false };
+	async findByAppId(app: string | null): Promise<SubPackage[]> {
+		const filter = app
+			? { app, isDeleted: false }
+			: { app: null, isDeleted: false };
 		return SubPackageModel.find(filter).sort({ price: 1 }).lean();
 	}
 

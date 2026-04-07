@@ -20,7 +20,7 @@ export interface ICoupon {
 	endDate: Date;
 	usageLimit: number;
 	usedCount: number;
-	appIds: ObjectId[];
+	apps: ObjectId[];
 	isGlobal: boolean;
 	createdAt?: Date;
 	updatedAt?: Date;
@@ -36,7 +36,7 @@ export interface CouponItemResponse {
 	endDate: string;
 	usageLimit: number;
 	usedCount: number;
-	appIds: AppInfo[];
+	apps: AppInfo[];
 	createdAt: string;
 }
 
@@ -55,7 +55,7 @@ export interface CreateCouponDTO {
 	startDate: string;
 	endDate: string;
 	usageLimit?: number;
-	appIds?: string[];
+	apps?: string[];
 }
 
 export interface UpdateCouponDTO {
@@ -64,5 +64,5 @@ export interface UpdateCouponDTO {
 	startDate?: string;
 	endDate?: string;
 	usageLimit?: number;
-	appIds?: string[];
+	apps?: string[];
 }

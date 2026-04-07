@@ -10,7 +10,8 @@ export default function HomeCollections() {
     queryKey: ["categories", "home"],
     queryFn: async () => {
       const response = await axios.get(`${API_URL}/api/v1/categories`);
-      const arr = response.data?.docs || response.data || [];
+      const payload = response.data?.data;
+      const arr = Array.isArray(payload) ? payload : (payload?.docs || []);
       return arr.filter((c: CategoryItem) => c.parentId == null).slice(0, 2);
     },
   });

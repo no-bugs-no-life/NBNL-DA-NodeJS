@@ -29,8 +29,8 @@ appsRouter.get("/:id", (c) => controller.getById(c));
 // GET /apps/slug/:slug - Get app by slug
 appsRouter.get("/slug/:slug", (c) => controller.getBySlug(c));
 
-// GET /apps/developer/:developerId - Get apps by developer
-appsRouter.get("/developer/:developerId", (c) => controller.getByDeveloper(c));
+// GET /apps/developer/:developer - Get apps by developer
+appsRouter.get("/developer/:developer", (c) => controller.getByDeveloper(c));
 
 // ============ PROTECTED ROUTES (Developer/Admin) ============
 

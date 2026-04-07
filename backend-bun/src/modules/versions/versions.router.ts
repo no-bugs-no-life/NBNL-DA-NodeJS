@@ -28,9 +28,9 @@ versionsRouter.get("/", validateQuery(VersionQuerySchema), (c) =>
 versionsRouter.get("/:id", validateParams(VersionParamsSchema), (c) =>
 	controller.getById(c),
 );
-versionsRouter.get("/app/:appId", (c) => controller.getByApp(c));
-versionsRouter.get("/app/:appId/latest", (c) => controller.getLatestByApp(c));
-versionsRouter.get("/app/:appId/platform/:platform", (c) =>
+versionsRouter.get("/app/:app", (c) => controller.getByApp(c));
+versionsRouter.get("/app/:app/latest", (c) => controller.getLatestByApp(c));
+versionsRouter.get("/app/:app/platform/:platform", (c) =>
 	controller.getByPlatform(c),
 );
 
@@ -68,7 +68,7 @@ versionsRouter.patch(
 	validateParams(VersionParamsSchema),
 	(c) => controller.deprecate(c),
 );
-versionsRouter.patch("/app/:appId/:id/latest", requireDeveloper, (c) =>
+versionsRouter.patch("/app/:app/:id/latest", requireDeveloper, (c) =>
 	controller.markLatest(c),
 );
 

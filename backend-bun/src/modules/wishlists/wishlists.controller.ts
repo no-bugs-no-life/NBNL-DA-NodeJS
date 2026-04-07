@@ -21,28 +21,28 @@ export class WishlistsController {
 
 	// User endpoints
 	async getMyWishlist(c: Context) {
-		const userId = c.req.var("userId") as string;
-		const wishlist = await this.service.findByUserId(userId);
+		const user = c.req.var("user") as string;
+		const wishlist = await this.service.findByUserId(user);
 		return apiSuccess(c, wishlist);
 	}
 
 	async addApp(c: Context) {
 		const body = c.req.valid("json") as AddToWishlistRequest;
-		const userId = c.req.var("userId") as string;
-		const wishlist = await this.service.addApp(userId, body.appId);
+		const user = c.req.var("user") as string;
+		const wishlist = await this.service.addApp(user, body.app);
 		return apiSuccess(c, wishlist);
 	}
 
 	async removeApp(c: Context) {
-		const appId = c.req.param("appId");
-		const userId = c.req.var("userId") as string;
-		const wishlist = await this.service.removeApp(userId, appId);
+		const app = c.req.param("app");
+		const user = c.req.var("user") as string;
+		const wishlist = await this.service.removeApp(user, app);
 		return apiSuccess(c, wishlist);
 	}
 
 	async clear(c: Context) {
-		const userId = c.req.var("userId") as string;
-		const wishlist = await this.service.clearApps(userId);
+		const user = c.req.var("user") as string;
+		const wishlist = await this.service.clearApps(user);
 		return apiSuccess(c, wishlist);
 	}
 

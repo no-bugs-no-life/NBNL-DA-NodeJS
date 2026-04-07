@@ -10,7 +10,8 @@ export default function HomeProductivity() {
     queryKey: ["apps", "productivity"],
     queryFn: async () => {
       const response = await axios.get(`${API_URL}/api/v1/apps?limit=3`);
-      return response.data?.docs || response.data;
+      const payload = response.data?.data;
+      return Array.isArray(payload) ? payload : (payload?.docs || []);
     },
   });
 

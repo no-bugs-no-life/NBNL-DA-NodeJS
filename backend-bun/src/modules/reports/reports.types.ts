@@ -14,9 +14,9 @@ export enum ReportStatus {
 
 export interface IReport {
 	_id?: ObjectId;
-	reporterId: ObjectId;
+	reporter: ObjectId;
 	targetType: ReportTargetType;
-	targetId: ObjectId;
+	target: ObjectId;
 	reason: string;
 	status: ReportStatus;
 	adminNote?: string;
@@ -35,9 +35,9 @@ export interface ReporterInfo {
 
 export interface ReportItemResponse {
 	_id: string;
-	reporterId: ReporterInfo;
+	reporter: ReporterInfo;
 	targetType: ReportTargetType;
-	targetId: unknown;
+	target: unknown;
 	reason: string;
 	status: ReportStatus;
 	adminNote: string;
@@ -55,7 +55,7 @@ export interface PaginatedReportsResponse {
 
 export interface CreateReportDTO {
 	targetType: ReportTargetType;
-	targetId: string;
+	target: string;
 	reason: string;
 }
 

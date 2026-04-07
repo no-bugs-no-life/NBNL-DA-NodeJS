@@ -31,7 +31,7 @@ export class CartsController extends BaseController {
 
 		const cart = await this.cartsService.addItem(
 			payload.id,
-			validated.appId,
+			validated.app,
 			validated.itemType,
 			validated.quantity,
 			validated.plan,
@@ -43,12 +43,12 @@ export class CartsController extends BaseController {
 		const payload = c.get("jwtPayload");
 		if (!payload) return c.json(this.fail("Chưa đăng nhập"), 401);
 
-		const { appId } = c.req.param();
+		const { app } = c.req.param();
 		// @ts-expect-error
 		const data = c.req.valid("json");
 		const validated = UpdateCartItemSchema.parse(data);
 
-		const cart = await this.cartsService.updateItem(payload.id, appId, {
+		const cart = await this.cartsService.updateItem(payload.id, app, {
 			quantity: validated.quantity,
 			plan: validated.plan,
 		});
@@ -59,8 +59,8 @@ export class CartsController extends BaseController {
 		const payload = c.get("jwtPayload");
 		if (!payload) return c.json(this.fail("Chưa đăng nhập"), 401);
 
-		const { appId } = c.req.param();
-		const cart = await this.cartsService.removeItem(payload.id, appId);
+		const { app } = c.req.param();
+		const cart = await this.cartsService.removeItem(payload.id, app);
 		return c.json(this.ok(cart, "Xóa khỏi giỏ hàng thành công"));
 	}
 
@@ -86,8 +86,8 @@ export class CartsController extends BaseController {
 		const validated = CreateCartSchema.parse(data);
 
 		const cart = await this.cartsService.createCart(
-			validated.userId,
-			validated.appId,
+			validated.user,
+			validated.app,
 			validated.itemType,
 		);
 		return c.json(this.ok(cart, "Tạo cart thành công"), 201);

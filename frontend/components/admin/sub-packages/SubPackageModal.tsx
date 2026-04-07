@@ -73,7 +73,7 @@ export function SubPackageModal({
       setDurationDays(String(initialData.durationDays));
       setDescription(initialData.description || "");
       setIsActive(initialData.isActive);
-      setAppId(typeof initialData.appId === "object" ? initialData.appId?._id || "" : initialData.appId || "");
+      setAppId(typeof initialData.appId === "object" && initialData.appId !== null ? (initialData.appId as { _id: string })._id : (initialData.appId as string) || "");
     }
   }, [initialData]);
   const isValid = name.trim() && price !== "" && Number(price) >= 0 && appId !== "";
@@ -84,10 +84,11 @@ export function SubPackageModal({
   };
   const handleSubmit = () => {
     if (!isValid) return;
+    const selectedType = type as "monthly" | "yearly" | "lifetime";
     const data = {
       name: name.trim(),
       appId,
-      type,
+      type: selectedType,
       price: Number(price),
       durationDays: type === "lifetime" ? 0 : Number(durationDays) || 30,
       description: description.trim(),

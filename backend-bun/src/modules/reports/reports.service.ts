@@ -14,15 +14,15 @@ export class ReportsService {
 
 	async create(
 		data: CreateReportRequest,
-		reporterId: string,
+		reporter: string,
 	): Promise<ReportItemResponse> {
 		const existingReports = await this.repository.findByTarget(
 			data.targetType,
-			data.targetId,
+			data.target,
 		);
 		const duplicate = existingReports.find(
 			(r) =>
-				r.reporterId.toString() === reporterId &&
+				r.reporter.toString() === reporter &&
 				r.status === ReportStatus.PENDING,
 		);
 		if (duplicate) {
@@ -30,9 +30,9 @@ export class ReportsService {
 		}
 
 		const report = await this.repository.create({
-			reporterId: reporterId as unknown as IReport["reporterId"],
+			reporter: reporter as unknown as IReport["reporter"],
 			targetType: data.targetType,
-			targetId: data.targetId as unknown as IReport["targetId"],
+			target: data.target as unknown as IReport["target"],
 			reason: data.reason,
 			status: ReportStatus.PENDING,
 		});
@@ -93,14 +93,14 @@ export class ReportsService {
 	private toResponse(report: IReport): ReportItemResponse {
 		return {
 			_id: report._id?.toString() ?? "",
-			reporterId: {
-				_id: report.reporterId,
+			reporter: {
+				_id: report.reporter,
 				fullName: "",
 				email: "",
 				avatarUrl: undefined,
 			},
 			targetType: report.targetType,
-			targetId: report.targetId,
+			target: report.target,
 			reason: report.reason,
 			status: report.status,
 			adminNote: report.adminNote ?? "",

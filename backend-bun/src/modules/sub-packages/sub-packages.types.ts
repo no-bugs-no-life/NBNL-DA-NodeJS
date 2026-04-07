@@ -1,7 +1,7 @@
 export interface SubPackage {
 	_id: string;
 	name: string;
-	appId: string | null;
+	app: string | null;
 	type: SubPackageType;
 	price: number;
 	durationDays: number;
@@ -16,7 +16,7 @@ export type SubPackageType = "monthly" | "yearly" | "lifetime";
 
 export interface CreateSubPackageDTO {
 	name: string;
-	appId?: string | null;
+	app?: string | null;
 	type: SubPackageType;
 	price: number;
 	durationDays: number;

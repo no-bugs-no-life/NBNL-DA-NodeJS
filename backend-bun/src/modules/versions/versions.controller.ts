@@ -45,19 +45,19 @@ export class VersionsController {
 	}
 
 	getByApp(c: Context) {
-		const appId = c.req.param("appId");
-		return apiSuccess(c, this.service.findByAppId(appId));
+		const app = c.req.param("app");
+		return apiSuccess(c, this.service.findByAppId(app));
 	}
 
 	getLatestByApp(c: Context) {
-		const appId = c.req.param("appId");
-		return apiSuccess(c, this.service.findLatestByAppId(appId));
+		const app = c.req.param("app");
+		return apiSuccess(c, this.service.findLatestByAppId(app));
 	}
 
 	getByPlatform(c: Context) {
-		const appId = c.req.param("appId");
+		const app = c.req.param("app");
 		const platform = c.req.param("platform") as Platform;
-		return apiSuccess(c, this.service.findByPlatform(appId, platform));
+		return apiSuccess(c, this.service.findByPlatform(app, platform));
 	}
 
 	create(c: Context) {
@@ -89,8 +89,8 @@ export class VersionsController {
 
 	markLatest(c: Context) {
 		const id = c.req.param("id");
-		const appId = c.req.param("appId");
-		return apiSuccess(c, this.service.markAsLatest(id, appId));
+		const app = c.req.param("app");
+		return apiSuccess(c, this.service.markAsLatest(id, app));
 	}
 
 	/**

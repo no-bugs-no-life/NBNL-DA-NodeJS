@@ -7,8 +7,8 @@ export interface App {
 	iconUrl: string;
 	price: number;
 	status: AppStatus;
-	developerId: string;
-	categoryId: string;
+	developer: string;
+	category: string;
 	tags: string[];
 	ratingScore: number;
 	ratingCount: number;
@@ -29,8 +29,8 @@ export interface CreateAppDTO {
 	iconUrl?: string;
 	price?: number;
 	status?: AppStatus;
-	developerId: string;
-	categoryId: string;
+	developer: string;
+	category: string;
 	tags?: string[];
 }
 
@@ -41,15 +41,15 @@ export interface UpdateAppDTO {
 	iconUrl?: string;
 	price?: number;
 	status?: AppStatus;
-	categoryId?: string;
+	category?: string;
 	tags?: string[];
 	isDisabled?: boolean;
 }
 
 export interface AppFilters {
 	status?: AppStatus;
-	categoryId?: string;
-	developerId?: string;
+	category?: string;
+	developer?: string;
 	tags?: string[];
 	isDisabled?: boolean;
 	isDeleted?: boolean;
@@ -84,8 +84,8 @@ export interface AppWithRelations {
 	iconUrl?: string;
 	price: number;
 	status: AppStatus;
-	developerId: DeveloperInfo;
-	categoryId: CategoryInfo;
+	developer: DeveloperInfo;
+	category: CategoryInfo;
 	tags?: TagInfo[];
 	ratingScore?: number;
 	ratingCount?: number;

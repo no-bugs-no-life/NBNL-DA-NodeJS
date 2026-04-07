@@ -20,17 +20,17 @@ const controller = new WishlistsController();
 
 const requireAuth = jwt({ secret: env.JWT_ACCESS_SECRET, alg: "HS256" });
 
-// User Routes (get userId from JWT token via middleware)
-// Note: For user routes, we'll rely on the JWT payload to extract userId
+// User Routes (get user from JWT token via middleware)
+// Note: For user routes, we'll rely on the JWT payload to extract user
 
 // Public routes not needed for wishlists (always authenticated)
 
-// User Routes - requires JWT, userId extracted from token
+// User Routes - requires JWT, user extracted from token
 wishlistsRouter.get("/", requireAuth, (c) => controller.getMyWishlist(c));
 wishlistsRouter.post("/", requireAuth, validateBody(AddToWishlistSchema), (c) =>
 	controller.addApp(c),
 );
-wishlistsRouter.delete("/:appId", requireAuth, (c) => controller.removeApp(c));
+wishlistsRouter.delete("/:app", requireAuth, (c) => controller.removeApp(c));
 wishlistsRouter.delete("/", requireAuth, (c) => controller.clear(c));
 
 // Admin Routes

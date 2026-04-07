@@ -1,8 +1,8 @@
 export interface Subscription {
 	_id: string;
-	userId: string;
-	appId: string;
-	subPackageId: string;
+	user: string;
+	app: string;
+	subPackage: string;
 	status: SubscriptionStatus;
 	startDate: Date;
 	endDate: Date;
@@ -14,9 +14,9 @@ export interface Subscription {
 export type SubscriptionStatus = "active" | "expired" | "cancelled";
 
 export interface CreateSubscriptionDTO {
-	userId: string;
-	appId: string;
-	subPackageId: string;
+	user: string;
+	app: string;
+	subPackage: string;
 	startDate: Date;
 	endDate: Date;
 }
@@ -24,13 +24,13 @@ export interface CreateSubscriptionDTO {
 export interface UpdateSubscriptionDTO {
 	status?: SubscriptionStatus;
 	endDate?: Date;
-	subPackageId?: string;
+	subPackage?: string;
 }
 
 export interface SubscriptionQueryDTO {
-	userId?: string;
-	appId?: string;
-	subPackageId?: string;
+	user?: string;
+	app?: string;
+	subPackage?: string;
 	status?: SubscriptionStatus;
 }
 
@@ -58,8 +58,8 @@ export interface PackageInfo {
 
 export interface SubscriptionWithRelations {
 	_id: string;
-	userId: UserInfo;
-	appId: AppInfo;
+	user: UserInfo;
+	app: AppInfo;
 	packageId: PackageInfo;
 	startDate: string;
 	endDate: string;

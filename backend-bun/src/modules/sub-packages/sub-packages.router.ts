@@ -27,7 +27,7 @@ subPackagesRouter.get("/global", (c) => controller.getGlobal(c));
 subPackagesRouter.get("/:id", validateParams(SubPackageParamsSchema), (c) =>
 	controller.getById(c),
 );
-subPackagesRouter.get("/app/:appId", (c) => controller.getByApp(c));
+subPackagesRouter.get("/app/:app", (c) => controller.getByApp(c));
 
 // Admin Routes
 subPackagesRouter.post(

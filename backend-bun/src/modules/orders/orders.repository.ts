@@ -1,7 +1,7 @@
 import type { IOrder, OrderQuery, OrderStatus } from "./orders.types";
 
 export interface IOrderRepository {
-	findByUserId(userId: string): Promise<IOrder[]>;
+	findByUserId(user: string): Promise<IOrder[]>;
 	findById(id: string): Promise<IOrder | null>;
 	findAllPaginated(
 		query: OrderQuery,
@@ -22,7 +22,7 @@ export class OrdersRepository implements IOrderRepository {
 		return [];
 	}
 
-	async findByUserId(_userId: string): Promise<IOrder[]> {
+	async findByUserId(_user: string): Promise<IOrder[]> {
 		// TODO: Implement with MongoDB
 		return [];
 	}

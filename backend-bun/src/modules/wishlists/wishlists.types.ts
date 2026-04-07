@@ -5,7 +5,7 @@ export interface WishlistApp {
 	price: number;
 	subscriptionPrice?: number;
 	status?: string;
-	developerId?: { name?: string };
+	developer?: { name?: string };
 }
 
 export interface WishlistUser {
@@ -17,25 +17,25 @@ export interface WishlistUser {
 
 export interface Wishlist {
 	_id: string;
-	userId: string;
-	appIds: string[];
+	user: string;
+	apps: string[];
 	createdAt: Date;
 	updatedAt: Date;
 }
 
-export interface WishlistWithRelations extends Wishlist {
-	userId: WishlistUser;
-	appIds: WishlistApp[];
+export interface WishlistWithRelations extends Omit<Wishlist, "user" | "apps"> {
+	user: WishlistUser;
+	apps: WishlistApp[];
 }
 
 export interface CreateWishlistDTO {
-	userId: string;
-	appIds: string[];
+	user: string;
+	apps: string[];
 }
 
 export interface UpdateWishlistDTO {
-	userId?: string;
-	appIds?: string[];
+	user?: string;
+	apps?: string[];
 }
 
 export interface PaginatedWishlists {

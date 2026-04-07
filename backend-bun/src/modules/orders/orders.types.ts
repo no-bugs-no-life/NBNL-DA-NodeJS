@@ -16,7 +16,7 @@ export enum PaymentMethod {
 }
 
 export interface OrderItem {
-	appId: ObjectId;
+	app: ObjectId;
 	name: string;
 	price: number;
 	iconUrl?: string;
@@ -24,7 +24,7 @@ export interface OrderItem {
 
 export interface IOrder {
 	_id?: ObjectId;
-	userId: ObjectId;
+	user: ObjectId;
 	items: OrderItem[];
 	totalAmount: number;
 	discountAmount: number;
@@ -40,7 +40,7 @@ export interface IOrder {
 
 export interface IOrderPublic {
 	id: string;
-	userId: string;
+	user: string;
 	items: OrderItemPublic[];
 	totalAmount: number;
 	discountAmount: number;
@@ -54,14 +54,14 @@ export interface IOrderPublic {
 }
 
 export interface OrderItemPublic {
-	appId: string;
+	app: string;
 	name: string;
 	price: number;
 	iconUrl?: string;
 }
 
 export interface IOrderCreate {
-	items: { appId: string; name: string; price: number; iconUrl?: string }[];
+	items: { app: string; name: string; price: number; iconUrl?: string }[];
 	couponCode?: string;
 	paymentMethod: PaymentMethod;
 }

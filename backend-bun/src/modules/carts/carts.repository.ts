@@ -2,23 +2,23 @@ import type { CartItemType, ICart, SubscriptionPlan } from "./carts.types";
 
 export interface ICartRepository {
 	// User cart operations
-	findByUserId(userId: string): Promise<ICart | null>;
-	createCart(userId: string): Promise<ICart>;
+	findByUserId(user: string): Promise<ICart | null>;
+	createCart(user: string): Promise<ICart>;
 	addItem(
-		userId: string,
-		appId: string,
+		user: string,
+		app: string,
 		itemType: CartItemType,
 		quantity: number,
 		price: number,
 		plan?: SubscriptionPlan,
 	): Promise<ICart | null>;
 	updateItem(
-		userId: string,
-		appId: string,
+		user: string,
+		app: string,
 		data: { quantity?: number; plan?: SubscriptionPlan },
 	): Promise<ICart | null>;
-	removeItem(userId: string, appId: string): Promise<ICart | null>;
-	clearCart(userId: string): Promise<boolean>;
+	removeItem(user: string, app: string): Promise<ICart | null>;
+	clearCart(user: string): Promise<boolean>;
 
 	// Admin operations
 	findAllPaginated(
@@ -26,23 +26,23 @@ export interface ICartRepository {
 		limit: number,
 	): Promise<{ carts: ICart[]; total: number }>;
 	deleteCart(id: string): Promise<boolean>;
-	deleteCartByUserId(userId: string): Promise<boolean>;
+	deleteCartByUserId(user: string): Promise<boolean>;
 }
 
 export class CartsRepository implements ICartRepository {
-	async findByUserId(_userId: string): Promise<ICart | null> {
+	async findByUserId(_user: string): Promise<ICart | null> {
 		// TODO: Implement with MongoDB
 		return null;
 	}
 
-	async createCart(_userId: string): Promise<ICart> {
+	async createCart(_user: string): Promise<ICart> {
 		// TODO: Implement with MongoDB - create empty cart for user
 		return {} as ICart;
 	}
 
 	async addItem(
-		_userId: string,
-		_appId: string,
+		_user: string,
+		_app: string,
 		_itemType: CartItemType,
 		_quantity: number,
 		_price: number,
@@ -56,20 +56,20 @@ export class CartsRepository implements ICartRepository {
 	}
 
 	async updateItem(
-		_userId: string,
-		_appId: string,
+		_user: string,
+		_app: string,
 		_data: { quantity?: number; plan?: SubscriptionPlan },
 	): Promise<ICart | null> {
 		// TODO: Implement with MongoDB
 		return null;
 	}
 
-	async removeItem(_userId: string, _appId: string): Promise<ICart | null> {
+	async removeItem(_user: string, _app: string): Promise<ICart | null> {
 		// TODO: Implement with MongoDB
 		return null;
 	}
 
-	async clearCart(_userId: string): Promise<boolean> {
+	async clearCart(_user: string): Promise<boolean> {
 		// TODO: Implement with MongoDB - delete cart or clear items
 		return false;
 	}
@@ -89,8 +89,8 @@ export class CartsRepository implements ICartRepository {
 		return false;
 	}
 
-	async deleteCartByUserId(_userId: string): Promise<boolean> {
-		// TODO: Implement with MongoDB - delete cart by userId
+	async deleteCartByUserId(_user: string): Promise<boolean> {
+		// TODO: Implement with MongoDB - delete cart by user
 		return false;
 	}
 }

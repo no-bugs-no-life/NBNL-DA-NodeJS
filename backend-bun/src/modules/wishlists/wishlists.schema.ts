@@ -1,17 +1,17 @@
 import { z } from "zod";
 
 export const CreateWishlistSchema = z.object({
-	userId: z.string().min(1, "User ID is required"),
-	appIds: z.array(z.string()).min(1, "At least one app is required"),
+	user: z.string().min(1, "User ID is required"),
+	apps: z.array(z.string()).min(1, "At least one app is required"),
 });
 
 export const UpdateWishlistSchema = z.object({
-	userId: z.string().optional(),
-	appIds: z.array(z.string()).optional(),
+	user: z.string().optional(),
+	apps: z.array(z.string()).optional(),
 });
 
 export const AddToWishlistSchema = z.object({
-	appId: z.string().min(1, "App ID is required"),
+	app: z.string().min(1, "App ID is required"),
 });
 
 export const WishlistParamsSchema = z.object({

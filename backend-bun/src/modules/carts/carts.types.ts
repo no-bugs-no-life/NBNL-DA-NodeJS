@@ -20,7 +20,7 @@ export interface CartAppItem {
 
 export interface CartItemData {
 	_id?: ObjectId;
-	appId: ObjectId | CartAppItem;
+	app: ObjectId | CartAppItem;
 	itemType: CartItemType;
 	plan?: SubscriptionPlan | null;
 	quantity: number;
@@ -29,7 +29,7 @@ export interface CartItemData {
 
 export interface ICartItem {
 	_id?: ObjectId;
-	appId: ObjectId | CartAppItem;
+	app: ObjectId | CartAppItem;
 	itemType: CartItemType;
 	plan?: SubscriptionPlan | null;
 	quantity: number;
@@ -39,8 +39,7 @@ export interface ICartItem {
 
 export interface ICart {
 	_id?: ObjectId;
-	userId: ObjectId;
-	user?: {
+	user: ObjectId | {
 		_id: ObjectId;
 		fullName?: string;
 		email: string;
@@ -54,7 +53,7 @@ export interface ICart {
 // API Response Types - matching frontend
 export interface CartItemResponse {
 	_id: string;
-	appId: {
+	app: {
 		_id: string;
 		name: string;
 		iconUrl: string;
@@ -92,7 +91,7 @@ export interface PaginatedCartsResponse {
 
 // Create/Update DTOs
 export interface AddToCartDTO {
-	appId: string;
+	app: string;
 	itemType?: CartItemType;
 	plan?: SubscriptionPlan;
 	quantity?: number;

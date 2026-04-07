@@ -14,9 +14,9 @@ const COLLECTION = "subscriptions";
 
 const subscriptionSchema = new mongoose.Schema<Subscription>(
 	{
-		userId: { type: String, required: true, index: true },
-		appId: { type: String, required: true, index: true },
-		subPackageId: { type: String, required: true, index: true },
+		user: { type: String, required: true, index: true },
+		app: { type: String, required: true, index: true },
+		subPackage: { type: String, required: true, index: true },
 		status: {
 			type: String,
 			enum: ["active", "expired", "cancelled"],
@@ -30,8 +30,8 @@ const subscriptionSchema = new mongoose.Schema<Subscription>(
 );
 
 // Compound indexes
-subscriptionSchema.index({ userId: 1, status: 1 });
-subscriptionSchema.index({ appId: 1, status: 1 });
+subscriptionSchema.index({ user: 1, status: 1 });
+subscriptionSchema.index({ app: 1, status: 1 });
 
 export const SubscriptionModel =
 	(mongoose.models[COLLECTION] as mongoose.Model<Subscription>) ||
@@ -56,9 +56,9 @@ export class SubscriptionsRepository {
 	): Promise<PaginatedSubscriptionsResult> {
 		const filter: Record<string, unknown> = { isDeleted: false };
 
-		if (query.userId) filter.userId = query.userId;
-		if (query.appId) filter.appId = query.appId;
-		if (query.subPackageId) filter.subPackageId = query.subPackageId;
+		if (query.user) filter.user = query.user;
+		if (query.app) filter.app = query.app;
+		if (query.subPackage) filter.subPackage = query.subPackage;
 		if (query.status) filter.status = query.status;
 
 		const page = query.page || 1;
@@ -93,9 +93,9 @@ export class SubscriptionsRepository {
 		return SubscriptionModel.findOne({ _id: id, isDeleted: false }).lean();
 	}
 
-	async findActiveByUserId(userId: string): Promise<Subscription | null> {
+	async findActiveByUserId(user: string): Promise<Subscription | null> {
 		return SubscriptionModel.findOne({
-			userId,
+			user,
 			status: "active",
 			isDeleted: false,
 		})
@@ -103,8 +103,8 @@ export class SubscriptionsRepository {
 			.lean();
 	}
 
-	async findByUserId(userId: string): Promise<Subscription[]> {
-		return SubscriptionModel.find({ userId, isDeleted: false })
+	async findByUserId(user: string): Promise<Subscription[]> {
+		return SubscriptionModel.find({ user, isDeleted: false })
 			.sort({ createdAt: -1 })
 			.lean();
 	}
@@ -153,15 +153,15 @@ export class SubscriptionsRepository {
 	}
 
 	async hasActiveSubscription(
-		userId: string,
-		subPackageId?: string,
+		user: string,
+		subPackage?: string,
 	): Promise<boolean> {
 		const query: Record<string, unknown> = {
-			userId,
+			user,
 			status: "active",
 			isDeleted: false,
 		};
-		if (subPackageId) query.subPackageId = subPackageId;
+		if (subPackage) query.subPackage = subPackage;
 		const count = await SubscriptionModel.countDocuments(query);
 		return count > 0;
 	}
@@ -176,15 +176,15 @@ export class SubscriptionsRepository {
 
 		const toObjectId = (id: string) => new mongoose.Types.ObjectId(id);
 		const userIds = subscriptions
-			.map((s) => s.userId)
+			.map((s) => s.user)
 			.filter((id) => mongoose.Types.ObjectId.isValid(id))
 			.map(toObjectId);
 		const appIds = subscriptions
-			.map((s) => s.appId)
+			.map((s) => s.app)
 			.filter((id) => mongoose.Types.ObjectId.isValid(id))
 			.map(toObjectId);
 		const packageIds = subscriptions
-			.map((s) => s.subPackageId)
+			.map((s) => s.subPackage)
 			.filter((id) => mongoose.Types.ObjectId.isValid(id))
 			.map(toObjectId);
 
@@ -250,16 +250,16 @@ export class SubscriptionsRepository {
 		);
 
 		return subscriptions.map((sub) => {
-			const user = userMap.get(sub.userId);
-			const app = appMap.get(sub.appId);
-			const pkg = packageMap.get(sub.subPackageId);
+			const user = userMap.get(sub.user);
+			const app = appMap.get(sub.app);
+			const pkg = packageMap.get(sub.subPackage);
 
 			return {
 				_id: sub._id,
-				userId: user || { _id: sub.userId, fullName: "Unknown", email: "" },
-				appId: app || { _id: sub.appId, name: "Unknown" },
+				user: user || { _id: sub.user, fullName: "Unknown", email: "" },
+				app: app || { _id: sub.app, name: "Unknown" },
 				packageId: pkg || {
-					_id: sub.subPackageId,
+					_id: sub.subPackage,
 					name: "Unknown",
 					type: "monthly",
 					price: 0,

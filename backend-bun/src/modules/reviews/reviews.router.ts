@@ -28,7 +28,7 @@ reviewsRouter.get("/", validateQuery(ReviewQuerySchema), (c) =>
 reviewsRouter.get("/:id", validateParams(ReviewParamsSchema), (c) =>
 	controller.getById(c),
 );
-reviewsRouter.get("/app/:appId", (c) => controller.getByApp(c));
+reviewsRouter.get("/app/:app", (c) => controller.getByApp(c));
 
 // Authenticated User Routes
 reviewsRouter.post("/", requireAuth, validateBody(CreateReviewSchema), (c) =>

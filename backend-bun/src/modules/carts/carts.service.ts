@@ -3,22 +3,21 @@ import { CartsRepository } from "./carts.repository";
 import type {
 	CartAppItem,
 	CartItemResponse,
-	CartItemType,
 	CartResponse,
 	ICart,
 	PaginatedCartsResponse,
-	SubscriptionPlan,
 } from "./carts.types";
+import { CartItemType, SubscriptionPlan } from "./carts.types";
 
 export class CartsService {
 	private readonly repository = new CartsRepository();
 
 	// User: Get own cart
-	async getUserCart(userId: string): Promise<CartResponse | null> {
-		const cart = await this.repository.findByUserId(userId);
+	async getUserCart(user: string): Promise<CartResponse | null> {
+		const cart = await this.repository.findByUserId(user);
 		if (!cart) {
 			// Create empty cart if not exists
-			const newCart = await this.repository.createCart(userId);
+			const newCart = await this.repository.createCart(user);
 			return this.toResponse(newCart);
 		}
 		return this.toResponse(cart);
@@ -26,8 +25,8 @@ export class CartsService {
 
 	// User: Add item to cart
 	async addItem(
-		userId: string,
-		appId: string,
+		user: string,
+		app: string,
 		itemType: CartItemType = CartItemType.ONE_TIME,
 		quantity: number = 1,
 		plan?: SubscriptionPlan,
@@ -36,8 +35,8 @@ export class CartsService {
 		const price = 0; // Placeholder - should fetch from apps collection
 
 		const cart = await this.repository.addItem(
-			userId,
-			appId,
+			user,
+			app,
 			itemType,
 			quantity,
 			price,
@@ -49,25 +48,25 @@ export class CartsService {
 
 	// User: Update cart item
 	async updateItem(
-		userId: string,
-		appId: string,
+		user: string,
+		app: string,
 		data: { quantity?: number; plan?: SubscriptionPlan },
 	): Promise<CartResponse> {
-		const cart = await this.repository.updateItem(userId, appId, data);
+		const cart = await this.repository.updateItem(user, app, data);
 		if (!cart) throw notFound("Sản phẩm không có trong giỏ hàng");
 		return this.toResponse(cart);
 	}
 
 	// User: Remove item from cart
-	async removeItem(userId: string, appId: string): Promise<CartResponse> {
-		const cart = await this.repository.removeItem(userId, appId);
+	async removeItem(user: string, app: string): Promise<CartResponse> {
+		const cart = await this.repository.removeItem(user, app);
 		if (!cart) throw notFound("Sản phẩm không có trong giỏ hàng");
 		return this.toResponse(cart);
 	}
 
 	// User: Clear cart
-	async clearCart(userId: string): Promise<boolean> {
-		return this.repository.clearCart(userId);
+	async clearCart(user: string): Promise<boolean> {
+		return this.repository.clearCart(user);
 	}
 
 	// Admin: Get all carts paginated
@@ -90,11 +89,11 @@ export class CartsService {
 
 	// Admin: Create cart for user
 	async createCart(
-		userId: string,
-		appId: string,
+		user: string,
+		app: string,
 		itemType: CartItemType,
 	): Promise<CartResponse> {
-		const cart = await this.repository.addItem(userId, appId, itemType, 1, 0);
+		const cart = await this.repository.addItem(user, app, itemType, 1, 0);
 		if (!cart) throw badRequest("Không thể tạo giỏ hàng");
 		return this.toResponse(cart);
 	}
@@ -104,21 +103,21 @@ export class CartsService {
 		return this.repository.deleteCart(id);
 	}
 
-	// Admin: Delete cart by userId
-	async deleteCartByUserId(userId: string): Promise<boolean> {
-		return this.repository.deleteCartByUserId(userId);
+	// Admin: Delete cart by user
+	async deleteCartByUserId(user: string): Promise<boolean> {
+		return this.repository.deleteCartByUserId(user);
 	}
 
 	private toResponse(cart: ICart): CartResponse {
 		const items: CartItemResponse[] = cart.items.map((item) => {
 			const appData =
-				typeof item.appId === "object" && "_id" in item.appId
-					? (item.appId as CartAppItem)
-					: { _id: item.appId, name: "", iconUrl: "", price: item.priceAtAdd };
+				typeof item.app === "object" && "_id" in item.app
+					? (item.app as CartAppItem)
+					: { _id: item.app, name: "", iconUrl: "", price: item.priceAtAdd };
 
 			return {
 				_id: item._id?.toString() ?? "",
-				appId: {
+				app: {
 					_id:
 						typeof appData._id === "object"
 							? appData._id.toString()
@@ -138,7 +137,7 @@ export class CartsService {
 		const totalPrice = items.reduce((sum, item) => {
 			const price =
 				item.plan === SubscriptionPlan.MONTHLY
-					? item.appId.subscriptionPrice || item.priceAtAdd
+					? item.app.subscriptionPrice || item.priceAtAdd
 					: item.priceAtAdd;
 			return sum + price * item.quantity;
 		}, 0);
@@ -147,12 +146,12 @@ export class CartsService {
 			_id: cart._id?.toString() ?? "",
 			user: {
 				_id:
-					typeof cart.userId === "object"
-						? cart.userId.toString()
-						: cart.userId,
-				fullName: cart.user?.fullName,
-				email: cart.user?.email || "",
-				avatarUrl: cart.user?.avatarUrl,
+					typeof cart.user === "object"
+						? cart.user._id?.toString() ?? ""
+						: cart.user,
+				fullName: (cart.user as { fullName?: string }).fullName || "",
+				email: (cart.user as { email?: string }).email || "",
+				avatarUrl: (cart.user as { avatarUrl?: string }).avatarUrl,
 			},
 			items,
 			totalPrice,

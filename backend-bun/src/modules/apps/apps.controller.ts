@@ -10,7 +10,7 @@ import type {
 	UpdateAppRequest,
 } from "./apps.schema";
 import { AppsService } from "./apps.service";
-import type { AppFilters, PaginatedApps } from "./apps.types";
+import type { AppFilters } from "./apps.types";
 
 export class AppsController {
 	private service: AppsService;
@@ -29,8 +29,8 @@ export class AppsController {
 
 		const filters: AppFilters = {
 			status: query.status,
-			categoryId: query.categoryId,
-			developerId: query.developerId,
+			category: query.category,
+			developer: query.developer,
 			search: query.search,
 			tags: query.tags,
 			isDisabled: query.isDisabled,
@@ -43,16 +43,7 @@ export class AppsController {
 		}
 
 		const result = await this.service.findAll(filters, query.page, query.limit);
-
-		const paginated: PaginatedApps = {
-			docs: result.apps,
-			totalDocs: result.total,
-			limit: result.limit,
-			totalPages: Math.ceil(result.total / result.limit),
-			page: result.page,
-		};
-
-		return apiSuccess(c, paginated);
+		return apiSuccess(c, result);
 	}
 
 	/**
@@ -74,11 +65,11 @@ export class AppsController {
 	}
 
 	/**
-	 * GET /apps/developer/:developerId - Get apps by developer
+	 * GET /apps/developer/:developer - Get apps by developer
 	 */
 	async getByDeveloper(c: Context) {
-		const developerId = c.req.param("developerId");
-		const apps = await this.service.findByDeveloper(developerId);
+		const developer = c.req.param("developer");
+		const apps = await this.service.findByDeveloper(developer);
 		return apiSuccess(c, apps);
 	}
 

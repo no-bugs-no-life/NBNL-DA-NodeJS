@@ -32,8 +32,8 @@ export class CouponsService {
 			startDate: new Date(data.startDate),
 			endDate: new Date(data.endDate),
 			usageLimit: data.usageLimit ?? 100,
-			appIds: (data.appIds ?? []) as unknown as ICoupon["appIds"],
-			isGlobal: !data.appIds?.length,
+			apps: (data.apps ?? []) as unknown as ICoupon["apps"],
+			isGlobal: !data.apps?.length,
 			usedCount: 0,
 		});
 
@@ -82,9 +82,9 @@ export class CouponsService {
 			updateData.startDate = new Date(data.startDate);
 		if (data.endDate !== undefined) updateData.endDate = new Date(data.endDate);
 		if (data.usageLimit !== undefined) updateData.usageLimit = data.usageLimit;
-		if (data.appIds !== undefined) {
-			updateData.appIds = data.appIds as unknown as ICoupon["appIds"];
-			updateData.isGlobal = !data.appIds.length;
+		if (data.apps !== undefined) {
+			updateData.apps = data.apps as unknown as ICoupon["apps"];
+			updateData.isGlobal = !data.apps.length;
 		}
 
 		const coupon = await this.repository.update(id, updateData);
@@ -95,7 +95,7 @@ export class CouponsService {
 	async applyCoupon(
 		code: string,
 		originalPrice: number,
-		appId?: string,
+		app?: string,
 	): Promise<ApplyResult> {
 		const coupon = await this.repository.findByCode(code.toUpperCase());
 		if (!coupon) throw notFound("Mã coupon không hợp lệ");
@@ -112,8 +112,8 @@ export class CouponsService {
 		}
 		if (
 			!coupon.isGlobal &&
-			appId &&
-			!coupon.appIds.some((a) => a.toString() === appId)
+			app &&
+			!coupon.apps.some((a) => a.toString() === app)
 		) {
 			throw badRequest("Coupon không áp dụng cho ứng dụng này");
 		}
@@ -146,8 +146,8 @@ export class CouponsService {
 	}
 
 	private toResponse(coupon: ICoupon): CouponItemResponse {
-		const appIds: AppInfo[] = coupon.appIds.map((appId) => ({
-			_id: appId,
+		const apps: AppInfo[] = coupon.apps.map((app) => ({
+			_id: app,
 			name: "",
 			iconUrl: undefined,
 		}));
@@ -161,7 +161,7 @@ export class CouponsService {
 			endDate: coupon.endDate?.toISOString() ?? new Date().toISOString(),
 			usageLimit: coupon.usageLimit,
 			usedCount: coupon.usedCount,
-			appIds,
+			apps,
 			createdAt: coupon.createdAt?.toISOString() ?? new Date().toISOString(),
 		};
 	}

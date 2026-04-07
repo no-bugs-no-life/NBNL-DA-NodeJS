@@ -43,16 +43,16 @@ export class ReviewsService {
 		return review;
 	}
 
-	async findByAppId(appId: string): Promise<Review[]> {
-		return this.repo.findByAppId(appId);
+	async findByAppId(app: string): Promise<Review[]> {
+		return this.repo.findByAppId(app);
 	}
 
-	async findByUserId(userId: string): Promise<Review[]> {
-		return this.repo.findByUserId(userId);
+	async findByUserId(user: string): Promise<Review[]> {
+		return this.repo.findByUserId(user);
 	}
 
 	async create(data: CreateReviewDTO): Promise<Review> {
-		if (await this.repo.existsByUserAndApp(data.userId, data.appId)) {
+		if (await this.repo.existsByUserAndApp(data.user, data.app)) {
 			throw AppError.conflict("You have already reviewed this app");
 		}
 		return this.repo.create(data);
@@ -96,7 +96,7 @@ export class ReviewsService {
 		if (!deleted) throw AppError.internal("Failed to delete review");
 	}
 
-	async getAppRating(appId: string) {
-		return this.repo.getAverageRating(appId);
+	async getAppRating(app: string) {
+		return this.repo.getAverageRating(app);
 	}
 }

@@ -5,7 +5,7 @@ import { ReportStatus, ReportTargetType } from "./reports.types";
 export const CreateReportSchema = z
 	.object({
 		targetType: z.nativeEnum(ReportTargetType),
-		targetId: z.string().min(1, "ID mục tiêu không được để trống"),
+		target: z.string().min(1, "ID mục tiêu không được để trống"),
 		reason: z
 			.string()
 			.min(5, "Lý do báo cáo tối thiểu 5 ký tự")

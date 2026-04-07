@@ -10,34 +10,34 @@ const COLLECTION = "wishlists";
 
 const wishlistSchema = new mongoose.Schema<Wishlist>(
 	{
-		userId: { type: String, required: true, unique: true, index: true },
-		appIds: [{ type: String }],
+		user: { type: String, required: true, unique: true, index: true },
+		apps: [{ type: String }],
 	},
 	{ timestamps: true, collection: COLLECTION },
 );
 
 export const WishlistModel =
-	mongoose.models[COLLECTION] ||
+	(mongoose.models[COLLECTION] as mongoose.Model<Wishlist>) ||
 	mongoose.model<Wishlist>(COLLECTION, wishlistSchema);
 
 // Helper to populate wishlist
 const populateWishlist = (doc: unknown): WishlistWithRelations | null => {
 	if (!doc || typeof doc !== "object") return null;
 	const d = doc as Record<string, unknown>;
-	const userId = d.userId as Record<string, unknown>;
-	const _appIds = d.appIds as string[];
+	const user = d.user as Record<string, unknown>;
+	const _apps = d.apps as string[];
 
 	return {
 		_id: d._id as string,
-		userId: userId
+		user: user
 			? {
-					_id: userId._id as string,
-					fullName: (userId.fullName as string) || "",
-					email: userId.email as string | undefined,
-					avatarUrl: userId.avatarUrl as string | undefined,
-				}
+				_id: user._id as string,
+				fullName: (user.fullName as string) || "",
+				email: user.email as string | undefined,
+				avatarUrl: user.avatarUrl as string | undefined,
+			}
 			: { _id: "", fullName: "" },
-		appIds: [], // Will be populated separately if needed
+		apps: [], // Will be populated separately if needed
 		createdAt: d.createdAt as Date,
 		updatedAt: d.updatedAt as Date,
 	};
@@ -57,7 +57,7 @@ export class WishlistsRepository {
 				.sort({ createdAt: -1 })
 				.skip(skip)
 				.limit(query.limit)
-				.populate("userId", "_id fullName email avatarUrl")
+				.populate("user", "_id fullName email avatarUrl")
 				.lean(),
 			WishlistModel.countDocuments(),
 		]);
@@ -83,13 +83,13 @@ export class WishlistsRepository {
 	): Promise<WishlistWithRelations | null> {
 		if (!mongoose.Types.ObjectId.isValid(id)) return null;
 		const doc = await WishlistModel.findById(id)
-			.populate("userId", "_id fullName email avatarUrl")
+			.populate("user", "_id fullName email avatarUrl")
 			.lean();
 		return doc ? populateWishlist(doc) : null;
 	}
 
-	async findByUserId(userId: string): Promise<Wishlist | null> {
-		return WishlistModel.findOne({ userId }).lean();
+	async findByUserId(user: string): Promise<Wishlist | null> {
+		return WishlistModel.findOne({ user }).lean();
 	}
 
 	async create(data: CreateWishlistDTO): Promise<Wishlist> {
@@ -108,26 +108,26 @@ export class WishlistsRepository {
 		return result !== null;
 	}
 
-	async addApp(userId: string, appId: string): Promise<Wishlist | null> {
+	async addApp(user: string, app: string): Promise<Wishlist | null> {
 		return WishlistModel.findOneAndUpdate(
-			{ userId },
-			{ $addToSet: { appIds: appId } },
+			{ user },
+			{ $addToSet: { apps: app } },
 			{ new: true, upsert: true },
 		).lean();
 	}
 
-	async removeApp(userId: string, appId: string): Promise<Wishlist | null> {
+	async removeApp(user: string, app: string): Promise<Wishlist | null> {
 		return WishlistModel.findOneAndUpdate(
-			{ userId },
-			{ $pull: { appIds: appId } },
+			{ user },
+			{ $pull: { apps: app } },
 			{ new: true },
 		).lean();
 	}
 
-	async clearApps(userId: string): Promise<Wishlist | null> {
+	async clearApps(user: string): Promise<Wishlist | null> {
 		return WishlistModel.findOneAndUpdate(
-			{ userId },
-			{ $set: { appIds: [] } },
+			{ user },
+			{ $set: { apps: [] } },
 			{ new: true },
 		).lean();
 	}

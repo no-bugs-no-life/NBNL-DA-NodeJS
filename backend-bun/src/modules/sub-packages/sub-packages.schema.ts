@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const CreateSubPackageSchema = z.object({
 	name: z.string().min(1).max(100),
-	appId: z.string().min(1),
+	app: z.string().min(1),
 	type: z.enum(["monthly", "yearly", "lifetime"]),
 	price: z.number().nonnegative(),
 	durationDays: z.number().int().nonnegative(),
@@ -23,7 +23,7 @@ export const SubPackageParamsSchema = z.object({
 });
 
 export const SubPackageQuerySchema = z.object({
-	appId: z.string().optional(),
+	app: z.string().optional(),
 	type: z.enum(["monthly", "yearly", "lifetime"]).optional(),
 	isActive: z
 		.enum(["true", "false"])

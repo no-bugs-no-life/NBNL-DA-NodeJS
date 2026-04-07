@@ -47,8 +47,8 @@ export class NotificationsController {
 	 * GET /notifications - User: Get own notifications
 	 */
 	async getAll(c: Context) {
-		const userId = this.getUserId(c);
-		if (!userId)
+		const user = this.getUserId(c);
+		if (!user)
 			return apiSuccess(c, {
 				docs: [],
 				totalDocs: 0,
@@ -57,7 +57,7 @@ export class NotificationsController {
 				page: 1,
 			});
 		const result = await this.service.getAllNotifications({
-			userId,
+			user,
 			page: 1,
 			limit: 50,
 		});
@@ -68,9 +68,9 @@ export class NotificationsController {
 	 * GET /notifications/unread-count
 	 */
 	async getUnreadCount(c: Context) {
-		const userId = this.getUserId(c);
-		if (!userId) return apiSuccess(c, { count: 0 });
-		const count = await this.service.getUnreadCount(userId);
+		const user = this.getUserId(c);
+		if (!user) return apiSuccess(c, { count: 0 });
+		const count = await this.service.getUnreadCount(user);
 		return apiSuccess(c, { count });
 	}
 
@@ -79,8 +79,8 @@ export class NotificationsController {
 	 */
 	async getById(c: Context) {
 		const id = c.req.param("id");
-		const userId = this.getUserId(c);
-		const notification = await this.service.getNotificationById(id, userId);
+		const user = this.getUserId(c);
+		const notification = await this.service.getNotificationById(id, user);
 		return apiSuccess(c, notification);
 	}
 
@@ -108,8 +108,8 @@ export class NotificationsController {
 	 */
 	async markAsRead(c: Context) {
 		const id = c.req.param("id");
-		const userId = this.getUserId(c);
-		const notification = await this.service.markAsRead(id, userId);
+		const user = this.getUserId(c);
+		const notification = await this.service.markAsRead(id, user);
 		return apiSuccess(c, notification);
 	}
 
@@ -117,9 +117,9 @@ export class NotificationsController {
 	 * PATCH /notifications/read-all
 	 */
 	async markAllAsRead(c: Context) {
-		const userId = this.getUserId(c);
-		if (!userId) return apiSuccess(c, { count: 0 });
-		const count = await this.service.markAllAsRead(userId);
+		const user = this.getUserId(c);
+		if (!user) return apiSuccess(c, { count: 0 });
+		const count = await this.service.markAllAsRead(user);
 		return apiSuccess(c, { count });
 	}
 
@@ -137,8 +137,8 @@ export class NotificationsController {
 	 */
 	async delete(c: Context) {
 		const id = c.req.param("id");
-		const userId = this.getUserId(c);
-		await this.service.deleteNotification(id, userId);
+		const user = this.getUserId(c);
+		await this.service.deleteNotification(id, user);
 		return apiNoContent(c);
 	}
 }

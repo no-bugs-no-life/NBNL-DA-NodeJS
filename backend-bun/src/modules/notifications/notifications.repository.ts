@@ -14,7 +14,7 @@ const COLLECTION = "notifications";
 
 const notificationSchema = new mongoose.Schema<Notification>(
 	{
-		userId: { type: String, required: true, index: true },
+		user: { type: String, required: true, index: true },
 		type: {
 			type: String,
 			enum: [
@@ -43,8 +43,8 @@ const notificationSchema = new mongoose.Schema<Notification>(
 );
 
 // Indexes
-notificationSchema.index({ userId: 1, createdAt: -1 });
-notificationSchema.index({ userId: 1, isRead: 1 });
+notificationSchema.index({ user: 1, createdAt: -1 });
+notificationSchema.index({ user: 1, isRead: 1 });
 
 export const NotificationModel =
 	mongoose.models[COLLECTION] ||
@@ -52,14 +52,14 @@ export const NotificationModel =
 
 export interface INotificationRepository {
 	findAll(options: NotificationQueryDTO): Promise<PaginatedNotifications>;
-	findAllByUser(userId: string): Promise<Notification[]>;
+	findAllByUser(user: string): Promise<Notification[]>;
 	findById(id: string): Promise<Notification | null>;
 	create(data: CreateNotificationDTO): Promise<Notification>;
 	update(id: string, data: UpdateNotificationDTO): Promise<Notification | null>;
 	markAsRead(id: string): Promise<Notification | null>;
-	markAllAsRead(userId: string): Promise<number>;
+	markAllAsRead(user: string): Promise<number>;
 	delete(id: string): Promise<boolean>;
-	getUnreadCount(userId: string): Promise<number>;
+	getUnreadCount(user: string): Promise<number>;
 }
 
 export class NotificationRepository implements INotificationRepository {
@@ -76,7 +76,7 @@ export class NotificationRepository implements INotificationRepository {
 		options: NotificationQueryDTO = {},
 	): Promise<PaginatedNotifications> {
 		const query: Record<string, unknown> = {};
-		if (options.userId) query.userId = options.userId;
+		if (options.user) query.user = options.user;
 		if (options.type) query.type = options.type;
 		if (options.isRead !== undefined) query.isRead = options.isRead;
 
@@ -105,9 +105,9 @@ export class NotificationRepository implements INotificationRepository {
 		};
 	}
 
-	async findAllByUser(userId: string): Promise<Notification[]> {
+	async findAllByUser(user: string): Promise<Notification[]> {
 		const docs = await this.collection
-			.find({ userId })
+			.find({ user })
 			.sort({ createdAt: -1 })
 			.toArray();
 		return docs as Notification[];
@@ -121,7 +121,7 @@ export class NotificationRepository implements INotificationRepository {
 
 	async create(data: CreateNotificationDTO): Promise<Notification> {
 		const notification: Omit<Notification, "_id"> = {
-			userId: data.userId,
+			user: data.user,
 			type: data.type,
 			channel: data.channel || "inapp",
 			message: data.message,
@@ -164,9 +164,9 @@ export class NotificationRepository implements INotificationRepository {
 		return result as Notification | null;
 	}
 
-	async markAllAsRead(userId: string): Promise<number> {
+	async markAllAsRead(user: string): Promise<number> {
 		const result = await this.collection.updateMany(
-			{ userId, isRead: false },
+			{ user, isRead: false },
 			{ $set: { isRead: true, updatedAt: new Date() } },
 		);
 		return result.modifiedCount;
@@ -178,8 +178,8 @@ export class NotificationRepository implements INotificationRepository {
 		return result.deletedCount > 0;
 	}
 
-	async getUnreadCount(userId: string): Promise<number> {
-		return this.collection.countDocuments({ userId, isRead: false });
+	async getUnreadCount(user: string): Promise<number> {
+		return this.collection.countDocuments({ user, isRead: false });
 	}
 
 	/**
@@ -192,9 +192,9 @@ export class NotificationRepository implements INotificationRepository {
 
 		const userIds = [
 			...new Set(
-				notifications.map((n) => n.userId).filter((id) => ObjectId.isValid(id)),
+				notifications.map((n) => n.user).filter((id) => ObjectId.isValid(id)),
 			),
-		];
+		].map((id) => new ObjectId(id));
 
 		const users =
 			userIds.length > 0
@@ -226,8 +226,8 @@ export class NotificationRepository implements INotificationRepository {
 				n.updatedAt instanceof Date ? n.updatedAt.toISOString() : n.updatedAt,
 			sentAt:
 				n.sentAt instanceof Date ? n.sentAt.toISOString() : (n.sentAt ?? null),
-			userId: userMap.get(n.userId) || {
-				_id: n.userId,
+			user: userMap.get(n.user) || {
+				_id: n.user,
 				fullName: "Unknown",
 				email: "",
 			},

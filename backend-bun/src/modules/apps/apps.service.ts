@@ -5,6 +5,7 @@ import type {
 	AppFilters,
 	AppWithRelations,
 	CreateAppDTO,
+	PaginatedApps,
 	UpdateAppDTO,
 } from "./apps.types";
 
@@ -26,12 +27,7 @@ export class AppsService {
 		filters: AppFilters,
 		page = 1,
 		limit = 20,
-	): Promise<{
-		apps: AppWithRelations[];
-		total: number;
-		page: number;
-		limit: number;
-	}> {
+	): Promise<PaginatedApps> {
 		return this.repo.findAll(filters, page, limit);
 	}
 
@@ -49,9 +45,9 @@ export class AppsService {
 		return app;
 	}
 
-	async findByDeveloper(developerId: string): Promise<AppWithRelations[]> {
-		if (!developerId) throw AppError.badRequest("Invalid developer ID");
-		return this.repo.findByDeveloper(developerId);
+	async findByDeveloper(developer: string): Promise<AppWithRelations[]> {
+		if (!developer) throw AppError.badRequest("Invalid developer ID");
+		return this.repo.findByDeveloper(developer);
 	}
 
 	async create(data: CreateAppDTO): Promise<App> {

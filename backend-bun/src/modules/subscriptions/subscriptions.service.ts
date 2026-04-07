@@ -40,16 +40,16 @@ export class SubscriptionsService {
 		return this.repo.findByIdWithRelations(id);
 	}
 
-	async findActiveByUserId(userId: string): Promise<Subscription | null> {
-		return this.repo.findActiveByUserId(userId);
+	async findActiveByUserId(user: string): Promise<Subscription | null> {
+		return this.repo.findActiveByUserId(user);
 	}
 
-	async findByUserId(userId: string): Promise<Subscription[]> {
-		return this.repo.findByUserId(userId);
+	async findByUserId(user: string): Promise<Subscription[]> {
+		return this.repo.findByUserId(user);
 	}
 
 	async create(data: CreateSubscriptionDTO): Promise<Subscription> {
-		const pkg = await this.packageRepo.findById(data.subPackageId);
+		const pkg = await this.packageRepo.findById(data.subPackage);
 		if (!pkg) throw notFound("Package not found");
 		if (!pkg.isActive) throw badRequest("Package is not active");
 
@@ -99,7 +99,7 @@ export class SubscriptionsService {
 				: new Date(baseDate.getTime() + pkg.durationDays * 24 * 60 * 60 * 1000);
 
 		await this.repo.update(id, {
-			subPackageId: dto.packageId,
+			subPackage: dto.packageId,
 			endDate: newEndDate,
 		});
 		return this.repo.findByIdWithRelations(
@@ -114,9 +114,9 @@ export class SubscriptionsService {
 	}
 
 	async hasActiveSubscription(
-		userId: string,
-		subPackageId?: string,
+		user: string,
+		subPackage?: string,
 	): Promise<boolean> {
-		return this.repo.hasActiveSubscription(userId, subPackageId);
+		return this.repo.hasActiveSubscription(user, subPackage);
 	}
 }

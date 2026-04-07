@@ -22,13 +22,13 @@ export class SubscriptionsController {
 	async list(c: Context) {
 		// @ts-expect-error
 		const query = c.req.valid("query") as SubscriptionQueryRequest;
-		const { page, limit, userId, appId, subPackageId, status } = query;
+		const { page, limit, user, app, subPackage, status } = query;
 		return apiSuccess(
 			c,
 			await this.service.findAll({
-				userId,
-				appId,
-				subPackageId,
+				user,
+				app,
+				subPackage,
 				status,
 				page,
 				limit,
@@ -44,14 +44,14 @@ export class SubscriptionsController {
 
 	async getByUser(c: Context) {
 		// biome-ignore lint/style/noNonNullAssertion: Guaranteed by Hono parameter
-		const userId = c.req.param("userId")!;
-		return apiSuccess(c, await this.service.findByUserId(userId));
+		const user = c.req.param("user")!;
+		return apiSuccess(c, await this.service.findByUserId(user));
 	}
 
 	async getActiveByUser(c: Context) {
 		// biome-ignore lint/style/noNonNullAssertion: Guaranteed by Hono parameter
-		const userId = c.req.param("userId")!;
-		return apiSuccess(c, await this.service.findActiveByUserId(userId));
+		const user = c.req.param("user")!;
+		return apiSuccess(c, await this.service.findActiveByUserId(user));
 	}
 
 	async create(c: Context) {
@@ -60,9 +60,9 @@ export class SubscriptionsController {
 		return apiCreated(
 			c,
 			await this.service.create({
-				userId: body.userId,
-				appId: body.appId || "",
-				subPackageId: body.subPackageId,
+				user: body.user,
+				app: body.app || "",
+				subPackage: body.subPackage,
 				startDate: new Date(),
 				endDate: new Date(),
 			}),
@@ -79,7 +79,7 @@ export class SubscriptionsController {
 			await this.service.update(id, {
 				status: body.status,
 				endDate: body.endDate ? new Date(body.endDate) : undefined,
-				subPackageId: body.subPackageId,
+				subPackage: body.subPackage,
 			}),
 		);
 	}
@@ -107,9 +107,9 @@ export class SubscriptionsController {
 
 	async checkActive(c: Context) {
 		// biome-ignore lint/style/noNonNullAssertion: Guaranteed by Hono parameter
-		const userId = c.req.param("userId")!;
+		const user = c.req.param("user")!;
 		return apiSuccess(c, {
-			hasActive: await this.service.hasActiveSubscription(userId),
+			hasActive: await this.service.hasActiveSubscription(user),
 		});
 	}
 }

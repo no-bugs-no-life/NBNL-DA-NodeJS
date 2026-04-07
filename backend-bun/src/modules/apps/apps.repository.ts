@@ -14,8 +14,8 @@ const COLLECTION = "apps";
 function toDocument(app: Partial<App>) {
 	return {
 		...app,
-		developerId: app.developerId ? new ObjectId(app.developerId) : undefined,
-		categoryId: app.categoryId ? new ObjectId(app.categoryId) : undefined,
+		developer: app.developer ? new ObjectId(app.developer) : undefined,
+		category: app.category ? new ObjectId(app.category) : undefined,
 		tags:
 			app.tags?.map((t) => (ObjectId.isValid(t) ? new ObjectId(t) : t)) || [],
 		createdAt: app.createdAt ? new Date(app.createdAt) : new Date(),
@@ -66,10 +66,10 @@ export class AppsRepository {
 		}
 
 		if (filters?.status) query.status = filters.status;
-		if (filters?.categoryId)
-			query.categoryId = new ObjectId(filters.categoryId);
-		if (filters?.developerId)
-			query.developerId = new ObjectId(filters.developerId);
+		if (filters?.category)
+			query.category = new ObjectId(filters.category);
+		if (filters?.developer)
+			query.developer = new ObjectId(filters.developer);
 		if (filters?.isDisabled !== undefined)
 			query.isDisabled = filters.isDisabled;
 
@@ -127,11 +127,11 @@ export class AppsRepository {
 		return app ?? null;
 	}
 
-	async findByDeveloper(developerId: string): Promise<AppWithRelations[]> {
-		if (!ObjectId.isValid(developerId)) return [];
+	async findByDeveloper(developer: string): Promise<AppWithRelations[]> {
+		if (!ObjectId.isValid(developer)) return [];
 		const docs = await this.collection
 			.find({
-				developerId: new ObjectId(developerId),
+				developer: new ObjectId(developer),
 				isDeleted: { $ne: true },
 			})
 			.sort({ createdAt: -1 })
@@ -149,8 +149,8 @@ export class AppsRepository {
 			iconUrl: data.iconUrl || "",
 			price: data.price || 0,
 			status: data.status || "pending",
-			developerId: data.developerId,
-			categoryId: data.categoryId,
+			developer: data.developer,
+			category: data.category,
 			tags: data.tags || [],
 			ratingScore: 0,
 			ratingCount: 0,
@@ -234,12 +234,12 @@ export class AppsRepository {
 
 		const developerIds = [
 			...new Set(
-				apps.map((a) => a.developerId).filter((id) => ObjectId.isValid(id)),
+				apps.map((a) => a.developer).filter((id) => ObjectId.isValid(id)),
 			),
 		].map((id) => new ObjectId(id));
 		const categoryIds = [
 			...new Set(
-				apps.map((a) => a.categoryId).filter((id) => ObjectId.isValid(id)),
+				apps.map((a) => a.category).filter((id) => ObjectId.isValid(id)),
 			),
 		].map((id) => new ObjectId(id));
 		const tagIds = [
@@ -284,8 +284,8 @@ export class AppsRepository {
 		);
 
 		return apps.map((app) => {
-			const dev = devMap.get(app.developerId);
-			const cat = catMap.get(app.categoryId);
+			const dev = devMap.get(app.developer);
+			const cat = catMap.get(app.category);
 			const appTags = (app.tags || [])
 				.map((tid) => tagMap.get(tid))
 				.filter((t): t is TagDoc => t !== undefined);
@@ -310,17 +310,17 @@ export class AppsRepository {
 					app.updatedAt instanceof Date
 						? app.updatedAt.toISOString()
 						: String(app.updatedAt),
-				developerId: dev
+				developer: dev
 					? {
 						_id: dev._id.toString(),
 						name: dev.fullName || dev.username || "Unknown",
 						contactEmail: dev.email || "",
 						avatarUrl: dev.avatar,
 					}
-					: { _id: app.developerId, name: "Unknown", contactEmail: "" },
-				categoryId: cat
+					: { _id: app.developer, name: "Unknown", contactEmail: "" },
+				category: cat
 					? { _id: cat._id.toString(), name: cat.name }
-					: { _id: app.categoryId, name: "" },
+					: { _id: app.category, name: "" },
 				tags: appTags.map((t) => ({ _id: t._id.toString(), name: t.name })),
 			} as AppWithRelations;
 		});

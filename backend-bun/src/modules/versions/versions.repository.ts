@@ -44,7 +44,7 @@ const accessControlSchema = new mongoose.Schema<AccessControl>(
 
 const versionSchema = new mongoose.Schema<Version>(
 	{
-		appId: { type: String, required: true, index: true },
+		app: { type: String, required: true, index: true },
 		versionNumber: { type: String, required: true, trim: true },
 		versionCode: { type: Number, required: true, index: true },
 		releaseName: { type: String, trim: true },
@@ -66,8 +66,8 @@ const versionSchema = new mongoose.Schema<Version>(
 );
 
 // Indexes
-versionSchema.index({ appId: 1, versionCode: -1 });
-versionSchema.index({ appId: 1, isLatest: 1, status: 1 });
+versionSchema.index({ app: 1, versionCode: -1 });
+versionSchema.index({ app: 1, isLatest: 1, status: 1 });
 versionSchema.index({ "files.platform": 1 });
 versionSchema.index({ status: 1, publishedAt: -1 });
 
@@ -76,7 +76,7 @@ versionSchema.pre("save", async function (next) {
 	if (this.isNew || this.isModified("isLatest")) {
 		if (this.isLatest) {
 			await this.constructor.updateMany(
-				{ appId: this.appId, _id: { $ne: this._id } },
+				{ app: this.app, _id: { $ne: this._id } },
 				{ $set: { isLatest: false } },
 			);
 		}
@@ -85,7 +85,7 @@ versionSchema.pre("save", async function (next) {
 });
 
 export const VersionModel =
-	mongoose.models[COLLECTION] ||
+	(mongoose.models[COLLECTION] as mongoose.Model<Version>) ||
 	mongoose.model<Version>(COLLECTION, versionSchema);
 
 interface PaginatedResult<T> {
@@ -99,7 +99,7 @@ interface PaginatedResult<T> {
 export class VersionsRepository {
 	async findAll(query: VersionQueryDTO): Promise<PaginatedResult<Version>> {
 		const filter: Record<string, unknown> = { isDeleted: false };
-		if (query.appId) filter.appId = query.appId;
+		if (query.app) filter.app = query.app;
 		if (query.status) filter.status = query.status;
 		if (query.isLatest !== undefined) filter.isLatest = query.isLatest;
 		if (query.platform) filter["files.platform"] = query.platform;
@@ -125,24 +125,24 @@ export class VersionsRepository {
 		return VersionModel.findOne({ _id: id, isDeleted: false }).lean();
 	}
 
-	async findByAppId(appId: string): Promise<Version[]> {
-		return VersionModel.find({ appId, isDeleted: false })
+	async findByAppId(app: string): Promise<Version[]> {
+		return VersionModel.find({ app, isDeleted: false })
 			.sort({ versionCode: -1 })
 			.lean();
 	}
 
-	async findLatestByAppId(appId: string): Promise<Version | null> {
+	async findLatestByAppId(app: string): Promise<Version | null> {
 		return VersionModel.findOne({
-			appId,
+			app,
 			isLatest: true,
 			isDeleted: false,
 			status: "published",
 		}).lean();
 	}
 
-	async findByPlatform(appId: string, platform: Platform): Promise<Version[]> {
+	async findByPlatform(app: string, platform: Platform): Promise<Version[]> {
 		return VersionModel.find({
-			appId,
+			app,
 			isDeleted: false,
 			status: "published",
 			"files.platform": platform,
@@ -191,7 +191,7 @@ export class VersionsRepository {
 
 	async checkAccess(
 		version: Version,
-		userId?: string,
+		user?: string,
 		userRole?: string,
 	): Promise<boolean> {
 		const { accessControl } = version;
@@ -205,8 +205,8 @@ export class VersionsRepository {
 		}
 
 		// User whitelist check
-		if (accessControl.allowedUserIds.length > 0 && userId) {
-			if (accessControl.allowedUserIds.includes(userId)) return true;
+		if (accessControl.allowedUserIds.length > 0 && user) {
+			if (accessControl.allowedUserIds.includes(user)) return true;
 		}
 
 		// If requiresPurchase is false, access granted

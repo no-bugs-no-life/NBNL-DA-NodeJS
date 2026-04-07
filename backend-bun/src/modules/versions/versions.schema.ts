@@ -34,7 +34,7 @@ export const AccessControlSchema = z.object({
 });
 
 export const CreateVersionSchema = z.object({
-	appId: z.string().min(1),
+	app: z.string().min(1),
 	versionNumber: z.string().min(1).max(50),
 	versionCode: z.number().int().positive(),
 	releaseName: z.string().max(100).optional(),
@@ -61,7 +61,7 @@ export const VersionParamsSchema = z.object({
 });
 
 export const VersionQuerySchema = z.object({
-	appId: z.string().optional(),
+	app: z.string().optional(),
 	status: versionStatusEnum.optional(),
 	platform: platformEnum.optional(),
 	isLatest: z
