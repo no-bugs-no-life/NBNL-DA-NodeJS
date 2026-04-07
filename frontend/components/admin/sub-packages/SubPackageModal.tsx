@@ -133,21 +133,21 @@ export function SubPackageModal({
               </div>
             ) : (
               <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-1">
-                {apps.map((app) => {
-                  const isSelected = app === app._id;
+                {apps.map((appItem) => {
+                  const isSelected = app === appItem._id;
                   return (
                     <button
-                      key={app._id}
+                      key={appItem._id}
                       type="button"
-                      onClick={() => setApp(app._id)}
+                      onClick={() => setApp(appItem._id)}
                       className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl border text-left transition-all text-sm ${isSelected
                           ? "border-blue-400 bg-blue-50"
                           : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50"
                         }`}
                     >
-                      <AppIcon iconUrl={app.iconUrl} name={app.name} />
+                      <AppIcon iconUrl={appItem.iconUrl} name={appItem.name} />
                       <span className="font-medium text-slate-700 truncate flex-1">
-                        {app.name}
+                        {appItem.name}
                       </span>
                       {isSelected && (
                         <svg
