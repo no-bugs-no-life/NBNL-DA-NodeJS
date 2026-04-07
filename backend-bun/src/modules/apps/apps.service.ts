@@ -1,4 +1,5 @@
 import { AppError } from "@/shared/errors";
+import { ObjectId } from "mongodb";
 import { AppsRepository } from "./apps.repository";
 import type {
 	App,
@@ -25,6 +26,12 @@ export class AppsService {
 
 	private isAdminRole(role: string): boolean {
 		return role === "ADMIN" || role === "MODERATOR";
+	}
+
+	private assertValidObjectId(value: string, fieldName: string): void {
+		if (!ObjectId.isValid(value)) {
+			throw AppError.badRequest(`${fieldName} must be a valid ObjectId`);
+		}
 	}
 
 	async findAll(
@@ -58,6 +65,10 @@ export class AppsService {
 		if (!data.developer) {
 			throw AppError.badRequest("Developer space is required");
 		}
+		if (!data.category) {
+			throw AppError.badRequest("Category is required");
+		}
+		this.assertValidObjectId(data.developer, "Developer");
 
 		const developerSpace = await this.repo.findDeveloperSpaceById(data.developer);
 		if (!developerSpace || developerSpace.isDeleted) {

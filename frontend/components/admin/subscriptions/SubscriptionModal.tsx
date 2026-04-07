@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Select } from "antd";
 import "antd/dist/reset.css";
 import { useUsers } from "@/hooks/useUsers";
@@ -17,14 +17,14 @@ export function SubscriptionModal({ onClose, onSubmit, loading }: Props) {
   const [userOptions, setUserOptions] = useState<
     { value: string; label: string }[]
   >([]);
-  let timeoutRef: ReturnType<typeof setTimeout> | null = null;
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const { data: users = [] } = useUsers();
   const { packages } = useAdminSubPackages();
 
   const handleUserSearch = (val: string) => {
-    if (timeoutRef) clearTimeout(timeoutRef);
-    timeoutRef = setTimeout(() => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    timeoutRef.current = setTimeout(() => {
       const q = val.trim().toLowerCase();
       const filtered = users
         .filter((u) => {

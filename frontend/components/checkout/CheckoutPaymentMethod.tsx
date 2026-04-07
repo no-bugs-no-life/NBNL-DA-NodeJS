@@ -1,4 +1,12 @@
-export default function CheckoutPaymentMethod() {
+interface CheckoutPaymentMethodProps {
+  paymentMethod: "card" | "momo";
+  onPaymentMethodChange: (value: "card" | "momo") => void;
+}
+
+export default function CheckoutPaymentMethod({
+  paymentMethod,
+  onPaymentMethodChange,
+}: CheckoutPaymentMethodProps) {
   return (
     <section>
       <h3 className="text-xl font-bold mb-4">Phương thức thanh toán</h3>
@@ -7,8 +15,9 @@ export default function CheckoutPaymentMethod() {
           <input
             type="radio"
             name="payment"
+            checked={paymentMethod === "card"}
+            onChange={() => onPaymentMethodChange("card")}
             className="text-primary w-5 h-5 focus:ring-primary"
-            defaultChecked
           />
           <span className="font-medium">
             Thẻ tín dụng / Ghi nợ (Visa, Mastercard)
@@ -18,6 +27,8 @@ export default function CheckoutPaymentMethod() {
           <input
             type="radio"
             name="payment"
+            checked={paymentMethod === "momo"}
+            onChange={() => onPaymentMethodChange("momo")}
             className="text-primary w-5 h-5 focus:ring-primary"
           />
           <span className="font-medium">Ví điện tử (Momo, ZaloPay)</span>

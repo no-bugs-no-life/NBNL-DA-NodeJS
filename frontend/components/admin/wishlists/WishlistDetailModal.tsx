@@ -1,5 +1,5 @@
 "use client";
-import { WishlistItem } from "@/hooks/useWishlist";
+import { WishlistAppItem, WishlistItem } from "@/hooks/useWishlist";
 import { API_URL } from "@/configs/api";
 
 const getImageUrl = (url?: string) => {
@@ -135,7 +135,7 @@ function AppCard({
   isRemoving,
   onRemove,
 }: {
-  app: WishlistItem["appIds"][0];
+  app: WishlistAppItem;
   isRemoving: boolean;
   onRemove: () => void;
 }) {

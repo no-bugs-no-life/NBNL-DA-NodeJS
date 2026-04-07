@@ -1,5 +1,3 @@
-import { ObjectId } from "mongodb";
-
 export interface AnalyticsRecord {
     _id: string;
     appId: string;

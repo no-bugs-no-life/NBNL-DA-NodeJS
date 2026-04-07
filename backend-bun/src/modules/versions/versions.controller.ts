@@ -87,6 +87,11 @@ export class VersionsController {
 		return apiSuccess(c, this.service.deprecate(id));
 	}
 
+	revokeDownloadLink(c: Context) {
+		const id = c.req.param("id");
+		return apiSuccess(c, this.service.revokeDownloadLink(id));
+	}
+
 	markLatest(c: Context) {
 		const id = c.req.param("id");
 		const app = c.req.param("app");

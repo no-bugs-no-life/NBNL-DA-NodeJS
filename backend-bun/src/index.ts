@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger as honoLogger } from "hono/logger";
+import path from "node:path";
 import { env } from "@/config/env";
 import { logger } from "@/infra/logger/logger";
 import { AppError } from "@/shared/errors";
@@ -24,12 +25,17 @@ app.use(
 	honoLogger((str) => logger.info(str)),
 );
 
-// Global Token Bucket Rate Limit (Ex: 10 requests maximum burst, regenerates 2 per second)
+// Global Token Bucket Rate Limit
+// - Default users: 10 requests burst, regenerates 2 req/s
+// - Admin/Moderator: 60 requests burst, regenerates 12 req/s
 app.use(
 	"*",
 	tokenBucketRateLimiter({
 		capacity: 10,
 		refillRatePerSec: 2,
+		adminCapacity: 60,
+		adminRefillRatePerSec: 12,
+		adminRoles: ["ADMIN", "MODERATOR"],
 	}),
 );
 
@@ -58,6 +64,16 @@ import { appRouter } from "@/routes";
 
 // 3. App Routes & Modules
 app.route("/api/v1", appRouter);
+
+app.get("/uploads/*", async (c) => {
+	const relPath = c.req.path.replace(/^\/uploads\//, "");
+	if (relPath.includes("..")) return c.json(fail("Invalid file path"), 400);
+
+	const filePath = path.join(process.cwd(), "uploads", relPath);
+	const file = Bun.file(filePath);
+	if (!(await file.exists())) return c.json(fail("File not found"), 404);
+	return new Response(file);
+});
 
 app.get("/", (c) => {
 	return c.json({ message: "Hello via Bun & Hono!" });

@@ -8,10 +8,18 @@ import { useTags } from "@/hooks/useTags";
 import { apiClient } from "@/store/useAuthStore";
 import useAuthStore from "@/store/useAuthStore";
 import { API_URL } from "@/configs/api";
-import ClassicEditor from "ckeditor5-custom-build-v5-full";
 
 const CKEditor = dynamic(
-  () => import("@ckeditor/ckeditor5-react").then((mod) => mod.CKEditor),
+  async () => {
+    const mod = await import("@ckeditor/ckeditor5-react");
+    const editorBuild = (await import("ckeditor5-custom-build-v5-full")).default;
+
+    const WrappedEditor = ({ data, onChange }: { data: string; onChange: (_event: unknown, editor: { getData: () => string }) => void; }) => (
+      <mod.CKEditor editor={editorBuild} data={data} onChange={onChange} />
+    );
+
+    return WrappedEditor;
+  },
   { ssr: false },
 );
 
@@ -26,6 +34,14 @@ const getIconDisplayUrl = (url: string) => {
     return url;
   if (/^[a-fA-F0-9]{24}$/.test(url)) return ""; // Broken old ObjectID, require reupload
   return `${API_URL}/${url.replace(/\\/g, "/")}`;
+};
+
+const PRICE_PATTERN = /^(0|[1-9]\d*)(\.\d{0,2})?$/;
+
+const normalizePrice = (value: string) => {
+  if (value === "") return 0;
+  if (!PRICE_PATTERN.test(value)) return null;
+  return Number(value);
 };
 
 interface Props {
@@ -54,7 +70,7 @@ export function AppFormModal({
   );
   const developers = devsData?.docs || [];
 
-  const { data: tagsData, isLoading: isLoadingTags } = useTags(1, 1000);
+  const { data: tagsData, isLoading: isLoadingTags } = useTags(1, 100);
   const tagsList = tagsData?.docs || [];
 
   const { user } = useAuthStore();
@@ -119,7 +135,7 @@ export function AppFormModal({
     return res.data.url.replace(/\\/g, "/"); // return URL instead of local filesId
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SyntheticEvent) => {
     e.preventDefault();
 
     let finalIconUrl = formData.iconUrl;
@@ -227,12 +243,11 @@ export function AppFormModal({
                   min="0"
                   step="0.01"
                   value={formData.price}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      price: Number(e.target.value),
-                    })
-                  }
+                  onChange={(e) => {
+                    const parsedPrice = normalizePrice(e.target.value);
+                    if (parsedPrice === null) return;
+                    setFormData({ ...formData, price: parsedPrice });
+                  }}
                   className="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-sm"
                   placeholder="0 = Miễn phí"
                 />
@@ -309,7 +324,6 @@ export function AppFormModal({
                 </label>
                 <div className="rounded-xl border border-slate-200 overflow-hidden bg-white">
                   <CKEditor
-                    editor={ClassicEditor}
                     data={formData.description || ""}
                     onChange={(_, editor) =>
                       setFormData({ ...formData, description: editor.getData() })
@@ -322,24 +336,42 @@ export function AppFormModal({
                 <label className="block text-sm font-semibold text-slate-700 mb-2">
                   Ảnh màn hình Icon
                 </label>
-                <div className="flex items-center gap-5">
-                  {iconPreviewUrl ? (
-                    <img
-                      src={iconPreviewUrl}
-                      alt="Icon preview"
-                      className="w-16 h-16 rounded-xl object-cover border-2 border-slate-100 shadow-sm bg-slate-50"
-                    />
-                  ) : (
-                    <div className="w-16 h-16 rounded-xl border-2 border-dashed border-slate-200 bg-slate-50 flex items-center justify-center text-slate-400">
-                      <span className="material-symbols-outlined">image</span>
+                <div className="rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 to-white p-4 md:p-5">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                    <div className="relative shrink-0">
+                      {iconPreviewUrl ? (
+                        <img
+                          src={iconPreviewUrl}
+                          alt="Icon preview"
+                          className="w-20 h-20 rounded-2xl object-cover border border-slate-200 shadow-sm bg-white"
+                        />
+                      ) : (
+                        <div className="w-20 h-20 rounded-2xl border-2 border-dashed border-slate-300 bg-slate-100/70 flex items-center justify-center text-slate-400">
+                          <span className="material-symbols-outlined text-2xl">
+                            image
+                          </span>
+                        </div>
+                      )}
+                      <span className="absolute -bottom-2 -right-2 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-100 text-blue-700 border border-blue-200">
+                        Preview
+                      </span>
                     </div>
-                  )}
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileChange}
-                    className="text-sm text-slate-600 file:mr-4 file:py-2.5 file:px-5 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer transition-colors w-full"
-                  />
+
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-slate-700 mb-1">
+                        Tải lên icon ứng dụng
+                      </p>
+                      <p className="text-xs text-slate-500 mb-3">
+                        Khuyến nghị ảnh vuông, rõ nét (PNG/JPG/WebP).
+                      </p>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileChange}
+                        className="w-full text-sm text-slate-600 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border file:border-blue-200 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer transition-colors"
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

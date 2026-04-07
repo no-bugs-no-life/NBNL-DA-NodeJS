@@ -1,7 +1,11 @@
 import { sign, verify } from "hono/jwt";
 import { env } from "@/config/env";
 import { badRequest, unauthorized } from "@/shared/errors";
-import type { LoginRequest } from "./auth.schema";
+import type {
+	ChangePasswordRequest,
+	LoginRequest,
+	VerifyTwoFactorRequest,
+} from "./auth.schema";
 import type { AuthResponse, UserPayload } from "./auth.types";
 import { mongoose } from "../../infra/db/connection";
 
@@ -78,5 +82,103 @@ export class AuthService {
 
 		const tokens = await this.generateTokens(user);
 		return { ...tokens, user };
+	}
+
+	async changePassword(userId: string, data: ChangePasswordRequest): Promise<void> {
+		const db = mongoose.connection.db;
+		if (!db) throw badRequest("Database not connected");
+
+		const { ObjectId } = await import("mongodb");
+		const user = await db.collection("users").findOne({
+			_id: new ObjectId(userId),
+		});
+		if (!user) throw badRequest("Người dùng không tồn tại");
+
+		const isMatch = await Bun.password.verify(
+			data.currentPassword,
+			user.password as string,
+		);
+		if (!isMatch) throw badRequest("Mật khẩu hiện tại không đúng");
+
+		const newHashedPassword = await Bun.password.hash(data.newPassword);
+		await db.collection("users").updateOne(
+			{ _id: new ObjectId(userId) },
+			{ $set: { password: newHashedPassword, updatedAt: new Date() } },
+		);
+	}
+
+	async enableTwoFactor(userId: string): Promise<{ setupCode: string }> {
+		const db = mongoose.connection.db;
+		if (!db) throw badRequest("Database not connected");
+
+		const { ObjectId } = await import("mongodb");
+		const setupCode = String(Math.floor(100000 + Math.random() * 900000));
+
+		await db.collection("users").updateOne(
+			{ _id: new ObjectId(userId) },
+			{
+				$set: {
+					twoFactorEnabled: false,
+					twoFactorCode: setupCode,
+					twoFactorUpdatedAt: new Date(),
+				},
+			},
+		);
+
+		return { setupCode };
+	}
+
+	async getSecurityStatus(
+		userId: string,
+	): Promise<{ twoFactorEnabled: boolean; twoFactorUpdatedAt?: string }> {
+		const db = mongoose.connection.db;
+		if (!db) throw badRequest("Database not connected");
+
+		const { ObjectId } = await import("mongodb");
+		const user = await db.collection("users").findOne(
+			{ _id: new ObjectId(userId) },
+			{ projection: { twoFactorEnabled: 1, twoFactorUpdatedAt: 1 } },
+		);
+		if (!user) throw badRequest("Người dùng không tồn tại");
+
+		return {
+			twoFactorEnabled: Boolean(user.twoFactorEnabled),
+			twoFactorUpdatedAt: user.twoFactorUpdatedAt
+				? new Date(user.twoFactorUpdatedAt).toISOString()
+				: undefined,
+		};
+	}
+
+	async verifyTwoFactor(
+		userId: string,
+		data: VerifyTwoFactorRequest,
+	): Promise<{ enabled: boolean }> {
+		const db = mongoose.connection.db;
+		if (!db) throw badRequest("Database not connected");
+
+		const { ObjectId } = await import("mongodb");
+		const user = await db.collection("users").findOne({
+			_id: new ObjectId(userId),
+		});
+		if (!user) throw badRequest("Người dùng không tồn tại");
+
+		if (!user.twoFactorCode || user.twoFactorCode !== data.code) {
+			throw badRequest("Mã xác minh 2FA không hợp lệ");
+		}
+
+		await db.collection("users").updateOne(
+			{ _id: new ObjectId(userId) },
+			{
+				$set: {
+					twoFactorEnabled: true,
+					twoFactorUpdatedAt: new Date(),
+				},
+				$unset: {
+					twoFactorCode: "",
+				},
+			},
+		);
+
+		return { enabled: true };
 	}
 }

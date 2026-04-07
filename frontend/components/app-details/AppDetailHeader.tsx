@@ -49,7 +49,11 @@ export default function AppDetailHeader() {
           <img
             alt={appInfo.name}
             className="w-full h-full object-contain"
-            src={appInfo.iconUrl}
+            src={
+              appInfo.iconUrl.startsWith("http")
+                ? appInfo.iconUrl
+                : `${API_URL}/${appInfo.iconUrl.replace(/\\/g, "/")}`
+            }
           />
         )}
       </div>

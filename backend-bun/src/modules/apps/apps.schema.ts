@@ -2,6 +2,7 @@ import { z } from "zod";
 
 // Enums as const
 const APP_STATUSES = ["pending", "published", "rejected", "archived"] as const;
+const APP_QUERY_STATUSES = [...APP_STATUSES, "approved"] as const;
 
 // Schemas
 export const CreateAppSchema = z.object({
@@ -47,7 +48,10 @@ export const AppParamsSchema = z.object({
 export const AppQuerySchema = z.object({
 	page: z.coerce.number().min(1).default(1),
 	limit: z.coerce.number().min(1).max(1000).default(20),
-	status: z.enum(APP_STATUSES).optional(),
+	status: z
+		.enum(APP_QUERY_STATUSES)
+		.transform((status) => (status === "approved" ? "published" : status))
+		.optional(),
 	category: z.string().optional(),
 	developer: z.string().optional(),
 	tags: z.string().optional(), // comma-separated

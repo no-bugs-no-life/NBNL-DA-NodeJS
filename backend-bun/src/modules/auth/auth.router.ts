@@ -16,7 +16,11 @@ const requireAuth = jwt({
 });
 
 import { validateBody } from "@/shared/middlewares/validate";
-import { LoginSchema } from "./auth.schema";
+import {
+	ChangePasswordSchema,
+	LoginSchema,
+	VerifyTwoFactorSchema,
+} from "./auth.schema";
 
 // Public Routes
 authRouter.post("/login", validateBody(LoginSchema), (c) =>
@@ -27,3 +31,21 @@ authRouter.post("/refresh", (c) => authController.refresh(c));
 // Protected Routes
 authRouter.post("/logout", requireAuth, (c) => authController.logout(c));
 authRouter.get("/me", requireAuth, (c) => authController.me(c));
+authRouter.get("/security-status", requireAuth, (c) =>
+	authController.securityStatus(c),
+);
+authRouter.post(
+	"/change-password",
+	requireAuth,
+	validateBody(ChangePasswordSchema),
+	(c) => authController.changePassword(c),
+);
+authRouter.post("/enable-2fa", requireAuth, (c) =>
+	authController.enableTwoFactor(c),
+);
+authRouter.post(
+	"/verify-2fa",
+	requireAuth,
+	validateBody(VerifyTwoFactorSchema),
+	(c) => authController.verifyTwoFactor(c),
+);

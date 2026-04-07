@@ -3,6 +3,7 @@ import Footer from "../../components/layout/Footer";
 import Link from "next/link";
 import { Metadata } from "next";
 import { mockTags } from "../../components/category/Sidebar/TagsSidebar";
+import { API_URL } from "@/configs/api";
 
 // Map tag names to Material Symbols icons
 const tagIconMap: Record<string, string> = {
@@ -26,14 +27,33 @@ export const metadata: Metadata = {
   description: "Duyệt qua các từ khóa ứng dụng phổ biến",
 };
 
-export default function TagsIndexPage() {
+export default async function TagsIndexPage() {
+  let tags: string[] = [];
+
+  try {
+    const res = await fetch(`${API_URL}/api/v1/tags?limit=100`, {
+      cache: "no-store",
+    });
+    const json = await res.json();
+    const docs = json?.data?.docs || json?.docs || [];
+    tags = Array.isArray(docs)
+      ? docs
+          .map((t: { name?: string }) => t?.name)
+          .filter((name): name is string => Boolean(name))
+      : [];
+  } catch {
+    tags = [];
+  }
+
+  const tagList = tags.length > 0 ? tags : mockTags;
+
   return (
     <>
       <Navbar />
       <main className="pt-24 pb-24 px-6 max-w-[1920px] mx-auto min-h-screen">
         <h1 className="text-4xl font-bold mb-8">Từ khóa tìm kiếm phổ biến</h1>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {mockTags.map((t, idx) => (
+          {tagList.map((t, idx) => (
             <Link key={idx} href={`/tags/${encodeURIComponent(t)}`}>
               <div className="bg-surface-container-low rounded-[20px] p-8 flex flex-col items-center justify-center text-center hover:bg-surface-container-high transition-colors border border-outline/10 cursor-pointer h-full group hover:shadow-lg shadow-[0_8px_30px_rgb(0,0,0,0.04)] active:scale-95 duration-300 min-h-[140px]">
                 <span className="material-symbols-outlined text-5xl text-primary mb-5 group-hover:scale-110 transition-transform">

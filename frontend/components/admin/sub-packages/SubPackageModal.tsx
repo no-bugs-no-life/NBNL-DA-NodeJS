@@ -60,7 +60,7 @@ export function SubPackageModal({
   const [durationDays, setDurationDays] = useState("");
   const [description, setDescription] = useState("");
   const [isActive, setIsActive] = useState(true);
-  const [appId, setAppId] = useState("");
+  const [app, setApp] = useState("");
 
   const { data: appsData, isLoading: isLoadingApps } = useAdminApps();
   const apps = appsData || [];
@@ -73,7 +73,7 @@ export function SubPackageModal({
       setDurationDays(String(initialData.durationDays));
       setDescription(initialData.description || "");
       setIsActive(initialData.isActive);
-      setAppId(
+      setApp(
         typeof initialData.appId === "object" && initialData.appId !== null
           ? (initialData.appId as { _id: string })._id
           : (initialData.appId as string) || "",
@@ -81,7 +81,7 @@ export function SubPackageModal({
     }
   }, [initialData]);
   const isValid =
-    name.trim() && price !== "" && Number(price) >= 0 && appId !== "";
+    name.trim() && price !== "" && Number(price) >= 0 && app !== "";
   const handleTypeChange = (newType: string) => {
     setType(newType);
     const opt = TYPE_OPTIONS.find((t) => t.value === newType);
@@ -92,7 +92,7 @@ export function SubPackageModal({
     const selectedType = type as "monthly" | "yearly" | "lifetime";
     const data = {
       name: name.trim(),
-      appId,
+      app,
       type: selectedType,
       price: Number(price),
       durationDays: type === "lifetime" ? 0 : Number(durationDays) || 30,
@@ -134,12 +134,12 @@ export function SubPackageModal({
             ) : (
               <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-1">
                 {apps.map((app) => {
-                  const isSelected = appId === app._id;
+                  const isSelected = app === app._id;
                   return (
                     <button
                       key={app._id}
                       type="button"
-                      onClick={() => setAppId(app._id)}
+                      onClick={() => setApp(app._id)}
                       className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl border text-left transition-all text-sm ${isSelected
                           ? "border-blue-400 bg-blue-50"
                           : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50"

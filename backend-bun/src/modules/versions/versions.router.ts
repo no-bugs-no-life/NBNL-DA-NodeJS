@@ -68,6 +68,12 @@ versionsRouter.patch(
 	validateParams(VersionParamsSchema),
 	(c) => controller.deprecate(c),
 );
+versionsRouter.patch(
+	"/:id/revoke-download",
+	requireDeveloper,
+	validateParams(VersionParamsSchema),
+	(c) => controller.revokeDownloadLink(c),
+);
 versionsRouter.patch("/app/:app/:id/latest", requireDeveloper, (c) =>
 	controller.markLatest(c),
 );

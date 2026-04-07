@@ -325,6 +325,5 @@ export function FileUploadModal({
         </button>
       </div>
     </div>
-    </div >
   );
 }

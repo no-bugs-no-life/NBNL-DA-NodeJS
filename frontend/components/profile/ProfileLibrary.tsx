@@ -1,11 +1,11 @@
 "use client";
 
 import Image from "next/image";
-import { LibraryItem } from "./data";
 import { Play, LayoutGrid } from "lucide-react";
+import { useProfileLibrary } from "@/hooks/useProfileLibrary";
 
 export default function ProfileLibrary() {
-  const items: LibraryItem[] = [];
+  const { items, isLoading } = useProfileLibrary();
 
   return (
     <div className="w-full">
@@ -18,7 +18,20 @@ export default function ProfileLibrary() {
         </div>
       </div>
 
-      {items.length === 0 ? (
+      {isLoading ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+          {Array.from({ length: 8 }).map((_, idx) => (
+            <div key={idx} className="animate-pulse rounded-xl overflow-hidden">
+              <div className="aspect-[16/9] md:aspect-[4/3] bg-slate-100" />
+              <div className="p-4 space-y-2 bg-white">
+                <div className="h-4 bg-slate-100 rounded w-2/3" />
+                <div className="h-3 bg-slate-100 rounded w-1/3" />
+                <div className="h-3 bg-slate-100 rounded w-1/2" />
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : items.length === 0 ? (
         <div className="p-12 text-center text-slate-500 bg-slate-50 rounded-2xl border border-slate-200 border-dashed flex flex-col items-center gap-3">
           <LayoutGrid className="w-12 h-12 text-slate-300" />
           <p className="text-lg font-medium">Thư viện trống</p>
@@ -49,14 +62,10 @@ export default function ProfileLibrary() {
                   {item.title}
                 </h3>
                 <p className="text-xs text-slate-500">
-                  Đã chơi:{" "}
-                  <span className="text-slate-700 font-medium">
-                    {item.playTime} giờ
-                  </span>
+                  Đã chơi: <span className="text-slate-700 font-medium">0 giờ</span>
                 </p>
                 <p className="text-xs text-slate-400 mt-2">
-                  Lần cuối:{" "}
-                  {new Date(item.lastPlayed).toLocaleDateString("vi-VN")}
+                  Lần cuối: {new Date(item.lastPlayed).toLocaleDateString("vi-VN")}
                 </p>
               </div>
             </div>

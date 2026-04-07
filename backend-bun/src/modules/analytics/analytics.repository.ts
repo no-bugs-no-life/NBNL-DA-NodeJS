@@ -11,15 +11,6 @@ import type { UpdateAnalyticsRequest } from "./analytics.schema";
 
 const COLLECTION = "analytics";
 
-function toDocument(record: Partial<AnalyticsRecord>) {
-    return {
-        ...record,
-        appId: record.appId ? new ObjectId(record.appId) : undefined,
-        createdAt: record.createdAt ? new Date(record.createdAt) : new Date(),
-        updatedAt: new Date(),
-    };
-}
-
 export class AnalyticsRepository {
     private get db() {
         // biome-ignore lint/style/noNonNullAssertion: Required by mongoose
@@ -42,13 +33,14 @@ export class AnalyticsRepository {
         }
 
         if (filters?.startDate || filters?.endDate) {
-            query.date = {};
+            const dateFilter: { $gte?: string; $lte?: string } = {};
             if (filters.startDate) {
-                (query.date as any).$gte = filters.startDate;
+                dateFilter.$gte = filters.startDate;
             }
             if (filters.endDate) {
-                (query.date as any).$lte = filters.endDate;
+                dateFilter.$lte = filters.endDate;
             }
+            query.date = dateFilter;
         }
 
         const skip = (page - 1) * limit;

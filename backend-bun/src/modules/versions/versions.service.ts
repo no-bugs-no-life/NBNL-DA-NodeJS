@@ -82,6 +82,13 @@ export class VersionsService {
 		return this.update(id, { status: "deprecated" });
 	}
 
+	async revokeDownloadLink(id: string): Promise<Version> {
+		return this.update(id, {
+			status: "deprecated",
+			isLatest: false,
+		});
+	}
+
 	async archive(id: string): Promise<Version> {
 		return this.update(id, { status: "archived" });
 	}

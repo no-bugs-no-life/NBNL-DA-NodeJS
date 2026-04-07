@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Select } from "antd";
 import "antd/dist/reset.css";
 import { WishlistItem } from "@/hooks/useWishlist";
@@ -81,11 +81,11 @@ export function WishlistUpdateModal({
   const [userOptions, setUserOptions] = useState<
     { value: string; label: string }[]
   >([]);
-  let timeoutRef: ReturnType<typeof setTimeout> | null = null;
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleUserSearch = (val: string) => {
-    if (timeoutRef) clearTimeout(timeoutRef);
-    timeoutRef = setTimeout(() => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    timeoutRef.current = setTimeout(() => {
       const q = val.trim().toLowerCase();
       const filtered = users
         .filter((u) => {

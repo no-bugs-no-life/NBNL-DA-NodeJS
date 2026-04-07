@@ -1,8 +1,12 @@
 import type { Context } from "hono";
-import { ok } from "@/shared/utils/api-response.util";
+import { fail, ok } from "@/shared/utils/api-response.util";
 import type {
 	CreateDeveloperRequest,
 	DeveloperQueryRequest,
+} from "./developers.schema";
+import {
+	AdminDeveloperQuerySchema,
+	DeveloperQuerySchema,
 } from "./developers.schema";
 import { DevelopersService } from "./developers.service";
 import type {
@@ -17,19 +21,42 @@ export class DevelopersController {
 		this.service = service || new DevelopersService();
 	}
 
+	private getAuthUserId(c: Context): string | undefined {
+		const payload =
+			(c.get("payload") as
+				| { sub?: string; id?: string; userId?: string }
+				| undefined) ||
+			(c.get("jwtPayload") as
+				| { sub?: string; id?: string; userId?: string }
+				| undefined);
+
+		return payload?.sub || payload?.id || payload?.userId;
+	}
+
+	private getAuthRole(c: Context): string | undefined {
+		const payload =
+			(c.get("payload") as { role?: string } | undefined) ||
+			(c.get("jwtPayload") as { role?: string } | undefined);
+		return payload?.role?.toUpperCase();
+	}
+
+	private isAdminRole(role?: string): boolean {
+		return role === "ADMIN" || role === "MODERATOR";
+	}
+
 	/**
 	 * GET /developers - List all developers
 	 */
 	async list(c: Context) {
-		const query = c.req.query();
-		const req: DeveloperQueryRequest = {
-			page: Number(query.page) || 1,
-			limit: Math.min(Number(query.limit) || 20, 100),
-			sortBy: (query.sortBy as "createdAt" | "name" | "status") || "createdAt",
-			order: Number(query.order) || -1,
-			status: query.status as "pending" | "approved" | "rejected" | undefined,
-			search: query.search,
-		};
+		const role = this.getAuthRole(c);
+		const querySchema = this.isAdminRole(role)
+			? AdminDeveloperQuerySchema
+			: DeveloperQuerySchema;
+		const parsed = querySchema.safeParse(c.req.query());
+		if (!parsed.success) {
+			return c.json(fail("Truy vấn không hợp lệ", parsed.error), 400);
+		}
+		const req: DeveloperQueryRequest = parsed.data;
 
 		const result = await this.service.findAll(req);
 
@@ -58,7 +85,7 @@ export class DevelopersController {
 	 * GET /developers/my - Get current user's developer profile
 	 */
 	async getMyProfile(c: Context) {
-		const userId = c.get("payload")?.sub;
+		const userId = this.getAuthUserId(c);
 		if (!userId) return c.json(ok(null), 401);
 
 		const dev = await this.service.findByUserId(userId);
@@ -70,7 +97,7 @@ export class DevelopersController {
 	 * GET /developers/my/apps - Get current user's apps
 	 */
 	async getMyApps(c: Context) {
-		const userId = c.get("payload")?.sub;
+		const userId = this.getAuthUserId(c);
 		if (!userId) return c.json(ok(null), 401);
 
 		const dev = await this.service.findByUserId(userId);
@@ -84,10 +111,23 @@ export class DevelopersController {
 	 */
 	async create(c: Context) {
 		const body = await c.req.json<CreateDeveloperRequest>();
-		const userId = c.get("payload")?.sub;
+		const userId = this.getAuthUserId(c);
 		if (!userId) return c.json(ok(null), 401);
 
-		const data: CreateDeveloperDTO = body.userId ? body : { ...body, userId };
+		const socialLinks = body.socialLinks
+			? Object.entries(body.socialLinks).reduce<Record<string, string>>(
+					(acc, [key, value]) => {
+						if (typeof value === "string") acc[key] = value;
+						return acc;
+					},
+					{},
+				)
+			: undefined;
+		const data: CreateDeveloperDTO = {
+			...body,
+			userId: body.userId || userId,
+			socialLinks,
+		};
 		const dev = await this.service.create(data, userId);
 		return c.json(ok(dev), 201);
 	}
@@ -110,7 +150,7 @@ export class DevelopersController {
 		const id = c.req.param("id") || "";
 		if (!id) return c.json(ok(null), 400);
 		const body = await c.req.json<{ permissions?: Record<string, boolean> }>();
-		const approvedBy = c.get("payload")?.sub;
+		const approvedBy = this.getAuthUserId(c);
 		if (!approvedBy) return c.json(ok(null), 401);
 
 		const dev = await this.service.approve(id, approvedBy, body.permissions);

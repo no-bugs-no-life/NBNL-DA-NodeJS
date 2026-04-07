@@ -11,7 +11,7 @@ import type {
 	UpdateAppRequest,
 } from "./apps.schema";
 import { AppsService } from "./apps.service";
-import type { AppFilters } from "./apps.types";
+import type { AppFilters, AppWithRelations, PaginatedApps } from "./apps.types";
 
 export class AppsController {
 	private service: AppsService;
@@ -22,6 +22,41 @@ export class AppsController {
 
 	private isAdminRole(role?: string): boolean {
 		return role === "ADMIN" || role === "MODERATOR";
+	}
+
+	private getAuthRole(c: Context): string | undefined {
+		const payload =
+			(c.get("payload") as { role?: string } | undefined) ||
+			(c.get("jwtPayload") as { role?: string } | undefined);
+		return payload?.role?.toUpperCase();
+	}
+
+	private toAbsoluteUrl(c: Context, maybeRelativeUrl?: string): string {
+		if (!maybeRelativeUrl) return "";
+		if (maybeRelativeUrl.startsWith("http://") || maybeRelativeUrl.startsWith("https://")) {
+			return maybeRelativeUrl;
+		}
+		return new URL(maybeRelativeUrl, c.req.url).toString();
+	}
+
+	private withAbsoluteIconUrl(
+		c: Context,
+		app: AppWithRelations,
+	): AppWithRelations {
+		return {
+			...app,
+			iconUrl: app.iconUrl ? this.toAbsoluteUrl(c, app.iconUrl) : app.iconUrl,
+		};
+	}
+
+	private withAbsoluteIconUrls(
+		c: Context,
+		result: PaginatedApps,
+	): PaginatedApps {
+		return {
+			...result,
+			docs: result.docs.map((a) => this.withAbsoluteIconUrl(c, a)),
+		};
 	}
 
 	private assertAdmin(c: Context) {
@@ -38,7 +73,8 @@ export class AppsController {
 	 */
 	async list(c: Context) {
 		const query = c.req.valid("query") as AppQueryRequest;
-		const isAdmin = c.req.query("admin") === "true";
+		const role = this.getAuthRole(c);
+		const isAdmin = c.req.query("admin") === "true" || this.isAdminRole(role);
 
 		const filters: AppFilters = {
 			status: query.status,
@@ -56,7 +92,7 @@ export class AppsController {
 		}
 
 		const result = await this.service.findAll(filters, query.page, query.limit);
-		return apiSuccess(c, result);
+		return apiSuccess(c, this.withAbsoluteIconUrls(c, result));
 	}
 
 	/**
@@ -65,7 +101,7 @@ export class AppsController {
 	async getById(c: Context) {
 		const id = c.req.param("id");
 		const app = await this.service.findById(id);
-		return apiSuccess(c, app);
+		return apiSuccess(c, this.withAbsoluteIconUrl(c, app));
 	}
 
 	/**
@@ -74,7 +110,7 @@ export class AppsController {
 	async getBySlug(c: Context) {
 		const slug = c.req.param("slug");
 		const app = await this.service.findBySlug(slug);
-		return apiSuccess(c, app);
+		return apiSuccess(c, this.withAbsoluteIconUrl(c, app));
 	}
 
 	/**
@@ -83,7 +119,10 @@ export class AppsController {
 	async getByDeveloper(c: Context) {
 		const developer = c.req.param("developer");
 		const apps = await this.service.findByDeveloper(developer);
-		return apiSuccess(c, apps);
+		return apiSuccess(
+			c,
+			apps.map((a) => this.withAbsoluteIconUrl(c, a)),
+		);
 	}
 
 	/**

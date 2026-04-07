@@ -24,7 +24,7 @@ export interface SubPackageItem {
 
 export interface CreateSubPackageInput {
   name: string;
-  appId?: string | null;
+  app: string;
   type: "monthly" | "yearly" | "lifetime";
   price: number;
   durationDays: number;

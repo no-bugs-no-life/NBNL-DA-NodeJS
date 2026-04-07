@@ -2,12 +2,22 @@
 import { useState } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AppItem, AppInput } from "./appsService";
 import { useCategories } from "@/hooks/useCategories";
 import { useTags } from "@/hooks/useTags";
 import { apiClient } from "@/store/useAuthStore";
 import useAuthStore from "@/store/useAuthStore";
 import { API_URL } from "@/configs/api";
+import {
+  AppVersion,
+  CreateAppVersionInput,
+  VersionPlatform,
+  createVersion,
+  fetchVersionsByApp,
+  publishVersion,
+  revokeDownloadVersion,
+} from "./versionsService";
 import ClassicEditor from "ckeditor5-custom-build-v5-full";
 
 const CKEditor = dynamic(
@@ -62,13 +72,18 @@ function StatusBadge({ status }: { status: string }) {
 }
 function SectionCard({
   title,
+  id,
   children,
 }: {
   title: string;
+  id?: string;
   children: React.ReactNode;
 }) {
   return (
-    <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden">
+    <div
+      id={id}
+      className="bg-white rounded-2xl border border-slate-100 overflow-hidden"
+    >
       {" "}
       <div className="px-5 py-3.5 border-b border-slate-100 bg-slate-50/50">
         {" "}
@@ -319,7 +334,28 @@ export function AppInfoPage({
   loadingAction,
 }: Props) {
   const [editMode, setEditMode] = useState(false);
+  const queryClient = useQueryClient();
   const isDisabled = app.isDisabled ?? false;
+  const { data: versions = [], isLoading: isLoadingVersions } = useQuery({
+    queryKey: ["app-versions", app._id],
+    queryFn: () => fetchVersionsByApp(app._id),
+    enabled: !!app._id,
+  });
+  const mCreateVersion = useMutation({
+    mutationFn: (payload: CreateAppVersionInput) => createVersion(payload),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: ["app-versions", app._id] }),
+  });
+  const mPublishVersion = useMutation({
+    mutationFn: (id: string) => publishVersion(id),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: ["app-versions", app._id] }),
+  });
+  const mRevokeVersion = useMutation({
+    mutationFn: (id: string) => revokeDownloadVersion(id),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: ["app-versions", app._id] }),
+  });
   return (
     <div className="max-w-4xl mx-auto space-y-6 animate-in fade-in duration-300">
       {" "}
@@ -549,6 +585,21 @@ export function AppInfoPage({
               </button>{" "}
             </div>{" "}
           </SectionCard>{" "}
+          <SectionCard id="versions" title="Quản lý Version & Link Download">
+            <VersionManagerSection
+              appId={app._id}
+              versions={versions}
+              isLoading={isLoadingVersions}
+              isMutating={
+                mCreateVersion.isPending ||
+                mPublishVersion.isPending ||
+                mRevokeVersion.isPending
+              }
+              onCreate={(payload) => mCreateVersion.mutate(payload)}
+              onPublish={(id) => mPublishVersion.mutate(id)}
+              onRevokeDownload={(id) => mRevokeVersion.mutate(id)}
+            />
+          </SectionCard>
         </>
       )}{" "}
     </div>
@@ -568,5 +619,193 @@ function InlineEditSection({
 }) {
   return (
     <EditForm app={app} onSave={onEdit} onCancel={onCancel} loading={loading} />
+  );
+}
+
+function VersionManagerSection({
+  appId,
+  versions,
+  isLoading,
+  isMutating,
+  onCreate,
+  onPublish,
+  onRevokeDownload,
+}: {
+  appId: string;
+  versions: AppVersion[];
+  isLoading: boolean;
+  isMutating: boolean;
+  onCreate: (payload: CreateAppVersionInput) => void;
+  onPublish: (id: string) => void;
+  onRevokeDownload: (id: string) => void;
+}) {
+  const [form, setForm] = useState({
+    versionNumber: "",
+    versionCode: "",
+    releaseName: "",
+    changelog: "",
+    fileName: "",
+    fileKey: "",
+    fileSize: "",
+      platform: "android" as VersionPlatform,
+  });
+
+  const submitCreate = (e: React.FormEvent) => {
+    e.preventDefault();
+    onCreate({
+      app: appId,
+      versionNumber: form.versionNumber,
+      versionCode: Number(form.versionCode),
+      releaseName: form.releaseName || undefined,
+      changelog: form.changelog || undefined,
+      status: "draft",
+      files: [
+        {
+          platform: form.platform,
+          fileKey: form.fileKey,
+          fileName: form.fileName,
+          fileSize: Number(form.fileSize || 0),
+          mimeType: "application/octet-stream",
+        },
+      ],
+    });
+    setForm({
+      versionNumber: "",
+      versionCode: "",
+      releaseName: "",
+      changelog: "",
+      fileName: "",
+      fileKey: "",
+      fileSize: "",
+      platform: "android",
+    });
+  };
+
+  return (
+    <div className="space-y-4">
+      <form onSubmit={submitCreate} className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <input
+          required
+          value={form.versionNumber}
+          onChange={(e) => setForm({ ...form, versionNumber: e.target.value })}
+          placeholder="Version number (vd: 1.2.0)"
+          className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm"
+        />
+        <input
+          required
+          type="number"
+          min={1}
+          value={form.versionCode}
+          onChange={(e) => setForm({ ...form, versionCode: e.target.value })}
+          placeholder="Version code"
+          className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm"
+        />
+        <input
+          value={form.releaseName}
+          onChange={(e) => setForm({ ...form, releaseName: e.target.value })}
+          placeholder="Release name"
+          className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm"
+        />
+        <select
+          value={form.platform}
+          onChange={(e) =>
+            setForm({ ...form, platform: e.target.value as VersionPlatform })
+          }
+          className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm bg-white"
+        >
+          <option value="android">Android</option>
+          <option value="ios">iOS</option>
+          <option value="windows">Windows</option>
+          <option value="macos">macOS</option>
+          <option value="linux">Linux</option>
+          <option value="web">Web</option>
+        </select>
+        <input
+          required
+          value={form.fileName}
+          onChange={(e) => setForm({ ...form, fileName: e.target.value })}
+          placeholder="File name"
+          className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm"
+        />
+        <input
+          required
+          value={form.fileKey}
+          onChange={(e) => setForm({ ...form, fileKey: e.target.value })}
+          placeholder="File key (storage path)"
+          className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm"
+        />
+        <input
+          required
+          type="number"
+          min={0}
+          value={form.fileSize}
+          onChange={(e) => setForm({ ...form, fileSize: e.target.value })}
+          placeholder="File size (bytes)"
+          className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm"
+        />
+        <input
+          value={form.changelog}
+          onChange={(e) => setForm({ ...form, changelog: e.target.value })}
+          placeholder="Changelog"
+          className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm"
+        />
+        <button
+          type="submit"
+          disabled={isMutating}
+          className="md:col-span-2 px-4 py-2.5 rounded-xl text-sm font-semibold bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
+        >
+          Tạo version mới
+        </button>
+      </form>
+
+      <div className="rounded-xl border border-slate-200 overflow-hidden">
+        <div className="grid grid-cols-12 gap-2 px-3 py-2 bg-slate-50 text-xs font-semibold text-slate-600">
+          <span className="col-span-3">Version</span>
+          <span className="col-span-2">Platform</span>
+          <span className="col-span-2">Status</span>
+          <span className="col-span-2">Download</span>
+          <span className="col-span-3 text-right">Actions</span>
+        </div>
+        {isLoading ? (
+          <p className="px-3 py-4 text-sm text-slate-500">Đang tải versions...</p>
+        ) : versions.length === 0 ? (
+          <p className="px-3 py-4 text-sm text-slate-500">Chưa có version nào.</p>
+        ) : (
+          versions.map((v) => (
+            <div
+              key={v._id}
+              className="grid grid-cols-12 gap-2 px-3 py-3 border-t border-slate-100 items-center text-sm"
+            >
+              <span className="col-span-3 font-medium">
+                {v.versionNumber} ({v.versionCode})
+              </span>
+              <span className="col-span-2">{v.files[0]?.platform || "-"}</span>
+              <span className="col-span-2">{v.status}</span>
+              <span className="col-span-2">{v.downloadCount || 0}</span>
+              <div className="col-span-3 flex justify-end gap-2">
+                {v.status !== "published" && (
+                  <button
+                    disabled={isMutating}
+                    onClick={() => onPublish(v._id)}
+                    className="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-green-100 text-green-700 hover:bg-green-200 disabled:opacity-50"
+                  >
+                    Publish
+                  </button>
+                )}
+                {v.status === "published" && (
+                  <button
+                    disabled={isMutating}
+                    onClick={() => onRevokeDownload(v._id)}
+                    className="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-red-100 text-red-700 hover:bg-red-200 disabled:opacity-50"
+                  >
+                    Thu hồi link
+                  </button>
+                )}
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
   );
 }

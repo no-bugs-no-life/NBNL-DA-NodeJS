@@ -10,16 +10,22 @@ import {
   Shield,
   LogOut,
 } from "lucide-react";
-import useAuthStore from "@/store/useAuthStore";
+import useAuthStore, { apiClient } from "@/store/useAuthStore";
 
 export default function ProfileSidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const { logout } = useAuthStore();
 
-  const handleLogout = () => {
-    logout();
-    router.push("/login");
+  const handleLogout = async () => {
+    try {
+      await apiClient.post("/api/v1/auth/logout");
+    } catch {
+      // silent fail
+    } finally {
+      logout();
+      router.push("/login");
+    }
   };
 
   const menuItems = [

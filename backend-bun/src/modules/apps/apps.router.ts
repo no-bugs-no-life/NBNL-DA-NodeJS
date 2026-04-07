@@ -1,5 +1,5 @@
-import { Hono } from "hono";
-import { jwt } from "hono/jwt";
+import { Hono, type MiddlewareHandler } from "hono";
+import { jwt, verify } from "hono/jwt";
 import { env } from "@/config/env";
 import { validateBody, validateQuery } from "@/shared/middlewares/validate";
 import { AppsController } from "./apps.controller";
@@ -18,10 +18,49 @@ const requireAuth = jwt({
 	alg: "HS256",
 });
 
+const optionalAuth: MiddlewareHandler = async (c, next) => {
+	const authHeader = c.req.header("authorization");
+	if (!authHeader?.startsWith("Bearer ")) {
+		await next();
+		return;
+	}
+
+	const token = authHeader.slice("Bearer ".length).trim();
+	if (!token) {
+		await next();
+		return;
+	}
+
+	try {
+		const payload = await verify(token, env.JWT_ACCESS_SECRET, "HS256");
+		const id =
+			typeof payload.id === "string"
+				? payload.id
+				: typeof payload.sub === "string"
+					? payload.sub
+					: undefined;
+		const role = typeof payload.role === "string" ? payload.role : undefined;
+		if (id && role) {
+			c.set("jwtPayload", {
+				id,
+				role,
+				email: typeof payload.email === "string" ? payload.email : undefined,
+				exp: typeof payload.exp === "number" ? payload.exp : undefined,
+				iat: typeof payload.iat === "number" ? payload.iat : undefined,
+			});
+		}
+	} catch {
+		// Ignore invalid token on public endpoint; keep behavior as guest.
+	}
+	await next();
+};
+
 // ============ PUBLIC ROUTES ============
 
 // GET /apps - List apps with filters & pagination
-appsRouter.get("/", validateQuery(AppQuerySchema), (c) => controller.list(c));
+appsRouter.get("/", optionalAuth, validateQuery(AppQuerySchema), (c) =>
+	controller.list(c),
+);
 
 // GET /apps/:id - Get app by ID
 appsRouter.get("/:id", (c) => controller.getById(c));

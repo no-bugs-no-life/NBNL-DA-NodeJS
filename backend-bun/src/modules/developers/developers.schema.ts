@@ -60,6 +60,10 @@ export const DeveloperQuerySchema = z.object({
 	search: z.string().optional(),
 });
 
+export const AdminDeveloperQuerySchema = DeveloperQuerySchema.extend({
+	limit: z.coerce.number().min(1).default(20),
+});
+
 // Types
 export type CreateDeveloperRequest = z.infer<typeof CreateDeveloperSchema>;
 export type UpdateDeveloperRequest = z.infer<typeof UpdateDeveloperSchema>;

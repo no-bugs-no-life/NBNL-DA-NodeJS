@@ -1,12 +1,11 @@
 import { Hono } from "hono";
 import { jwt } from "hono/jwt";
 import { env } from "@/config/env";
-import { validateBody, validateQuery } from "@/shared/middlewares/validate";
+import { validateBody } from "@/shared/middlewares/validate";
 import { DevelopersController } from "./developers.controller";
 import {
 	ApproveDeveloperSchema,
 	CreateDeveloperSchema,
-	DeveloperQuerySchema,
 	RejectDeveloperSchema,
 	RevokeDeveloperSchema,
 	UpdateDeveloperSchema,
@@ -27,7 +26,6 @@ const requireAuth = jwt({
 developersRouter.get(
 	"/",
 	requireAuth,
-	validateQuery(DeveloperQuerySchema),
 	(c) => controller.list(c),
 );
 

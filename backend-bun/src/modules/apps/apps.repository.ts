@@ -11,11 +11,16 @@ import type {
 
 const COLLECTION = "apps";
 
+function toObjectIdIfValid(value?: string) {
+	if (!value) return undefined;
+	return ObjectId.isValid(value) ? new ObjectId(value) : value;
+}
+
 function toDocument(app: Partial<App>) {
 	return {
 		...app,
-		developer: app.developer ? new ObjectId(app.developer) : undefined,
-		category: app.category ? new ObjectId(app.category) : undefined,
+		developer: toObjectIdIfValid(app.developer),
+		category: toObjectIdIfValid(app.category),
 		tags:
 			app.tags?.map((t) => (ObjectId.isValid(t) ? new ObjectId(t) : t)) || [],
 		createdAt: app.createdAt ? new Date(app.createdAt) : new Date(),
@@ -76,15 +81,17 @@ export class AppsRepository {
 		}
 
 		if (filters?.status) query.status = filters.status;
-		if (filters?.category)
-			query.category = new ObjectId(filters.category);
-		if (filters?.developer)
-			query.developer = new ObjectId(filters.developer);
+		if (filters?.category) query.category = toObjectIdIfValid(filters.category);
+		if (filters?.developer) query.developer = toObjectIdIfValid(filters.developer);
 		if (filters?.isDisabled !== undefined)
 			query.isDisabled = filters.isDisabled;
 
 		if (filters?.tags?.length) {
-			query.tags = { $in: filters.tags.map((t) => new ObjectId(t)) };
+			query.tags = {
+				$in: filters.tags.map((t) =>
+					ObjectId.isValid(t) ? new ObjectId(t) : t,
+				),
+			};
 		}
 
 		if (filters?.search) {
@@ -217,7 +224,10 @@ export class AppsRepository {
 	}
 
 	async existsBySlug(slug: string, excludeId?: string): Promise<boolean> {
-		const query: Record<string, unknown> = { slug };
+		const query: Record<string, unknown> = {
+			slug,
+			isDeleted: { $ne: true },
+		};
 		if (excludeId) query._id = { $ne: new ObjectId(excludeId) };
 		const count = await this.collection.countDocuments(query);
 		return count > 0;

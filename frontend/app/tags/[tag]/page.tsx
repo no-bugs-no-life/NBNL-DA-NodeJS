@@ -4,7 +4,14 @@ import TagsSidebar from "../../../components/category/Sidebar/TagsSidebar";
 import FeaturedArea from "../../../components/category/FeaturedArea";
 import ProductGrid from "../../../components/category/ProductGrid";
 
-export default async function TagsPage() {
+export default async function TagsPage({
+  params,
+}: {
+  params: Promise<{ tag: string }>;
+}) {
+  const { tag } = await params;
+  const decodedTag = decodeURIComponent(tag);
+
   return (
     <>
       <Navbar />
@@ -12,7 +19,7 @@ export default async function TagsPage() {
         <TagsSidebar />
         <div className="flex-1 min-w-0">
           <FeaturedArea />
-          <ProductGrid />
+          <ProductGrid tag={decodedTag} />
         </div>
       </main>
       <Footer />

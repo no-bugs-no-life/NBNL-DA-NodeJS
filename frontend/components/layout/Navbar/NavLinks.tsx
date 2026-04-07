@@ -18,6 +18,9 @@ export default function NavLinks() {
 
   useEffect(() => setMounted(true), []);
 
+  // Chỉ hiển thị danh mục cha ở menu chính
+  const displayedCategories = categories.filter((c) => c.parentId == null);
+
   const isActive = (path: string) => {
     if (path === "/") {
       return pathname === "/";
@@ -60,8 +63,8 @@ export default function NavLinks() {
               <div className="col-span-2 text-center text-sm py-4">
                 Đang tải danh mục...
               </div>
-            ) : categories.length > 0 ? (
-              categories.map((c) => (
+            ) : displayedCategories.length > 0 ? (
+              displayedCategories.slice(0, 10).map((c) => (
                 <Link
                   key={c._id}
                   href={`/category/${c._id}`}

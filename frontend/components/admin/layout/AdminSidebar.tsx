@@ -23,52 +23,97 @@ const MENU_GROUPS = [
   {
     title: "Tổng quan",
     items: [
-      { name: "Dashboard", icon: Squares2X2Icon, path: "/admin/dashboard" },
+      { name: "Bảng điều khiển", icon: Squares2X2Icon, path: "/admin/dashboard" },
       {
-        name: "Quản lý Analytics",
+        name: "Quản lý Phân tích",
         icon: ChartBarIcon,
         path: "/admin/analytics",
       },
     ],
   },
   {
-    title: "Hệ thống",
+    title: "Nội dung hệ thống",
     items: [
       {
         name: "Quản lý Danh mục",
         icon: FolderOpenIcon,
         path: "/admin/categories",
       },
-      { name: "Quản lý App", icon: DevicePhoneMobileIcon, path: "/admin/apps" },
-      { name: "Quản lý Đánh giá", icon: StarIcon, path: "/admin/reviews" },
-      { name: "Quản lý Tag", icon: TagIcon, path: "/admin/tags" },
+      { name: "Quản lý Ứng dụng", icon: DevicePhoneMobileIcon, path: "/admin/apps" },
       {
-        name: "Quản lý Developer",
+        name: "Quản lý Phiên bản (theo Ứng dụng)",
+        icon: FolderIcon,
+        path: "/admin/apps",
+      },
+      { name: "Quản lý Đánh giá", icon: StarIcon, path: "/admin/reviews" },
+      { name: "Quản lý Thẻ", icon: TagIcon, path: "/admin/tags" },
+      { name: "Quản lý Tệp", icon: FolderIcon, path: "/admin/files" },
+    ],
+  },
+  {
+    title: "Đối tác & người dùng",
+    items: [
+      {
+        name: "Quản lý Nhà phát triển",
         icon: CodeBracketIcon,
         path: "/admin/developers",
       },
-      { name: "Quản lý Wishlist", icon: HeartIcon, path: "/admin/wishlists" },
+      { name: "Quản lý Yêu thích", icon: HeartIcon, path: "/admin/wishlists" },
       {
         name: "Quản lý Giỏ hàng",
         icon: ShoppingCartIcon,
         path: "/admin/carts",
       },
-      { name: "Quản lý Files", icon: FolderIcon, path: "/admin/files" },
-      { name: "Quản lý Coupon", icon: TicketIcon, path: "/admin/coupons" },
+    ],
+  },
+  {
+    title: "Thương mại & thanh toán",
+    items: [
+      { name: "Quản lý Mã giảm giá", icon: TicketIcon, path: "/admin/coupons" },
       {
-        name: "Quản lý Subscriptions",
+        name: "Quản lý Đăng ký",
         icon: BanknotesIcon,
         path: "/admin/subscriptions",
       },
       {
-        name: "Quản lý Gói Subscription",
+        name: "Quản lý Gói đăng ký",
         icon: CreditCardIcon,
         path: "/admin/sub-packages",
       },
+    ],
+  },
+  {
+    title: "Giám sát hệ thống",
+    items: [
       { name: "Quản lý Reports", icon: FlagIcon, path: "/admin/reports" },
     ],
   },
 ];
+
+function getSelectedAppIdFromPathname(pathname: string) {
+  const match = pathname.match(/^\/admin\/apps\/([^/]+)(?:\/|$)/);
+  return match?.[1] || null;
+}
+
+function buildMenuGroups(pathname: string) {
+  const selectedAppId = getSelectedAppIdFromPathname(pathname);
+  return MENU_GROUPS.map((group) => {
+    if (group.title !== "Nội dung hệ thống") return group;
+    return {
+      ...group,
+      items: group.items
+        .map((item) => {
+          if (item.name !== "Quản lý Phiên bản (theo Ứng dụng)") return item;
+          if (!selectedAppId) return null;
+          return {
+            ...item,
+            path: `/admin/apps/${selectedAppId}#versions`,
+          };
+        })
+        .filter(Boolean) as typeof group.items,
+    };
+  });
+}
 
 function SidebarLogo() {
   return (
@@ -119,6 +164,7 @@ export function AdminSidebar({
   setIsOpen?: (val: boolean) => void;
 }) {
   const pathname = usePathname() || "";
+  const menuGroups = buildMenuGroups(pathname);
 
   return (
     <aside
@@ -138,7 +184,7 @@ export function AdminSidebar({
       </div>
 
       <nav className="flex flex-col gap-6 mt-4 md:mt-0">
-        {MENU_GROUPS.map((group) => (
+        {menuGroups.map((group) => (
           <div key={group.title}>
             <h3 className="px-4 text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-3">
               {group.title}

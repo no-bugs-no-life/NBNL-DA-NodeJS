@@ -34,6 +34,8 @@ export function DeveloperFormModal({
   const [userOptions, setUserOptions] = useState<
     { value: string; label: string }[]
   >([]);
+  const fieldClassName =
+    "w-full h-11 px-4 rounded-xl border border-slate-200 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-sm";
 
   const handleUserSearch = (val: string) => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
@@ -62,7 +64,7 @@ export function DeveloperFormModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-white rounded-2xl w-full max-w-3xl shadow-xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
+      <div className="bg-white rounded-2xl w-full max-w-4xl shadow-xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
         <div className="p-6 border-b border-slate-100 flex items-center justify-between">
           <div>
             <h2 className="text-xl font-bold text-slate-800">
@@ -88,7 +90,7 @@ export function DeveloperFormModal({
           <form
             id="developer-form"
             onSubmit={handleSubmit}
-            className="grid grid-cols-1 md:grid-cols-2 gap-5"
+            className="grid grid-cols-1 lg:grid-cols-2 gap-5"
           >
             {action === "create" && (
               <div className="md:col-span-2">
@@ -102,9 +104,10 @@ export function DeveloperFormModal({
                   value={formData.userId || undefined}
                   loading={isLoadingUsers}
                   defaultActiveFirstOption={false}
-                  showArrow={false}
+                  suffixIcon={null}
                   filterOption={false}
                   notFoundContent={null}
+                  size="large"
                   options={userOptions}
                   onSearch={handleUserSearch}
                   onChange={(val) =>
@@ -128,7 +131,7 @@ export function DeveloperFormModal({
                 onChange={(e) =>
                   setFormData({ ...formData, name: e.target.value })
                 }
-                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-sm"
+                className={fieldClassName}
               />
             </div>
 
@@ -143,7 +146,7 @@ export function DeveloperFormModal({
                 onChange={(e) =>
                   setFormData({ ...formData, contactEmail: e.target.value })
                 }
-                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-sm"
+                className={fieldClassName}
               />
             </div>
 
@@ -157,7 +160,7 @@ export function DeveloperFormModal({
                 onChange={(e) =>
                   setFormData({ ...formData, avatarUrl: e.target.value })
                 }
-                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-sm"
+                className={fieldClassName}
                 placeholder="https://..."
               />
             </div>
@@ -172,7 +175,7 @@ export function DeveloperFormModal({
                 onChange={(e) =>
                   setFormData({ ...formData, website: e.target.value })
                 }
-                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-sm"
+                className={fieldClassName}
                 placeholder="https://..."
               />
             </div>
@@ -182,12 +185,12 @@ export function DeveloperFormModal({
                 Tiểu sử (Bio)
               </label>
               <textarea
-                rows={4}
+                rows={5}
                 value={formData.bio}
                 onChange={(e) =>
                   setFormData({ ...formData, bio: e.target.value })
                 }
-                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-sm resize-none"
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-sm resize-none"
               />
             </div>
           </form>

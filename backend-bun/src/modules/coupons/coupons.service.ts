@@ -21,6 +21,10 @@ export interface ApplyResult {
 export class CouponsService {
 	private readonly repository = new CouponsRepository();
 
+	private getCouponApps(coupon: ICoupon): ICoupon["apps"] {
+		return Array.isArray(coupon.apps) ? coupon.apps : [];
+	}
+
 	async create(data: CreateCouponRequest): Promise<CouponItemResponse> {
 		const existing = await this.repository.findByCode(data.code.toUpperCase());
 		if (existing) throw badRequest("Mã coupon đã tồn tại");
@@ -113,7 +117,7 @@ export class CouponsService {
 		if (
 			!coupon.isGlobal &&
 			app &&
-			!coupon.apps.some((a) => a.toString() === app)
+			!this.getCouponApps(coupon).some((a) => a.toString() === app)
 		) {
 			throw badRequest("Coupon không áp dụng cho ứng dụng này");
 		}
@@ -146,7 +150,7 @@ export class CouponsService {
 	}
 
 	private toResponse(coupon: ICoupon): CouponItemResponse {
-		const apps: AppInfo[] = coupon.apps.map((app) => ({
+		const apps: AppInfo[] = this.getCouponApps(coupon).map((app) => ({
 			_id: app,
 			name: "",
 			iconUrl: undefined,

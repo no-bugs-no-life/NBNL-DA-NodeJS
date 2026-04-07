@@ -2,7 +2,11 @@ import type { Context } from "hono";
 import { deleteCookie, getCookie, setCookie } from "hono/cookie";
 import { env } from "@/config/env";
 import { BaseController } from "@/shared/base";
-import type { LoginRequest } from "./auth.schema";
+import type {
+	ChangePasswordRequest,
+	LoginRequest,
+	VerifyTwoFactorRequest,
+} from "./auth.schema";
 import { AuthService } from "./auth.service";
 
 export class AuthController extends BaseController {
@@ -85,5 +89,53 @@ export class AuthController extends BaseController {
 		if (!payload) return c.json(this.fail("Chưa đăng nhập"), 401);
 
 		return c.json(this.ok(payload, "Thông tin người dùng"));
+	}
+
+	async changePassword(c: Context) {
+		// @ts-expect-error
+		const data = c.req.valid("json") as ChangePasswordRequest;
+		const payload = c.get("jwtPayload") as
+			| { id?: string; sub?: string }
+			| undefined;
+		const userId = payload?.id || payload?.sub;
+		if (!userId) return c.json(this.fail("Chưa đăng nhập"), 401);
+
+		await this.authService.changePassword(userId, data);
+		return c.json(this.ok(null, "Đổi mật khẩu thành công"));
+	}
+
+	async enableTwoFactor(c: Context) {
+		const payload = c.get("jwtPayload") as
+			| { id?: string; sub?: string }
+			| undefined;
+		const userId = payload?.id || payload?.sub;
+		if (!userId) return c.json(this.fail("Chưa đăng nhập"), 401);
+
+		const result = await this.authService.enableTwoFactor(userId);
+		return c.json(this.ok(result, "Đã tạo mã thiết lập 2FA"));
+	}
+
+	async securityStatus(c: Context) {
+		const payload = c.get("jwtPayload") as
+			| { id?: string; sub?: string }
+			| undefined;
+		const userId = payload?.id || payload?.sub;
+		if (!userId) return c.json(this.fail("Chưa đăng nhập"), 401);
+
+		const result = await this.authService.getSecurityStatus(userId);
+		return c.json(this.ok(result, "Trạng thái bảo mật"));
+	}
+
+	async verifyTwoFactor(c: Context) {
+		// @ts-expect-error
+		const data = c.req.valid("json") as VerifyTwoFactorRequest;
+		const payload = c.get("jwtPayload") as
+			| { id?: string; sub?: string }
+			| undefined;
+		const userId = payload?.id || payload?.sub;
+		if (!userId) return c.json(this.fail("Chưa đăng nhập"), 401);
+
+		const result = await this.authService.verifyTwoFactor(userId, data);
+		return c.json(this.ok(result, "Xác minh 2FA thành công"));
 	}
 }
