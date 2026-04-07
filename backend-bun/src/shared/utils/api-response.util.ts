@@ -23,3 +23,12 @@ export const paginated = <T>(
 	msg,
 	data: { items, total, page, limit },
 });
+
+// Aliases for convenience
+export const apiSuccess = <T>(c: any, data: T, msg?: string) =>
+	c.json(ok(data, msg));
+
+export const apiCreated = <T>(c: any, data: T, msg = "Created") =>
+	c.json(ok(data, msg), 201);
+
+export const apiNoContent = (c: any) => c.status(204);

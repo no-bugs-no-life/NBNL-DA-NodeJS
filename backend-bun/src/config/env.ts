@@ -8,10 +8,13 @@ const envSchema = z.object({
 	LOG_LEVEL: z
 		.enum(["fatal", "error", "warn", "info", "debug", "trace"])
 		.default("info"),
-	DATABASE_URL: z.string().url(),
+	MONGODB_URI: z.string().url().default("mongodb://localhost:27017/nbnl"),
 	REDIS_URL: z.string().url().default("redis://localhost:6379"),
 	JWT_ACCESS_SECRET: z.string().min(10).default("super-secret-access-key-dev"),
-	JWT_REFRESH_SECRET: z.string().min(10).default("super-secret-refresh-key-dev"),
+	JWT_REFRESH_SECRET: z
+		.string()
+		.min(10)
+		.default("super-secret-refresh-key-dev"),
 	JWT_ACCESS_EXPIRES_IN: z.coerce.number().default(900), // 15 mins
 	JWT_REFRESH_EXPIRES_IN: z.coerce.number().default(604800), // 7 days
 	CORS_ORIGIN: z.string().default("*"),

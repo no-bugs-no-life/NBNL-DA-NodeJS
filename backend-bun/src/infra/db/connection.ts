@@ -1,27 +1,42 @@
-import postgres from "postgres";
+import mongoose from "mongoose";
 import { env } from "@/config/env";
 import { logger } from "../logger/logger";
 
-const sql = postgres(env.DATABASE_URL, {
-	max: 10, // Max concurrent connections
-	idle_timeout: 20, // Idle connection timeout in seconds
-	max_lifetime: 60 * 30, // Max lifetime of a connection in seconds
-	onnotice: () => {}, // Suppress notices
-	transform: {
-		...postgres.camel, // Camel case columns
-		undefined: null,
-	},
-});
+let isConnected = false;
 
-logger.info("📦 PostgreSQL connection pool initialized");
+const connectDB = async () => {
+	if (isConnected) {
+		logger.info("📦 Mongoose already connected");
+		return mongoose.connection;
+	}
+
+	try {
+		logger.info("⏳ Connecting to MongoDB...");
+		await mongoose.connect(env.MONGODB_URI);
+		isConnected = true;
+		logger.info("✅ MongoDB connected successfully");
+		return mongoose.connection;
+	} catch (error) {
+		logger.error({ err: error }, "❌ MongoDB connection error");
+		process.exit(1);
+	}
+};
+
+mongoose.connection.on("disconnected", () => {
+	logger.warn("⚠️ MongoDB disconnected");
+	isConnected = false;
+});
 
 /**
  * Handle graceful shutdown of the database connection
  */
 export const closeDatabase = async () => {
-	logger.info("⏳ Closing PostgreSQL connection pool...");
-	await sql.end();
-	logger.info("✅ PostgreSQL connection pool closed gracefully");
+	logger.info("⏳ Closing MongoDB connection...");
+	await mongoose.connection.close();
+	logger.info("✅ MongoDB connection closed gracefully");
 };
 
-export { sql };
+// Initiate connection immediately (optional, or let index.ts await connectDB())
+connectDB();
+
+export { mongoose, connectDB };

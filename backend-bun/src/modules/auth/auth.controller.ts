@@ -11,7 +11,7 @@ export class AuthController extends BaseController {
 	private readonly authService = new AuthService();
 
 	async login(c: Context) {
-		// @ts-ignore
+		// @ts-expect-error
 		const data = c.req.valid("json") as LoginRequest;
 
 		const result = await this.authService.login(data);
@@ -45,7 +45,8 @@ export class AuthController extends BaseController {
 
 	async refresh(c: Context) {
 		const refreshToken = getCookie(c, "refresh_token");
-		if (!refreshToken) return c.json(this.fail("Không tìm thấy refresh token"), 401);
+		if (!refreshToken)
+			return c.json(this.fail("Không tìm thấy refresh token"), 401);
 
 		try {
 			const result = await this.authService.refresh(refreshToken);
@@ -68,7 +69,10 @@ export class AuthController extends BaseController {
 
 			return c.json(this.ok(result.user, "Làm mới token thành công"));
 		} catch (error: any) {
-			return c.json(this.fail(error?.message || "Refresh token không hợp lệ"), 401);
+			return c.json(
+				this.fail(error?.message || "Refresh token không hợp lệ"),
+				401,
+			);
 		}
 	}
 
