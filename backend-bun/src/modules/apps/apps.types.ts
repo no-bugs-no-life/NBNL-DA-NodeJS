@@ -10,8 +10,6 @@ export interface App {
 	developer: string;
 	category: string;
 	tags: string[];
-	ratingScore: number;
-	ratingCount: number;
 	isDisabled: boolean;
 	isDeleted: boolean;
 	flags?: string[];

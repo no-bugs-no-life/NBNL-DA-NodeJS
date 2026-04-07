@@ -7,7 +7,8 @@
     "dev": "bun --watch src/index.ts",
     "lint": "biome lint --write ./src",
     "format": "biome format --write ./src",
-    "seed": "bun run src/scripts/seeds/index.ts"
+    "seed": "bun run src/scripts/seeds/index.ts",
+    "migrate:apps:unset-rating": "bun run src/scripts/migrations/unsetAppRatingFields.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.4.10",

@@ -1,6 +1,5 @@
 import { Hono } from "hono";
-import { jwt } from "hono/jwt";
-import { env } from "@/config/env";
+import { requireAdmin } from "@/shared/middlewares/auth";
 import { validateBody } from "@/shared/middlewares/validate";
 import { CouponsController } from "./coupons.controller";
 import {
@@ -11,23 +10,6 @@ import {
 
 export const couponsRouter = new Hono();
 const controller = new CouponsController();
-
-const requireAuth = jwt({
-	secret: env.JWT_ACCESS_SECRET,
-	cookie: "access_token",
-	alg: "HS256",
-});
-
-// biome-ignore lint/suspicious/noExplicitAny: Hono context types
-const requireAdmin = async (c: any, next: any) => {
-	await requireAuth(c, async () => {
-		const payload = c.get("jwtPayload");
-		if (!payload || !["ADMIN", "MODERATOR"].includes(payload.role)) {
-			return c.json({ success: false, msg: "Không có quyền truy cập" }, 403);
-		}
-		await next();
-	});
-};
 
 // Public Routes
 couponsRouter.get("/valid", (c) => controller.getValidCoupons(c));

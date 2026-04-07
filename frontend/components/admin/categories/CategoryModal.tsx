@@ -23,7 +23,7 @@ export function CategoryModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md mx-4 animate-in fade-in slide-in-from-bottom-4 duration-200">
+      <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-2xl mx-4 animate-in fade-in slide-in-from-bottom-4 duration-200">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-bold text-slate-800">{title}</h2>
           <button
@@ -33,7 +33,7 @@ export function CategoryModal({
             <span className="material-symbols-outlined text-xl">close</span>
           </button>
         </div>
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-semibold text-slate-700 mb-1.5">
               Tên danh mục <span className="text-red-500">*</span>
@@ -48,7 +48,7 @@ export function CategoryModal({
           </div>
           <div>
             <label className="block text-sm font-semibold text-slate-700 mb-1.5">
-              Icon URL{" "}
+              Icon URL
               <span className="text-slate-400 font-normal">(tuỳ chọn)</span>
             </label>
             <input

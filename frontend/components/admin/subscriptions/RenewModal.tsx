@@ -65,10 +65,10 @@ export function RenewModal({
           </div>
           {packages.length === 0 && (
             <p className="text-sm text-slate-400 text-center">
-              Chưa có gói nào.{" "}
+              Chưa có gói nào.
               <a href="/admin/sub-packages" className="text-blue-500 underline">
                 Tạo gói
-              </a>{" "}
+              </a>
               trước.
             </p>
           )}

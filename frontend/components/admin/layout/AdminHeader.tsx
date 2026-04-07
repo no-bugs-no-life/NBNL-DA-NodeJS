@@ -68,7 +68,7 @@ export function AdminHeader({ onMenuClick }: { onMenuClick?: () => void }) {
           href="/"
           className="text-sm text-blue-600 hover:text-blue-700 font-bold flex items-center gap-1.5 transition-colors bg-blue-50 px-4 py-2 rounded-full"
         >
-          Trang chủ Website{" "}
+          Trang chủ Website
           <span className="material-symbols-outlined text-[16px]">
             open_in_new
           </span>

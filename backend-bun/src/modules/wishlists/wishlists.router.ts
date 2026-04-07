@@ -26,16 +26,14 @@ const requireAuth = jwt({ secret: env.JWT_ACCESS_SECRET, alg: "HS256" });
 // Public routes not needed for wishlists (always authenticated)
 
 // User Routes - requires JWT, user extracted from token
-wishlistsRouter.get("/", requireAuth, (c) => controller.getMyWishlist(c));
-wishlistsRouter.post("/", requireAuth, validateBody(AddToWishlistSchema), (c) =>
-	controller.addApp(c),
-);
-wishlistsRouter.delete("/:app", requireAuth, (c) => controller.removeApp(c));
-wishlistsRouter.delete("/", requireAuth, (c) => controller.clear(c));
+wishlistsRouter.get("/my", requireAuth, (c) => controller.getMyWishlist(c));
+wishlistsRouter.post("/my/apps", requireAuth, validateBody(AddToWishlistSchema), (c) => controller.addApp(c));
+wishlistsRouter.delete("/my/apps/:app", requireAuth, (c) => controller.removeApp(c));
+wishlistsRouter.delete("/my", requireAuth, (c) => controller.clear(c));
 
 // Admin Routes
 wishlistsRouter.get(
-	"/all",
+	"/",
 	requireAuth,
 	validateQuery(WishlistQuerySchema),
 	(c) => controller.listAll(c),
@@ -47,7 +45,7 @@ wishlistsRouter.get(
 	(c) => controller.getById(c),
 );
 wishlistsRouter.post(
-	"/admin",
+	"/",
 	requireAuth,
 	validateBody(CreateWishlistSchema),
 	(c) => controller.create(c),

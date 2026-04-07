@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import dynamic from "next/dynamic";
 import { AppItem, AppInput } from "@/app/admin/(protected)/apps/appsService";
 import { useCategories } from "@/hooks/useCategories";
 import { useDevelopers } from "@/hooks/useDevelopers";
@@ -7,9 +8,16 @@ import { useTags } from "@/hooks/useTags";
 import { apiClient } from "@/store/useAuthStore";
 import useAuthStore from "@/store/useAuthStore";
 import { API_URL } from "@/configs/api";
+import ClassicEditor from "ckeditor5-custom-build-v5-full";
+
+const CKEditor = dynamic(
+  () => import("@ckeditor/ckeditor5-react").then((mod) => mod.CKEditor),
+  { ssr: false },
+);
 
 const getIconDisplayUrl = (url: string) => {
   if (!url) return "";
+  if (url.includes("via.placeholder.com")) return "";
   if (
     url.startsWith("http") ||
     url.startsWith("blob:") ||
@@ -68,10 +76,10 @@ export function AppFormModal({
         slug: app.slug || "",
         description: (app as any).description || "",
         price: app.price || 0,
-        categoryId: app.categoryId?._id || "",
+        category: app.category?._id || "",
         tags: app.tags?.map((t: any) => t._id) || [],
         iconUrl: app.iconUrl || "",
-        developerId: app.developerId?._id || "",
+        developer: app.developer?._id || "",
       };
     }
     return {
@@ -79,10 +87,10 @@ export function AppFormModal({
       slug: "",
       description: "",
       price: 0,
-      categoryId: "",
+      category: "",
       tags: [],
       iconUrl: "",
-      developerId: "",
+      developer: "",
     };
   });
 
@@ -135,7 +143,7 @@ export function AppFormModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-white rounded-2xl w-full max-w-xl shadow-xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
+      <div className="bg-white rounded-2xl w-full max-w-4xl shadow-xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
         <div className="p-6 border-b border-slate-100 flex items-center justify-between">
           <h2 className="text-xl font-bold text-slate-800">
             {action === "create" ? "Thêm Ứng dụng mới" : "Chỉnh sửa Ứng dụng"}
@@ -150,18 +158,18 @@ export function AppFormModal({
 
         <div className="p-6 overflow-y-auto flex-1">
           <form id="app-form" onSubmit={handleSubmit} className="space-y-5">
-            <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               {isAdmin && action === "create" && (
-                <div>
+                <div className="md:col-span-2">
                   <label className="block text-sm font-semibold text-slate-700 mb-1.5">
-                    Workspace (Developer){" "}
+                    Workspace (Developer)
                     <span className="text-red-500">*</span>
                   </label>
                   <select
                     required
-                    value={formData.developerId || ""}
+                    value={formData.developer || ""}
                     onChange={(e) =>
-                      setFormData({ ...formData, developerId: e.target.value })
+                      setFormData({ ...formData, developer: e.target.value })
                     }
                     disabled={isLoadingDevs}
                     className="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-sm bg-white"
@@ -194,42 +202,40 @@ export function AppFormModal({
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-1.5">
-                    Slug (URL)
-                  </label>
-                  <input
-                    required
-                    type="text"
-                    value={formData.slug}
-                    onChange={(e) =>
-                      setFormData({ ...formData, slug: e.target.value })
-                    }
-                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-sm"
-                    placeholder="vi-du-flappy-bird"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-1.5">
-                    Giá bán ($)
-                  </label>
-                  <input
-                    required
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    value={formData.price}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        price: Number(e.target.value),
-                      })
-                    }
-                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-sm"
-                    placeholder="0 = Miễn phí"
-                  />
-                </div>
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-1.5">
+                  Slug (URL)
+                </label>
+                <input
+                  required
+                  type="text"
+                  value={formData.slug}
+                  onChange={(e) =>
+                    setFormData({ ...formData, slug: e.target.value })
+                  }
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-sm"
+                  placeholder="vi-du-flappy-bird"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-1.5">
+                  Giá bán ($)
+                </label>
+                <input
+                  required
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={formData.price}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      price: Number(e.target.value),
+                    })
+                  }
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-sm"
+                  placeholder="0 = Miễn phí"
+                />
               </div>
 
               <div>
@@ -238,9 +244,9 @@ export function AppFormModal({
                 </label>
                 <select
                   required
-                  value={formData.categoryId}
+                  value={formData.category}
                   onChange={(e) =>
-                    setFormData({ ...formData, categoryId: e.target.value })
+                    setFormData({ ...formData, category: e.target.value })
                   }
                   disabled={isLoadingCategories}
                   className="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-sm bg-white"
@@ -256,7 +262,7 @@ export function AppFormModal({
                 </select>
               </div>
 
-              <div>
+              <div className="md:col-span-2">
                 <label className="block text-sm font-semibold text-slate-700 mb-1.5">
                   Tags
                 </label>
@@ -282,8 +288,8 @@ export function AppFormModal({
                             const newTags = e.target.checked
                               ? [...(formData.tags || []), tag._id]
                               : (formData.tags || []).filter(
-                                  (id) => id !== tag._id,
-                                );
+                                (id) => id !== tag._id,
+                              );
                             setFormData({ ...formData, tags: newTags });
                           }}
                           className="rounded text-blue-600 focus:ring-blue-500 w-4 h-4 cursor-pointer"
@@ -297,22 +303,22 @@ export function AppFormModal({
                 </div>
               </div>
 
-              <div>
+              <div className="md:col-span-2">
                 <label className="block text-sm font-semibold text-slate-700 mb-1.5">
-                  Mô tả ngăn
+                  Mô tả
                 </label>
-                <textarea
-                  rows={3}
-                  value={formData.description}
-                  onChange={(e) =>
-                    setFormData({ ...formData, description: e.target.value })
-                  }
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-sm resize-none"
-                  placeholder="Điền mô tả ngắn cho ứng dụng..."
-                />
+                <div className="rounded-xl border border-slate-200 overflow-hidden bg-white">
+                  <CKEditor
+                    editor={ClassicEditor}
+                    data={formData.description || ""}
+                    onChange={(_, editor) =>
+                      setFormData({ ...formData, description: editor.getData() })
+                    }
+                  />
+                </div>
               </div>
 
-              <div>
+              <div className="md:col-span-2">
                 <label className="block text-sm font-semibold text-slate-700 mb-2">
                   Ảnh màn hình Icon
                 </label>

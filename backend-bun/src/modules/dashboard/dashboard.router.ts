@@ -1,16 +1,9 @@
 import { Hono } from "hono";
-import { jwt } from "hono/jwt";
-import { env } from "@/config/env";
+import { requireAdmin } from "@/shared/middlewares/auth";
 import { DashboardController } from "./dashboard.controller";
 
 export const dashboardRouter = new Hono();
 const controller = new DashboardController();
-
-// Auth middleware for admin routes
-const requireAdmin = jwt({
-	secret: env.JWT_ACCESS_SECRET,
-	alg: "HS256",
-});
 
 // GET /dashboard/stats - Get all dashboard stats
 dashboardRouter.get("/stats", requireAdmin, (c) => controller.getStats(c));

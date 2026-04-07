@@ -11,11 +11,19 @@ export const CreateAppSchema = z.object({
 	iconUrl: z.string().optional().default(""),
 	price: z.number().min(0).default(0),
 	status: z.enum(APP_STATUSES).optional(),
-	developer: z.string().min(1),
-	category: z.string().min(1),
+	developer: z.string().min(1).optional(),
+	developerId: z.string().min(1).optional(),
+	category: z.string().min(1).optional(),
+	categoryId: z.string().min(1).optional(),
 	tags: z.array(z.string()).optional(),
 	flags: z.array(z.string()).optional(),
 	priority: z.number().int().optional().default(0),
+}).refine((data) => Boolean(data.developer || data.developerId), {
+	message: "Developer is required",
+	path: ["developer"],
+}).refine((data) => Boolean(data.category || data.categoryId), {
+	message: "Category is required",
+	path: ["category"],
 });
 
 export const UpdateAppSchema = z.object({
@@ -38,7 +46,7 @@ export const AppParamsSchema = z.object({
 
 export const AppQuerySchema = z.object({
 	page: z.coerce.number().min(1).default(1),
-	limit: z.coerce.number().min(1).max(100).default(20),
+	limit: z.coerce.number().min(1).max(1000).default(20),
 	status: z.enum(APP_STATUSES).optional(),
 	category: z.string().optional(),
 	developer: z.string().optional(),

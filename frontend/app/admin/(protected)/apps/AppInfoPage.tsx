@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { AppItem, AppInput } from "./appsService";
 import { useCategories } from "@/hooks/useCategories";
@@ -7,9 +8,16 @@ import { useTags } from "@/hooks/useTags";
 import { apiClient } from "@/store/useAuthStore";
 import useAuthStore from "@/store/useAuthStore";
 import { API_URL } from "@/configs/api";
+import ClassicEditor from "ckeditor5-custom-build-v5-full";
+
+const CKEditor = dynamic(
+  () => import("@ckeditor/ckeditor5-react").then((mod) => mod.CKEditor),
+  { ssr: false },
+);
 
 const getImageUrl = (url?: string) => {
   if (!url) return "";
+  if (url.includes("via.placeholder.com")) return "";
   if (
     url.startsWith("http") ||
     url.startsWith("blob:") ||
@@ -18,6 +26,12 @@ const getImageUrl = (url?: string) => {
     return url;
   if (/^[a-fA-F0-9]{24}$/.test(url)) return "https://i.sstatic.net/l60Hf.png"; // Fallback for old corrupt icons
   return `${API_URL}/${url.replace(/\\/g, "/")}`;
+};
+
+const formatPrice = (price?: number) => {
+  if (typeof price !== "number") return "—";
+  if (price === 0) return "Miễn phí";
+  return `${price.toLocaleString("vi-VN")} đ`;
 };
 
 interface Props {
@@ -115,9 +129,10 @@ function EditForm({ app, onSave, onCancel, loading }: EditFormProps) {
     slug: app.slug || "",
     description: (app as any).description || "",
     price: app.price || 0,
-    categoryId: app.categoryId?._id || "",
+    category: app.category?._id || "",
     tags: app.tags?.map((t: any) => t._id) || [],
     iconUrl: app.iconUrl || "",
+    developer: app.developer?._id || "",
   });
   const [uploading, setUploading] = useState(false);
   const uploadIcon = async (file: File) => {
@@ -206,9 +221,9 @@ function EditForm({ app, onSave, onCancel, loading }: EditFormProps) {
           <Field label="Danh mục">
             {" "}
             <select
-              value={formData.categoryId}
+              value={formData.category}
               onChange={(e) =>
-                setFormData({ ...formData, categoryId: e.target.value })
+                setFormData({ ...formData, category: e.target.value })
               }
               className="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-sm bg-white"
             >
@@ -224,14 +239,15 @@ function EditForm({ app, onSave, onCancel, loading }: EditFormProps) {
         </div>{" "}
         <Field label="Mô tả">
           {" "}
-          <textarea
-            rows={3}
-            value={formData.description}
-            onChange={(e) =>
-              setFormData({ ...formData, description: e.target.value })
-            }
-            className="form-input resize-none"
-          />{" "}
+          <div className="rounded-xl border border-slate-200 overflow-hidden bg-white">
+            <CKEditor
+              editor={ClassicEditor}
+              data={formData.description || ""}
+              onChange={(_, editor) =>
+                setFormData({ ...formData, description: editor.getData() })
+              }
+            />
+          </div>{" "}
         </Field>{" "}
         <Field label="Icon URL">
           {" "}
@@ -357,7 +373,7 @@ export function AppInfoPage({
           {/* Identity card */}{" "}
           <div className="bg-white rounded-2xl border border-slate-100 p-6 flex items-start gap-5">
             {" "}
-            {app.iconUrl ? (
+            {getImageUrl(app.iconUrl) ? (
               <img
                 src={getImageUrl(app.iconUrl)}
                 alt={app.name}
@@ -381,14 +397,12 @@ export function AppInfoPage({
                 {" "}
                 <span className="text-sm font-semibold text-slate-700 bg-slate-100 px-3 py-1 rounded-lg">
                   {" "}
-                  {app.price === 0
-                    ? "Miễn phí"
-                    : `${app.price.toLocaleString("vi-VN")} đ`}{" "}
+                  {formatPrice(app.price)}{" "}
                 </span>{" "}
-                {app.categoryId?.name && (
+                {app.category?.name && (
                   <span className="text-sm font-medium text-slate-600 bg-blue-50 text-blue-700 px-3 py-1 rounded-lg">
                     {" "}
-                    {app.categoryId.name}{" "}
+                    {app.category.name}{" "}
                   </span>
                 )}{" "}
               </div>{" "}
@@ -398,23 +412,20 @@ export function AppInfoPage({
           {(app as any).description && (
             <SectionCard title="Mô tả">
               {" "}
-              <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">
-                {(app as any).description}
-              </p>{" "}
+              <div
+                className="text-sm text-slate-600 leading-relaxed ck-content"
+                dangerouslySetInnerHTML={{ __html: (app as any).description }}
+              />{" "}
             </SectionCard>
           )}{" "}
           {/* Meta chips */}
           <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-3">
             <MetaChip
               label="Giá"
-              value={
-                app.price === 0
-                  ? "Miễn phí"
-                  : `${app.price.toLocaleString("vi-VN")} đ`
-              }
+              value={formatPrice(app.price)}
             />
             <MetaChip label="Slug" value={app.slug} />
-            <MetaChip label="Danh mục" value={app.categoryId?.name} />
+            <MetaChip label="Danh mục" value={app.category?.name} />
             <MetaChip label="Trạng thái" value={app.status} />
             <MetaChip
               label="Đánh giá"
@@ -423,18 +434,18 @@ export function AppInfoPage({
           </div>
           {/* Developer */}
           <SectionCard title="Nhà phát triển">
-            {app.developerId ? (
+            {app.developer ? (
               <div className="flex items-center gap-4">
-                {app.developerId.avatarUrl ? (
+                {app.developer.avatarUrl ? (
                   <img
-                    src={app.developerId.avatarUrl}
-                    alt={app.developerId.name}
+                    src={app.developer.avatarUrl}
+                    alt={app.developer.name}
                     className="w-12 h-12 rounded-full object-cover bg-slate-100 shrink-0"
                   />
                 ) : (
                   <div className="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-sm font-bold shrink-0">
                     {" "}
-                    {(app.developerId.name || "?")
+                    {(app.developer.name || "?")
                       .split(" ")
                       .map((n) => n[0])
                       .join("")
@@ -445,10 +456,10 @@ export function AppInfoPage({
                 <div>
                   {" "}
                   <p className="font-semibold text-slate-800 text-sm">
-                    {app.developerId.name}
+                    {app.developer.name}
                   </p>{" "}
                   <p className="text-xs text-slate-400">
-                    {app.developerId.contactEmail}
+                    {app.developer.contactEmail}
                   </p>{" "}
                 </div>{" "}
               </div>

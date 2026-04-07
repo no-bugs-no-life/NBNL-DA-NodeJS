@@ -1,4 +1,5 @@
 import type { Context } from "hono";
+import { AppError } from "@/shared/errors";
 import {
 	apiCreated,
 	apiNoContent,
@@ -17,6 +18,18 @@ export class AppsController {
 
 	constructor(service?: AppsService) {
 		this.service = service || new AppsService();
+	}
+
+	private isAdminRole(role?: string): boolean {
+		return role === "ADMIN" || role === "MODERATOR";
+	}
+
+	private assertAdmin(c: Context) {
+		const payload = c.get("jwtPayload");
+		if (!this.isAdminRole(payload?.role)) {
+			throw AppError.forbidden("Admin approval is required");
+		}
+		return payload;
 	}
 
 	/**
@@ -77,8 +90,20 @@ export class AppsController {
 	 * POST /apps - Create new app
 	 */
 	async create(c: Context) {
-		const body = c.req.valid("json") as CreateAppRequest;
-		const app = await this.service.create(body);
+		const body = c.req.valid("json") as CreateAppRequest & {
+			developerId?: string;
+			categoryId?: string;
+		};
+		const payload = c.get("jwtPayload");
+		const app = await this.service.create(
+			{
+				...body,
+				developer: body.developer || body.developerId || "",
+				category: body.category || body.categoryId || "",
+			},
+			payload.id,
+			payload.role,
+		);
 		return apiCreated(c, app);
 	}
 
@@ -88,7 +113,10 @@ export class AppsController {
 	async update(c: Context) {
 		const id = c.req.param("id");
 		const body = c.req.valid("json") as UpdateAppRequest;
-		const app = await this.service.update(id, body);
+		const payload = c.get("jwtPayload");
+		const isAdmin = this.isAdminRole(payload?.role);
+		const { status, ...safeBody } = body;
+		const app = await this.service.update(id, isAdmin ? body : safeBody);
 		return apiSuccess(c, app);
 	}
 
@@ -105,6 +133,7 @@ export class AppsController {
 	 * POST /apps/approve/:id - Approve and publish app
 	 */
 	async approve(c: Context) {
+		this.assertAdmin(c);
 		const id = c.req.param("id");
 		const app = await this.service.approve(id);
 		return apiSuccess(c, app);
@@ -114,6 +143,7 @@ export class AppsController {
 	 * POST /apps/publish/:id - Publish app
 	 */
 	async publish(c: Context) {
+		this.assertAdmin(c);
 		const id = c.req.param("id");
 		const app = await this.service.publish(id);
 		return apiSuccess(c, app);
@@ -123,6 +153,7 @@ export class AppsController {
 	 * POST /apps/reject/:id - Reject app
 	 */
 	async reject(c: Context) {
+		this.assertAdmin(c);
 		const id = c.req.param("id");
 		const app = await this.service.reject(id);
 		return apiSuccess(c, app);
@@ -148,6 +179,7 @@ export class AppsController {
 	 * PATCH /apps/:id/status - Update app status
 	 */
 	async updateStatus(c: Context) {
+		this.assertAdmin(c);
 		const id = c.req.param("id");
 		const body = await c.req.json<{ status: string }>();
 		const app = await this.service.updateStatus(

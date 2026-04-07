@@ -32,7 +32,7 @@ export function useMyWishlist() {
     queryKey: ["wishlist", "me"],
     queryFn: async () => {
       const token = localStorage.getItem("token");
-      const response = await axios.get(`${API_URL}/api/v1/wishlists`, {
+      const response = await axios.get(`${API_URL}/api/v1/wishlists/my`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       return response.data as WishlistItem | null;
@@ -46,7 +46,7 @@ export function useAddToWishlist() {
     mutationFn: async (appId: string) => {
       const token = localStorage.getItem("token");
       const response = await axios.post(
-        `${API_URL}/api/v1/wishlists`,
+        `${API_URL}/api/v1/wishlists/my/apps`,
         { appId },
         { headers: { Authorization: `Bearer ${token}` } },
       );
@@ -62,7 +62,7 @@ export function useRemoveFromWishlist() {
     mutationFn: async (appId: string) => {
       const token = localStorage.getItem("token");
       const response = await axios.delete(
-        `${API_URL}/api/v1/wishlists/${appId}`,
+        `${API_URL}/api/v1/wishlists/my/apps/${appId}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         },
@@ -78,7 +78,7 @@ export function useClearWishlist() {
   return useMutation({
     mutationFn: async () => {
       const token = localStorage.getItem("token");
-      const response = await axios.delete(`${API_URL}/api/v1/wishlists`, {
+      const response = await axios.delete(`${API_URL}/api/v1/wishlists/my`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       return response.data;
@@ -94,7 +94,7 @@ export function useAdminWishlists(page: number = 1, limit: number = 20) {
     queryKey: ["admin", "wishlists", page, limit],
     queryFn: async () => {
       const token = localStorage.getItem("token");
-      const response = await axios.get(`${API_URL}/api/v1/wishlists/all`, {
+      const response = await axios.get(`${API_URL}/api/v1/wishlists`, {
         params: { page, limit },
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -125,7 +125,7 @@ export function useCreateWishlistAdmin() {
     mutationFn: async (data: { userId: string; appIds: string[] }) => {
       const token = localStorage.getItem("token");
       const response = await axios.post(
-        `${API_URL}/api/v1/wishlists/admin`,
+        `${API_URL}/api/v1/wishlists`,
         data,
         {
           headers: { Authorization: `Bearer ${token}` },

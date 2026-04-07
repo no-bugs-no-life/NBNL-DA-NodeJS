@@ -31,6 +31,16 @@ interface UserDoc {
 	avatar?: string;
 }
 
+interface DeveloperSpaceDoc {
+	_id: ObjectId;
+	userId: ObjectId;
+	name?: string;
+	contactEmail?: string;
+	avatarUrl?: string;
+	status?: string;
+	isDeleted?: boolean;
+}
+
 interface CategoryDoc {
 	_id: ObjectId;
 	name: string;
@@ -161,8 +171,6 @@ export class AppsRepository {
 			tags: data.tags || [],
 			flags: data.flags || [],
 			priority: data.priority || 0,
-			ratingScore: 0,
-			ratingCount: 0,
 			isDisabled: false,
 			isDeleted: false,
 			createdAt: new Date(),
@@ -215,15 +223,31 @@ export class AppsRepository {
 		return count > 0;
 	}
 
-	async updateRating(
-		appId: string,
-		ratingScore: number,
-		ratingCount: number,
-	): Promise<void> {
-		await this.collection.updateOne(
-			{ _id: new ObjectId(appId) },
-			{ $set: { ratingScore, ratingCount, updatedAt: new Date() } },
+	async findDeveloperSpaceById(id: string): Promise<DeveloperSpaceDoc | null> {
+		if (!ObjectId.isValid(id)) return null;
+		const doc = await this.db.collection("developers").findOne(
+			{ _id: new ObjectId(id) },
+			{
+				projection: {
+					_id: 1,
+					userId: 1,
+					status: 1,
+					isDeleted: 1,
+					name: 1,
+					contactEmail: 1,
+					avatarUrl: 1,
+				},
+			},
 		);
+		return (doc as DeveloperSpaceDoc) || null;
+	}
+
+	async userExists(id: string): Promise<boolean> {
+		if (!ObjectId.isValid(id)) return false;
+		const count = await this.db
+			.collection("users")
+			.countDocuments({ _id: new ObjectId(id) }, { limit: 1 });
+		return count > 0;
 	}
 
 	private slugify(text: string): string {
@@ -258,12 +282,18 @@ export class AppsRepository {
 		].map((id) => new ObjectId(id));
 
 		// Fetch related data
-		const [developers, categories, tags] = await Promise.all([
+		const [developerSpaces, categories, tags] = await Promise.all([
 			developerIds.length > 0
 				? this.db
-					.collection("users")
+					.collection("developers")
 					.find({ _id: { $in: developerIds } })
-					.project({ _id: 1, fullName: 1, username: 1, email: 1, avatar: 1 })
+					.project({
+						_id: 1,
+						userId: 1,
+						name: 1,
+						contactEmail: 1,
+						avatarUrl: 1,
+					})
 					.toArray()
 				: [],
 			categoryIds.length > 0
@@ -282,8 +312,51 @@ export class AppsRepository {
 				: [],
 		]);
 
-		const devMap = new Map<string, UserDoc>(
-			developers.map((d) => [d._id.toString(), d as UserDoc]),
+		const userIds = [
+			...new Set(
+				developerSpaces
+					.map((d) => (d as { userId?: ObjectId }).userId?.toString())
+					.filter((id): id is string => Boolean(id)),
+			),
+		].map((id) => new ObjectId(id));
+
+		const users =
+			userIds.length > 0
+				? await this.db
+					.collection("users")
+					.find({ _id: { $in: userIds } })
+					.project({ _id: 1, fullName: 1, username: 1, email: 1, avatar: 1 })
+					.toArray()
+				: [];
+
+		const appIds = apps.map((a) => a._id.toString());
+		const ratingDocs =
+			appIds.length > 0
+				? await this.db
+					.collection("reviews")
+					.aggregate([
+						{
+							$match: {
+								app: { $in: appIds },
+								status: "approved",
+							},
+						},
+						{
+							$group: {
+								_id: "$app",
+								average: { $avg: "$rating" },
+								count: { $sum: 1 },
+							},
+						},
+					])
+					.toArray()
+				: [];
+
+		const devMap = new Map<string, DeveloperSpaceDoc>(
+			developerSpaces.map((d) => [d._id.toString(), d as DeveloperSpaceDoc]),
+		);
+		const userMap = new Map<string, UserDoc>(
+			users.map((u) => [u._id.toString(), u as UserDoc]),
 		);
 		const catMap = new Map<string, CategoryDoc>(
 			categories.map((c) => [c._id.toString(), c as CategoryDoc]),
@@ -291,10 +364,21 @@ export class AppsRepository {
 		const tagMap = new Map<string, TagDoc>(
 			tags.map((t) => [t._id.toString(), t as TagDoc]),
 		);
+		const ratingMap = new Map<string, { average: number; count: number }>(
+			ratingDocs.map((item) => [
+				String(item._id),
+				{
+					average: Math.round((Number(item.average) || 0) * 10) / 10,
+					count: Number(item.count) || 0,
+				},
+			]),
+		);
 
 		return apps.map((app) => {
 			const dev = devMap.get(app.developer);
+			const devUser = dev ? userMap.get(dev.userId.toString()) : undefined;
 			const cat = catMap.get(app.category);
+			const rating = ratingMap.get(app._id.toString()) || { average: 0, count: 0 };
 			const appTags = (app.tags || [])
 				.map((tid) => tagMap.get(tid))
 				.filter((t): t is TagDoc => t !== undefined);
@@ -307,8 +391,8 @@ export class AppsRepository {
 				iconUrl: app.iconUrl,
 				price: app.price,
 				status: app.status,
-				ratingScore: app.ratingScore,
-				ratingCount: app.ratingCount,
+				ratingScore: rating.average,
+				ratingCount: rating.count,
 				isDisabled: app.isDisabled,
 				isDeleted: app.isDeleted,
 				flags: app.flags,
@@ -324,9 +408,13 @@ export class AppsRepository {
 				developer: dev
 					? {
 						_id: dev._id.toString(),
-						name: dev.fullName || dev.username || "Unknown",
-						contactEmail: dev.email || "",
-						avatarUrl: dev.avatar,
+						name:
+							dev.name ||
+							devUser?.fullName ||
+							devUser?.username ||
+							"Unknown Developer",
+						contactEmail: dev.contactEmail || devUser?.email || "",
+						avatarUrl: dev.avatarUrl || devUser?.avatar,
 					}
 					: { _id: app.developer, name: "Unknown", contactEmail: "" },
 				category: cat

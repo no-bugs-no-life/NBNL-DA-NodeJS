@@ -1,5 +1,7 @@
 "use client";
 import React, { useState } from "react";
+import { Select } from "antd";
+import "antd/dist/reset.css";
 import { DeveloperItem } from "@/hooks/useDevelopers";
 import { useUsers } from "@/hooks/useUsers";
 
@@ -19,6 +21,7 @@ export function DeveloperFormModal({
   loading,
 }: Props) {
   const { data: users = [], isLoading: isLoadingUsers } = useUsers();
+  const timeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [formData, setFormData] = useState({
     name: developer?.name || "",
@@ -28,15 +31,38 @@ export function DeveloperFormModal({
     website: developer?.website || "",
     userId: "",
   });
+  const [userOptions, setUserOptions] = useState<
+    { value: string; label: string }[]
+  >([]);
+
+  const handleUserSearch = (val: string) => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    timeoutRef.current = setTimeout(() => {
+      const q = val.trim().toLowerCase();
+      const filtered = users
+        .filter((u) => {
+          const email = (u.email || "").toLowerCase();
+          const name = (u.fullName || u.username || "").toLowerCase();
+          return email.includes(q) || name.includes(q);
+        })
+        .slice(0, 50)
+        .map((u) => ({
+          value: u._id,
+          label: `${u.email}${u.fullName ? ` (${u.fullName})` : ""}`,
+        }));
+      setUserOptions(filtered);
+    }, 300);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (action === "create" && !formData.userId) return;
     onSubmit(formData as any);
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-white rounded-2xl w-full max-w-lg shadow-xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
+      <div className="bg-white rounded-2xl w-full max-w-3xl shadow-xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
         <div className="p-6 border-b border-slate-100 flex items-center justify-between">
           <div>
             <h2 className="text-xl font-bold text-slate-800">
@@ -62,31 +88,32 @@ export function DeveloperFormModal({
           <form
             id="developer-form"
             onSubmit={handleSubmit}
-            className="space-y-4"
+            className="grid grid-cols-1 md:grid-cols-2 gap-5"
           >
             {action === "create" && (
-              <div>
+              <div className="md:col-span-2">
                 <label className="block text-sm font-semibold text-slate-700 mb-1.5">
                   Chọn người dùng <span className="text-red-500">*</span>
                 </label>
-                <select
-                  required
-                  value={formData.userId}
-                  onChange={(e) =>
-                    setFormData({ ...formData, userId: e.target.value })
+                <Select
+                  showSearch
+                  style={{ width: "100%" }}
+                  placeholder="Chọn tài khoản User"
+                  value={formData.userId || undefined}
+                  loading={isLoadingUsers}
+                  defaultActiveFirstOption={false}
+                  showArrow={false}
+                  filterOption={false}
+                  notFoundContent={null}
+                  options={userOptions}
+                  onSearch={handleUserSearch}
+                  onChange={(val) =>
+                    setFormData({ ...formData, userId: String(val || "") })
                   }
-                  disabled={isLoadingUsers}
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-sm bg-white"
-                >
-                  <option value="" disabled>
-                    -- Chọn tài khoản User --
-                  </option>
-                  {users.map((u) => (
-                    <option key={u._id} value={u._id}>
-                      {u.email} {u.fullName ? `(${u.fullName})` : ""}
-                    </option>
-                  ))}
-                </select>
+                />
+                {!formData.userId && (
+                  <p className="text-xs text-red-500 mt-1">Vui lòng chọn người dùng</p>
+                )}
               </div>
             )}
 
@@ -150,7 +177,7 @@ export function DeveloperFormModal({
               />
             </div>
 
-            <div>
+            <div className="md:col-span-2">
               <label className="block text-sm font-semibold text-slate-700 mb-1.5">
                 Tiểu sử (Bio)
               </label>

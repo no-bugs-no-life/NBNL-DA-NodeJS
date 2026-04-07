@@ -1,5 +1,6 @@
 "use client";
 import useAuthStore from "@/store/useAuthStore";
+import api from "@/lib/axios";
 import { notFound } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
@@ -27,6 +28,47 @@ interface DashboardStats {
 interface ChartDataPoint {
   date: string;
   value: number;
+}
+
+interface DashboardBundle {
+  stats: DashboardStats | null;
+  revenueData: ChartDataPoint[];
+  usersData: ChartDataPoint[];
+}
+
+const DASHBOARD_CACHE_TTL_MS = 15000;
+let dashboardCache: { data: DashboardBundle; fetchedAt: number } | null = null;
+let inFlightDashboardRequest: Promise<DashboardBundle> | null = null;
+
+async function fetchDashboardBundle(): Promise<DashboardBundle> {
+  if (inFlightDashboardRequest) return inFlightDashboardRequest;
+
+  inFlightDashboardRequest = (async () => {
+    const [statsRes, revenueRes, usersRes] = await Promise.all([
+      api.get("/api/v1/dashboard/stats"),
+      api.get("/api/v1/dashboard/chart/revenue?days=30"),
+      api.get("/api/v1/dashboard/chart/users?days=30"),
+    ]);
+
+    const statsJson = statsRes.data;
+    const revenueJson = revenueRes.data;
+    const usersJson = usersRes.data;
+
+    const data: DashboardBundle = {
+      stats: statsJson.success ? statsJson.data : null,
+      revenueData: revenueJson.success ? revenueJson.data : [],
+      usersData: usersJson.success ? usersJson.data : [],
+    };
+
+    dashboardCache = { data, fetchedAt: Date.now() };
+    return data;
+  })();
+
+  try {
+    return await inFlightDashboardRequest;
+  } finally {
+    inFlightDashboardRequest = null;
+  }
 }
 
 function formatNumber(num: number): string {
@@ -266,46 +308,40 @@ export default function DashboardPage() {
   }, [checkAuth]);
 
   useEffect(() => {
-    if (!isAdmin()) return;
+    if (isLoading || !isAdmin()) return;
 
     const fetchDashboardData = async () => {
       try {
-        const token = localStorage.getItem("accessToken");
-        const headers = { Authorization: `Bearer ${token}` };
+        if (
+          dashboardCache &&
+          Date.now() - dashboardCache.fetchedAt < DASHBOARD_CACHE_TTL_MS
+        ) {
+          setStats(dashboardCache.data.stats);
+          setRevenueData(dashboardCache.data.revenueData);
+          setUsersData(dashboardCache.data.usersData);
+          setError(null);
+          return;
+        }
 
-        const [statsRes, revenueRes, usersRes] = await Promise.all([
-          fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/dashboard/stats`, {
-            headers,
-          }),
-          fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/api/v1/dashboard/chart/revenue?days=30`,
-            { headers },
-          ),
-          fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/api/v1/dashboard/chart/users?days=30`,
-            { headers },
-          ),
-        ]);
-
-        const [statsJson, revenueJson, usersJson] = await Promise.all([
-          statsRes.json(),
-          revenueRes.json(),
-          usersRes.json(),
-        ]);
-
-        if (statsJson.success) setStats(statsJson.data);
-        else setError(statsJson.msg);
-
-        if (revenueJson.success) setRevenueData(revenueJson.data);
-        if (usersJson.success) setUsersData(usersJson.data);
+        const data = await fetchDashboardBundle();
+        setStats(data.stats);
+        setRevenueData(data.revenueData);
+        setUsersData(data.usersData);
+        setError(null);
       } catch (err) {
+        const status = (err as { response?: { status?: number } })?.response
+          ?.status;
+        if (status === 429) {
+          setError("Bạn thao tác quá nhanh. Vui lòng chờ vài giây rồi thử lại.");
+          return;
+        }
         setError("Failed to fetch dashboard data");
         console.error(err);
       }
     };
 
     fetchDashboardData();
-  }, [isAdmin]);
+  }, [isAdmin, isLoading]);
 
   if (!isLoading && !isAdmin()) {
     notFound();

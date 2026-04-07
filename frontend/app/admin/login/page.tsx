@@ -1,9 +1,8 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import axios from "axios";
 import useAuthStore from "@/store/useAuthStore";
-import { API_URL } from "@/configs/api";
+import api from "@/lib/axios";
 
 export default function AdminLoginPage() {
   const [username, setUsername] = useState("");
@@ -19,14 +18,15 @@ export default function AdminLoginPage() {
     setLoading(true);
     try {
       // Step 1: Login → get raw JWT token string
-      const loginRes = await axios.post(`${API_URL}/api/v1/auth/login`, {
+      const loginRes = await api.post(`/api/v1/auth/login`, {
         username,
         password,
       });
       const token: string = loginRes.data;
 
       // Step 2: Get user info with role via /me
-      const meRes = await axios.get(`${API_URL}/api/v1/auth/me`, {
+      // token is persisted by store; request interceptor will attach it later
+      const meRes = await api.get(`/api/v1/auth/me`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const user = meRes.data;

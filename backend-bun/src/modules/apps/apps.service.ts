@@ -23,6 +23,10 @@ export class AppsService {
 			.replace(/[^a-z0-9-]/g, "");
 	}
 
+	private isAdminRole(role: string): boolean {
+		return role === "ADMIN" || role === "MODERATOR";
+	}
+
 	async findAll(
 		filters: AppFilters,
 		page = 1,
@@ -50,14 +54,38 @@ export class AppsService {
 		return this.repo.findByDeveloper(developer);
 	}
 
-	async create(data: CreateAppDTO): Promise<App> {
+	async create(data: CreateAppDTO, actorId: string, actorRole: string): Promise<App> {
+		if (!data.developer) {
+			throw AppError.badRequest("Developer space is required");
+		}
+
+		const developerSpace = await this.repo.findDeveloperSpaceById(data.developer);
+		if (!developerSpace || developerSpace.isDeleted) {
+			throw AppError.badRequest("Developer space not found");
+		}
+
+		if (developerSpace.status !== "approved") {
+			throw AppError.forbidden("Developer space must be approved by admin");
+		}
+
+		const ownerUserId = developerSpace.userId.toString();
+		if (!this.isAdminRole(actorRole) && ownerUserId !== actorId) {
+			throw AppError.forbidden(
+				"You can only create apps in your own developer space",
+			);
+		}
+
+		if (!(await this.repo.userExists(ownerUserId))) {
+			throw AppError.badRequest("Developer must be linked to a valid user");
+		}
+
 		const slug = data.slug || this.slugify(data.name);
 
 		if (await this.repo.existsBySlug(slug)) {
 			throw AppError.conflict("App with this slug already exists");
 		}
 
-		return this.repo.create({ ...data, slug });
+		return this.repo.create({ ...data, slug, status: "pending" });
 	}
 
 	async update(id: string, data: UpdateAppDTO): Promise<AppWithRelations> {
@@ -119,11 +147,4 @@ export class AppsService {
 		return this.update(id, { status });
 	}
 
-	async updateRating(
-		appId: string,
-		ratingScore: number,
-		ratingCount: number,
-	): Promise<void> {
-		await this.repo.updateRating(appId, ratingScore, ratingCount);
-	}
 }

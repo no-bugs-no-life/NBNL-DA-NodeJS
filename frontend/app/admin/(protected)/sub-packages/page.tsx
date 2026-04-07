@@ -19,7 +19,7 @@ function TopBar({ count, onAdd }: { count: number; onAdd: () => void }) {
       </div>{" "}
       <button
         onClick={onAdd}
-        className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
+        className="flex items-center gap-2 bg-blue-100 hover:bg-blue-200 text-blue-800 px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
       >
         {" "}
         <span className="material-symbols-outlined text-sm">add</span> Tạo gói

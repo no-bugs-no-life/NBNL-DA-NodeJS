@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { analyticsRouter } from "@/modules/analytics";
 import { appsRouter } from "@/modules/apps";
 import { authRouter } from "@/modules/auth";
 import { cartsRouter } from "@/modules/carts";
@@ -39,5 +40,6 @@ appRouter.route("/versions", versionsRouter);
 appRouter.route("/dashboard", dashboardRouter);
 appRouter.route("/developers", developersRouter);
 appRouter.route("/wishlists", wishlistsRouter);
+appRouter.route("/analytics", analyticsRouter);
 
 // Export router tổng để nhúng vào app chính
