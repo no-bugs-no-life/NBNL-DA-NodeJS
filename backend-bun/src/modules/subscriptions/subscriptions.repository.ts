@@ -32,7 +32,6 @@ const subscriptionSchema = new mongoose.Schema<Subscription>(
 // Compound indexes
 subscriptionSchema.index({ userId: 1, status: 1 });
 subscriptionSchema.index({ appId: 1, status: 1 });
-subscriptionSchema.index({ subPackageId: 1 });
 
 export const SubscriptionModel =
 	(mongoose.models[COLLECTION] as mongoose.Model<Subscription>) ||
