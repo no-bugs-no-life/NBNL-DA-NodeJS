@@ -130,12 +130,19 @@ export class AppsRepository {
 		};
 	}
 
-	async findById(id: string): Promise<AppWithRelations | null> {
+	async findById(
+		id: string,
+		opts?: { includeDeleted?: boolean },
+	): Promise<AppWithRelations | null> {
 		if (!ObjectId.isValid(id)) return null;
-		const doc = await this.collection.findOne({
+		const query: Record<string, unknown> = {
 			_id: new ObjectId(id),
-			isDeleted: { $ne: true },
-		});
+		};
+		if (!opts?.includeDeleted) {
+			query.isDeleted = { $ne: true };
+		}
+
+		const doc = await this.collection.findOne(query);
 		if (!doc) return null;
 		const [app] = await this.populateRelations([doc as unknown as WithId<App>]);
 		return app ?? null;
@@ -173,6 +180,7 @@ export class AppsRepository {
 			iconUrl: data.iconUrl || "",
 			price: data.price || 0,
 			status: data.status || "pending",
+			deletedFromStatus: undefined,
 			developer: data.developer,
 			category: data.category,
 			tags: data.tags || [],
@@ -180,6 +188,7 @@ export class AppsRepository {
 			priority: data.priority || 0,
 			isDisabled: false,
 			isDeleted: false,
+			deletedAt: null,
 			createdAt: new Date(),
 			updatedAt: new Date(),
 		};
@@ -211,9 +220,47 @@ export class AppsRepository {
 	}
 
 	async softDelete(id: string): Promise<boolean> {
+		const now = new Date();
 		const result = await this.collection.updateOne(
-			{ _id: new ObjectId(id) },
-			{ $set: { isDeleted: true, updatedAt: new Date() } },
+			{
+				_id: new ObjectId(id),
+				isDeleted: { $ne: true },
+			},
+			[
+				{
+					$set: {
+						deletedFromStatus: "$status",
+						status: "deleted",
+						isDeleted: true,
+						deletedAt: now,
+						updatedAt: now,
+					},
+				},
+			],
+		);
+		return result.modifiedCount > 0;
+	}
+
+	async restore(id: string): Promise<boolean> {
+		const now = new Date();
+		const result = await this.collection.updateOne(
+			{
+				_id: new ObjectId(id),
+				isDeleted: true,
+			},
+			[
+				{
+					$set: {
+						status: { $ifNull: ["$deletedFromStatus", "pending"] },
+						isDeleted: false,
+						deletedAt: null,
+						updatedAt: now,
+					},
+				},
+				{
+					$unset: ["deletedFromStatus"],
+				},
+			],
 		);
 		return result.modifiedCount > 0;
 	}
@@ -401,10 +448,17 @@ export class AppsRepository {
 				iconUrl: app.iconUrl,
 				price: app.price,
 				status: app.status,
+				deletedFromStatus: app.deletedFromStatus,
 				ratingScore: rating.average,
 				ratingCount: rating.count,
 				isDisabled: app.isDisabled,
 				isDeleted: app.isDeleted,
+				deletedAt:
+					app.deletedAt instanceof Date
+						? app.deletedAt.toISOString()
+						: app.deletedAt
+							? String(app.deletedAt)
+							: undefined,
 				flags: app.flags,
 				priority: app.priority,
 				createdAt:

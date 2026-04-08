@@ -30,6 +30,14 @@ export class OrdersController extends BaseController {
 		return c.json(this.ok(orders));
 	}
 
+	async getMyOrderById(c: Context) {
+		const payload = c.get("jwtPayload");
+		if (!payload) return c.json(this.fail("Chưa đăng nhập"), 401);
+		const { id } = c.req.param();
+		const order = await this.ordersService.getMyOrder(id, payload.id);
+		return c.json(this.ok(order));
+	}
+
 	async getAll(c: Context) {
 		const query = OrderQuerySchema.parse(c.req.query());
 		const { orders, total } = await this.ordersService.getAll(query);

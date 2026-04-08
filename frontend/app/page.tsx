@@ -5,7 +5,6 @@ import HomeTrending from "../components/home/HomeTrending";
 import HomeGames from "../components/home/HomeGames";
 import HomeCollections from "../components/home/HomeCollections";
 import HomeProductivity from "../components/home/HomeProductivity";
-import HomeClientWrapper from "../components/home/HomeClientWrapper";
 
 export default function Home() {
   return (
@@ -13,9 +12,6 @@ export default function Home() {
       <Navbar />
 
       <main className="pt-24 pb-12">
-        {/* Headless data loader: fetch API data for homepage without changing UI */}
-        <HomeClientWrapper />
-
         <HomeHero />
         <HomeTrending />
         <HomeGames />

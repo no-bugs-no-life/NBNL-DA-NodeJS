@@ -102,7 +102,10 @@ export class SubPackagesRepository {
 		if (!mongoose.Types.ObjectId.isValid(id)) return false;
 		const result = await SubPackageModel.findOneAndUpdate(
 			{ _id: id, isDeleted: false },
-			{ isDeleted: true },
+			{
+				isActive: false,
+				isDeleted: false,
+			},
 		);
 		return result !== null;
 	}

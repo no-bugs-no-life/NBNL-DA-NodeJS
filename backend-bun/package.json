@@ -5,6 +5,7 @@
   "scripts": {
     "start": "bun src/index.ts",
     "dev": "bun --watch src/index.ts",
+    "test": "bun test",
     "lint": "biome lint --write ./src",
     "format": "biome format --write ./src",
     "seed": "bun run src/scripts/seeds/index.ts",
@@ -24,6 +25,7 @@
     "hono": "^4.12.11",
     "ioredis": "^5.10.1",
     "mongoose": "^9.4.1",
+    "node-cron": "^4.2.1",
     "pino": "^10.3.1",
     "zod": "^4.3.6"
   }

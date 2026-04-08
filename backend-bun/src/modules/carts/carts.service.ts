@@ -1,4 +1,6 @@
 import { badRequest, notFound } from "@/shared/errors";
+import { ObjectId } from "mongodb";
+import mongoose from "mongoose";
 import { CartsRepository } from "./carts.repository";
 import type {
 	CartAppItem,
@@ -11,6 +13,17 @@ import { CartItemType, SubscriptionPlan } from "./carts.types";
 
 export class CartsService {
 	private readonly repository = new CartsRepository();
+
+	private async getAppPrice(appId: string): Promise<number> {
+		if (!ObjectId.isValid(appId)) return 0;
+		// biome-ignore lint/style/noNonNullAssertion: initialized on bootstrap
+		const db = mongoose.connection.db!;
+		const app = await db.collection("apps").findOne(
+			{ _id: new ObjectId(appId) },
+			{ projection: { price: 1 } },
+		);
+		return typeof app?.price === "number" ? app.price : 0;
+	}
 
 	// User: Get own cart
 	async getUserCart(user: string): Promise<CartResponse | null> {
@@ -31,8 +44,7 @@ export class CartsService {
 		quantity: number = 1,
 		plan?: SubscriptionPlan,
 	): Promise<CartResponse> {
-		// TODO: Get app price from AppsRepository
-		const price = 0; // Placeholder - should fetch from apps collection
+		const price = await this.getAppPrice(app);
 
 		const cart = await this.repository.addItem(
 			user,
@@ -93,7 +105,8 @@ export class CartsService {
 		app: string,
 		itemType: CartItemType,
 	): Promise<CartResponse> {
-		const cart = await this.repository.addItem(user, app, itemType, 1, 0);
+		const price = await this.getAppPrice(app);
+		const cart = await this.repository.addItem(user, app, itemType, 1, price);
 		if (!cart) throw badRequest("Không thể tạo giỏ hàng");
 		return this.toResponse(cart);
 	}
@@ -117,6 +130,16 @@ export class CartsService {
 
 			return {
 				_id: item._id?.toString() ?? "",
+				appId: {
+					_id:
+						typeof appData._id === "object"
+							? appData._id.toString()
+							: appData._id,
+					name: appData.name || "",
+					iconUrl: appData.iconUrl || "",
+					price: appData.price || item.priceAtAdd,
+					subscriptionPrice: appData.subscriptionPrice,
+				},
 				app: {
 					_id:
 						typeof appData._id === "object"
@@ -129,7 +152,7 @@ export class CartsService {
 				},
 				itemType: item.itemType,
 				plan: item.plan,
-				quantity: item.quantity,
+				quantity: item.itemType === CartItemType.ONE_TIME ? 1 : item.quantity,
 				priceAtAdd: item.priceAtAdd,
 			};
 		});
@@ -137,8 +160,8 @@ export class CartsService {
 		const totalPrice = items.reduce((sum, item) => {
 			const price =
 				item.plan === SubscriptionPlan.MONTHLY
-					? item.app.subscriptionPrice || item.priceAtAdd
-					: item.priceAtAdd;
+					? item.appId.subscriptionPrice || item.priceAtAdd
+					: item.appId.price || item.priceAtAdd;
 			return sum + price * item.quantity;
 		}, 0);
 
@@ -146,12 +169,21 @@ export class CartsService {
 			_id: cart._id?.toString() ?? "",
 			user: {
 				_id:
-					typeof cart.user === "object"
-						? cart.user._id?.toString() ?? ""
-						: cart.user,
-				fullName: (cart.user as { fullName?: string }).fullName || "",
-				email: (cart.user as { email?: string }).email || "",
-				avatarUrl: (cart.user as { avatarUrl?: string }).avatarUrl,
+					typeof cart.user === "object" && cart.user !== null && "_id" in cart.user
+						? String(cart.user._id)
+						: String(cart.user ?? ""),
+				fullName:
+					typeof cart.user === "object" && cart.user !== null && "fullName" in cart.user
+						? String(cart.user.fullName ?? "")
+						: "",
+				email:
+					typeof cart.user === "object" && cart.user !== null && "email" in cart.user
+						? String(cart.user.email ?? "")
+						: "",
+				avatarUrl:
+					typeof cart.user === "object" && cart.user !== null && "avatarUrl" in cart.user
+						? (cart.user.avatarUrl as string | undefined)
+						: undefined,
 			},
 			items,
 			totalPrice,

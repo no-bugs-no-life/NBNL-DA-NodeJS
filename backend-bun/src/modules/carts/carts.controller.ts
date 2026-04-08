@@ -11,26 +11,31 @@ import { CartsService } from "./carts.service";
 export class CartsController extends BaseController {
 	private readonly cartsService = new CartsService();
 
+	private getUserId(payload: { id?: string; sub?: string } | undefined): string | undefined {
+		return payload?.id || payload?.sub;
+	}
+
 	// ===== User Cart Routes =====
 
 	async getCart(c: Context) {
-		const payload = c.get("jwtPayload");
-		if (!payload) return c.json(this.fail("Chưa đăng nhập"), 401);
+		const payload = c.get("jwtPayload") as { id?: string; sub?: string } | undefined;
+		const userId = this.getUserId(payload);
+		if (!userId) return c.json(this.fail("Chưa đăng nhập"), 401);
 
-		const cart = await this.cartsService.getUserCart(payload.id);
+		const cart = await this.cartsService.getUserCart(userId);
 		return c.json(this.ok(cart));
 	}
 
 	async addItem(c: Context) {
-		const payload = c.get("jwtPayload");
-		if (!payload) return c.json(this.fail("Chưa đăng nhập"), 401);
+		const payload = c.get("jwtPayload") as { id?: string; sub?: string } | undefined;
+		const userId = this.getUserId(payload);
+		if (!userId) return c.json(this.fail("Chưa đăng nhập"), 401);
 
-		// @ts-expect-error
-		const data = c.req.valid("json");
+		const data = c.req.valid("json") as unknown;
 		const validated = AddToCartSchema.parse(data);
 
 		const cart = await this.cartsService.addItem(
-			payload.id,
+			userId,
 			validated.app,
 			validated.itemType,
 			validated.quantity,
@@ -40,15 +45,16 @@ export class CartsController extends BaseController {
 	}
 
 	async updateItem(c: Context) {
-		const payload = c.get("jwtPayload");
-		if (!payload) return c.json(this.fail("Chưa đăng nhập"), 401);
+		const payload = c.get("jwtPayload") as { id?: string; sub?: string } | undefined;
+		const userId = this.getUserId(payload);
+		if (!userId) return c.json(this.fail("Chưa đăng nhập"), 401);
 
 		const { app } = c.req.param();
-		// @ts-expect-error
-		const data = c.req.valid("json");
+		if (!app) return c.json(this.fail("Thiếu app id"), 400);
+		const data = c.req.valid("json") as unknown;
 		const validated = UpdateCartItemSchema.parse(data);
 
-		const cart = await this.cartsService.updateItem(payload.id, app, {
+		const cart = await this.cartsService.updateItem(userId, app, {
 			quantity: validated.quantity,
 			plan: validated.plan,
 		});
@@ -56,19 +62,22 @@ export class CartsController extends BaseController {
 	}
 
 	async removeItem(c: Context) {
-		const payload = c.get("jwtPayload");
-		if (!payload) return c.json(this.fail("Chưa đăng nhập"), 401);
+		const payload = c.get("jwtPayload") as { id?: string; sub?: string } | undefined;
+		const userId = this.getUserId(payload);
+		if (!userId) return c.json(this.fail("Chưa đăng nhập"), 401);
 
 		const { app } = c.req.param();
-		const cart = await this.cartsService.removeItem(payload.id, app);
+		if (!app) return c.json(this.fail("Thiếu app id"), 400);
+		const cart = await this.cartsService.removeItem(userId, app);
 		return c.json(this.ok(cart, "Xóa khỏi giỏ hàng thành công"));
 	}
 
 	async clearCart(c: Context) {
-		const payload = c.get("jwtPayload");
-		if (!payload) return c.json(this.fail("Chưa đăng nhập"), 401);
+		const payload = c.get("jwtPayload") as { id?: string; sub?: string } | undefined;
+		const userId = this.getUserId(payload);
+		if (!userId) return c.json(this.fail("Chưa đăng nhập"), 401);
 
-		await this.cartsService.clearCart(payload.id);
+		await this.cartsService.clearCart(userId);
 		return c.json(this.ok(null, "Xóa giỏ hàng thành công"));
 	}
 
@@ -81,8 +90,7 @@ export class CartsController extends BaseController {
 	}
 
 	async createCart(c: Context) {
-		// @ts-expect-error
-		const data = c.req.valid("json");
+		const data = c.req.valid("json") as unknown;
 		const validated = CreateCartSchema.parse(data);
 
 		const cart = await this.cartsService.createCart(
@@ -95,6 +103,7 @@ export class CartsController extends BaseController {
 
 	async deleteCart(c: Context) {
 		const { id } = c.req.param();
+		if (!id) return c.json(this.fail("Thiếu cart id"), 400);
 		await this.cartsService.deleteCart(id);
 		return c.json(this.ok(null, "Xóa giỏ hàng thành công"));
 	}

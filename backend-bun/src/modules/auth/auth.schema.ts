@@ -14,6 +14,11 @@ export const VerifyTwoFactorSchema = z.object({
 	code: z.string().min(4).max(8),
 });
 
+export const GoogleVerifySchema = z.object({
+	credential: z.string().min(10),
+});
+
 export type LoginRequest = z.infer<typeof LoginSchema>;
 export type ChangePasswordRequest = z.infer<typeof ChangePasswordSchema>;
 export type VerifyTwoFactorRequest = z.infer<typeof VerifyTwoFactorSchema>;
+export type GoogleVerifyRequest = z.infer<typeof GoogleVerifySchema>;

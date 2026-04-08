@@ -7,7 +7,9 @@ import { logger } from "@/infra/logger/logger";
 import { AppError } from "@/shared/errors";
 
 import { tokenBucketRateLimiter } from "@/shared/middlewares";
+import { requireAuth } from "@/shared/middlewares/auth";
 import { fail } from "@/shared/utils";
+import { VersionsService } from "@/modules/versions/versions.service";
 
 const app = new Hono();
 
@@ -64,6 +66,21 @@ import { appRouter } from "@/routes";
 
 // 3. App Routes & Modules
 app.route("/api/v1", appRouter);
+const versionsService = new VersionsService();
+
+app.get("/downloads/:downloadId", requireAuth, async (c) => {
+	const downloadId = c.req.param("downloadId");
+	const payload = c.get("jwtPayload");
+	const userId = payload?.id;
+	if (!downloadId || !userId) return c.json(fail("Unauthorized"), 401);
+
+	const download = await versionsService.getDownloadLink(downloadId);
+	if (!download || download.userId !== userId) {
+		return c.json(fail("Unauthorized"), 401);
+	}
+
+	return c.redirect(download.fileKey, 302);
+});
 
 app.get("/uploads/*", async (c) => {
 	const relPath = c.req.path.replace(/^\/uploads\//, "");
@@ -82,6 +99,8 @@ app.get("/", (c) => {
 import { closeRedis } from "@/infra/cache/redis";
 // 4. Bootstrap Server & Graceful Shutdown
 import { closeDatabase } from "@/infra/db/connection";
+import { startFilesCleanupCron } from "@/modules/files";
+import { startOrderExpireCron, startOrderPaymentCron } from "@/modules/orders";
 
 const gracefulShutdown = async (signal: string) => {
 	logger.info(`🛑 Received ${signal}, starting graceful shutdown...`);
@@ -99,6 +118,9 @@ process.on("SIGINT", () => gracefulShutdown("SIGINT"));
 process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
 
 logger.info(`🚀 Server starting at http://localhost:${env.PORT}`);
+startOrderPaymentCron();
+startOrderExpireCron();
+startFilesCleanupCron();
 
 export default {
 	port: env.PORT,

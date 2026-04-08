@@ -42,9 +42,12 @@ export class AppsService {
 		return this.repo.findAll(filters, page, limit);
 	}
 
-	async findById(id: string): Promise<AppWithRelations> {
+	async findById(
+		id: string,
+		opts?: { includeDeleted?: boolean },
+	): Promise<AppWithRelations> {
 		if (!id) throw AppError.badRequest("Invalid app ID");
-		const app = await this.repo.findById(id);
+		const app = await this.repo.findById(id, opts);
 		if (!app) throw AppError.notFound("App not found");
 		return app;
 	}
@@ -124,6 +127,13 @@ export class AppsService {
 			: await this.repo.softDelete(id);
 
 		if (!deleted) throw AppError.internal("Failed to delete app");
+	}
+
+	async restore(id: string): Promise<AppWithRelations> {
+		this.assertValidObjectId(id, "App");
+		const ok = await this.repo.restore(id);
+		if (!ok) throw AppError.notFound("App not found or not deleted");
+		return this.findById(id);
 	}
 
 	async approve(id: string): Promise<AppWithRelations> {

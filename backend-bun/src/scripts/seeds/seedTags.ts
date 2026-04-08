@@ -1,25 +1,31 @@
 import { mongoose } from "../../infra/db/connection";
+import { ensureMin, requireDb, upsertManyByKey } from "./seedUtils";
+import { SEED_MIN_PER_COLLECTION } from "./data/seedConfig";
+import { seedTags as seedTagsData } from "./data/tagsData";
 
-export const seedTags = async () => {
-    const db = mongoose.connection.db;
-    if (!db) throw new Error("Database not connected");
-
-    const collection = db.collection("tags");
-
-    const count = await collection.countDocuments();
-    if (count > 0) {
-        console.log("✅ Tags already exist, skipping...");
-        return;
-    }
-
-    console.log("⏳ Seeding tags...");
-    const tags = [
-        { name: "Mới nhất", slug: "moi-nhat", createdAt: new Date(), updatedAt: new Date() },
-        { name: "Thịnh hành", slug: "thinh-hanh", createdAt: new Date(), updatedAt: new Date() },
-        { name: "Miễn phí", slug: "mien-phi", createdAt: new Date(), updatedAt: new Date() },
-        { name: "Giảm giá", slug: "giam-gia", createdAt: new Date(), updatedAt: new Date() },
-    ];
-
-    await collection.insertMany(tags);
-    console.log("🎉 Tags seeded successfully!");
+type TagDoc = {
+	name: string;
+	slug: string;
+	createdAt: Date;
+	updatedAt: Date;
 };
+
+export async function seedTagsCollection() {
+	ensureMin(seedTagsData, SEED_MIN_PER_COLLECTION, "seedTags");
+
+	const db = requireDb(mongoose.connection.db);
+	const collection = db.collection<TagDoc>("tags");
+
+	console.log("⏳ Seeding tags...");
+
+	await upsertManyByKey({
+		collection,
+		keyField: "slug",
+		items: seedTagsData.map((t) => ({
+			key: t.slug,
+			doc: { ...t },
+		})),
+	});
+
+	console.log(`✅ Tags upserted: ${seedTagsData.length}`);
+}

@@ -19,6 +19,7 @@ import { validateBody } from "@/shared/middlewares/validate";
 import {
 	ChangePasswordSchema,
 	LoginSchema,
+	GoogleVerifySchema,
 	VerifyTwoFactorSchema,
 } from "./auth.schema";
 
@@ -27,6 +28,12 @@ authRouter.post("/login", validateBody(LoginSchema), (c) =>
 	authController.login(c),
 );
 authRouter.post("/refresh", (c) => authController.refresh(c));
+
+authRouter.get("/google", (c) => authController.googleStart(c));
+authRouter.get("/google/callback", (c) => authController.googleCallback(c));
+authRouter.post("/google/verify", validateBody(GoogleVerifySchema), (c) =>
+	authController.googleVerify(c),
+);
 
 // Protected Routes
 authRouter.post("/logout", requireAuth, (c) => authController.logout(c));

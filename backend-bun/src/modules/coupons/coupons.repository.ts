@@ -1,4 +1,5 @@
 import type { IBaseRepository } from "@/shared/base";
+import mongoose, { ObjectId } from "mongoose";
 import type { CouponQuery, ICoupon } from "./coupons.types";
 
 export interface ICouponRepository extends IBaseRepository<ICoupon> {
@@ -11,50 +12,105 @@ export interface ICouponRepository extends IBaseRepository<ICoupon> {
 }
 
 export class CouponsRepository implements ICouponRepository {
+	private get db() {
+		// biome-ignore lint/style/noNonNullAssertion: initialized on app bootstrap
+		return mongoose.connection.db!;
+	}
+
+	private get collection() {
+		return this.db.collection<ICoupon>("coupons");
+	}
+
 	async findAll(): Promise<ICoupon[]> {
-		// TODO: Implement with MongoDB
-		return [];
+		return this.collection.find({ isDisabled: { $ne: true } }).toArray();
 	}
 
-	async findById(_id: string): Promise<ICoupon | null> {
-		// TODO: Implement with MongoDB
-		return null;
+	async findById(id: string): Promise<ICoupon | null> {
+		if (!mongoose.isValidObjectId(id)) return null;
+		return this.collection.findOne({ _id: new mongoose.Types.ObjectId(id) as ObjectId });
 	}
 
-	async findByCode(_code: string): Promise<ICoupon | null> {
-		// TODO: Implement with MongoDB
-		return null;
+	async findByCode(code: string): Promise<ICoupon | null> {
+		return this.collection.findOne({
+			code,
+			isDisabled: { $ne: true },
+		});
 	}
 
 	async findAllPaginated(
-		_query: CouponQuery,
+		query: CouponQuery,
 	): Promise<{ coupons: ICoupon[]; total: number }> {
-		// TODO: Implement with MongoDB
-		return { coupons: [], total: 0 };
+		const page = Math.max(1, query.page ?? 1);
+		const limit = Math.max(1, Math.min(100, query.limit ?? 10));
+		const skip = (page - 1) * limit;
+		const filter = { isDisabled: { $ne: true } } as const;
+		const [coupons, total] = await Promise.all([
+			this.collection
+				.find(filter)
+				.sort({ createdAt: -1 })
+				.skip(skip)
+				.limit(limit)
+				.toArray(),
+			this.collection.countDocuments(filter),
+		]);
+		return { coupons, total };
 	}
 
-	async create(_data: Partial<ICoupon>): Promise<ICoupon> {
-		// TODO: Implement with MongoDB
-		return {} as ICoupon;
+	async create(data: Partial<ICoupon>): Promise<ICoupon> {
+		const now = new Date();
+		const doc: ICoupon = {
+			code: data.code ?? "",
+			discountType: data.discountType!,
+			discountValue: data.discountValue!,
+			startDate: data.startDate!,
+			endDate: data.endDate!,
+			usageLimit: data.usageLimit ?? 0,
+			usedCount: data.usedCount ?? 0,
+			apps: data.apps ?? [],
+			isGlobal: data.isGlobal ?? true,
+			isDisabled: data.isDisabled ?? false,
+			createdAt: now,
+			updatedAt: now,
+		};
+		const result = await this.collection.insertOne(doc);
+		return { ...doc, _id: result.insertedId as ObjectId };
 	}
 
-	async update(_id: string, _data: Partial<ICoupon>): Promise<ICoupon | null> {
-		// TODO: Implement with MongoDB
-		return null;
+	async update(id: string, data: Partial<ICoupon>): Promise<ICoupon | null> {
+		if (!mongoose.isValidObjectId(id)) return null;
+		const result = await this.collection.findOneAndUpdate(
+			{ _id: new mongoose.Types.ObjectId(id) as ObjectId },
+			{ $set: { ...data, updatedAt: new Date() } },
+			{ returnDocument: "after" },
+		);
+		return result ?? null;
 	}
 
-	async incrementUsage(_id: string): Promise<ICoupon | null> {
-		// TODO: Implement with MongoDB - increment usedCount
-		return null;
+	async incrementUsage(id: string): Promise<ICoupon | null> {
+		if (!mongoose.isValidObjectId(id)) return null;
+		const result = await this.collection.findOneAndUpdate(
+			{ _id: new mongoose.Types.ObjectId(id) as ObjectId },
+			{ $inc: { usedCount: 1 }, $set: { updatedAt: new Date() } },
+			{ returnDocument: "after" },
+		);
+		return result ?? null;
 	}
 
 	async findValidCoupons(): Promise<ICoupon[]> {
-		// TODO: Implement with MongoDB - find active & not expired
-		return [];
+		const now = new Date();
+		return this.collection
+			.find({
+				isDisabled: { $ne: true },
+				startDate: { $lte: now },
+				endDate: { $gte: now },
+				$expr: { $lt: ["$usedCount", "$usageLimit"] },
+			})
+			.sort({ createdAt: -1 })
+			.toArray();
 	}
 
-	async delete(_id: string): Promise<boolean> {
-		// TODO: Implement with MongoDB - soft delete
-		return false;
+	async delete(id: string): Promise<boolean> {
+		const updated = await this.update(id, { isDisabled: true });
+		return !!updated;
 	}
 }

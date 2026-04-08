@@ -18,6 +18,19 @@ const envSchema = z.object({
 	JWT_ACCESS_EXPIRES_IN: z.coerce.number().default(900), // 15 mins
 	JWT_REFRESH_EXPIRES_IN: z.coerce.number().default(604800), // 7 days
 	CORS_ORIGIN: z.string().default("*"),
+	GOOGLE_CLIENT_ID: z.string().min(10).optional(),
+	GOOGLE_REDIRECT_URI: z
+		.string()
+		.default("http://localhost:4000/auth/google/auth/google/callback"),
+	FRONTEND_URL: z.string().default("http://localhost:4000"),
+	SEPAY_TOKEN: z.string().optional(),
+	SEPAY_ACCOUNT_NUMBER: z.string().optional(),
+	SEPAY_POLL_CRON: z.string().default("*/1 * * * * *"),
+	/** Sau bấy nhiêu phút kể từ createdAt, đơn pending/processing tự hủy */
+	ORDER_PAYMENT_TIMEOUT_MINUTES: z.coerce.number().min(1).max(1440).default(15),
+	/** Cron hủy đơn quá hạn (node-cron 6 trường: giây phút ...) */
+	ORDER_EXPIRE_CRON: z.string().default("0 * * * * *"),
+	FILE_CLEANUP_CRON: z.string().default("0 * * * *"),
 });
 
 const _env = envSchema.safeParse(process.env);

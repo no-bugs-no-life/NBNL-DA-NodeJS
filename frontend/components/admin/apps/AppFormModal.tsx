@@ -5,9 +5,9 @@ import { AppItem, AppInput } from "@/app/admin/(protected)/apps/appsService";
 import { useCategories } from "@/hooks/useCategories";
 import { useDevelopers } from "@/hooks/useDevelopers";
 import { useTags } from "@/hooks/useTags";
-import { apiClient } from "@/store/useAuthStore";
 import useAuthStore from "@/store/useAuthStore";
 import { API_URL } from "@/configs/api";
+import { uploadFileByChunks } from "@/lib/chunkUpload";
 
 const CKEditor = dynamic(
   async () => {
@@ -119,20 +119,13 @@ export function AppFormModal({
   };
 
   const uploadFile = async (file: File) => {
-    const formPayload = new FormData();
-    formPayload.append("file", file);
-    formPayload.append("ownerType", "APP");
-    formPayload.append("ownerId", app?._id || user?._id || "ADMIN");
-    formPayload.append("fileType", "icon");
-
-    const res = await apiClient.post(
-      "/api/v1/files/upload-image",
-      formPayload,
-      {
-        headers: { "Content-Type": "multipart/form-data" },
-      },
-    );
-    return res.data.url.replace(/\\/g, "/"); // return URL instead of local filesId
+    const uploaded = await uploadFileByChunks({
+      file,
+      ownerType: "app",
+      ownerId: app?._id || user?._id || "admin",
+      fileType: "icon",
+    });
+    return uploaded.url.replace(/\\/g, "/");
   };
 
   const handleSubmit = async (e: React.SyntheticEvent) => {

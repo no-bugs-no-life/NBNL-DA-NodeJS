@@ -1,67 +1,137 @@
+import type { ObjectId } from "mongodb";
 import { mongoose } from "../../infra/db/connection";
+import { ensureMin, requireDb, upsertManyByKey } from "./seedUtils";
+import { SEED_MIN_PER_COLLECTION } from "./data/seedConfig";
+import { seedApps } from "./data/appsData";
 
-export const seedApps = async () => {
-    const db = mongoose.connection.db;
-    if (!db) throw new Error("Database not connected");
-
-    const appCollection = db.collection("apps");
-    const userCollection = db.collection("users");
-    const catCollection = db.collection("categories");
-
-    const count = await appCollection.countDocuments();
-    if (count > 0) {
-        console.log("✅ Apps already exist, skipping...");
-        return;
-    }
-
-    console.log("⏳ Seeding apps...");
-
-    // Get an admin/developer
-    let dev = await userCollection.findOne({ role: "ADMIN" });
-    if (!dev) {
-        dev = await userCollection.findOne({});
-    }
-    if (!dev) {
-        console.log("⚠️ No developer/admin found, skip seeding apps.");
-        return;
-    }
-
-    // Get a category
-    const category = await catCollection.findOne({});
-
-    const apps = [
-        {
-            name: "Demo Game 1",
-            slug: "demo-game-1",
-            description: "This is a demo game",
-            iconUrl: "https://via.placeholder.com/150",
-            price: 0,
-            status: "published",
-            developer: dev._id,
-            category: category ? category._id : null,
-            tags: [],
-            isDisabled: false,
-            isDeleted: false,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-        },
-        {
-            name: "Demo App Premium",
-            slug: "demo-app-premium",
-            description: "This is a premium application",
-            iconUrl: "https://via.placeholder.com/150",
-            price: 99000,
-            status: "published",
-            developer: dev._id,
-            category: category ? category._id : null,
-            tags: [],
-            isDisabled: false,
-            isDeleted: false,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-        }
-    ];
-
-    await appCollection.insertMany(apps);
-    console.log("🎉 Apps seeded successfully!");
+type AppDoc = {
+	name: string;
+	slug: string;
+	description: string;
+	iconUrl: string;
+	price: number;
+	status: string;
+	developer: ObjectId;
+	category: ObjectId | null;
+	tags: ObjectId[];
+	flags: string[];
+	priority: number;
+	isDisabled: boolean;
+	isDeleted: boolean;
+	createdAt: Date;
+	updatedAt: Date;
 };
+
+export async function seedAppsCollection() {
+	ensureMin(seedApps, SEED_MIN_PER_COLLECTION, "seedApps");
+
+	const db = requireDb(mongoose.connection.db);
+	const appsCol = db.collection<AppDoc>("apps");
+
+	console.log("⏳ Seeding apps...");
+
+	const [devDocs, catDocs, tagDocs] = await Promise.all([
+		db
+			.collection("developers")
+			.find({
+				contactEmail: {
+					$in: [...new Set(seedApps.map((a) => a.developerContactEmail))],
+				},
+				isDeleted: { $ne: true },
+			})
+			.project({ _id: 1, contactEmail: 1 })
+			.toArray(),
+		db
+			.collection("categories")
+			.find({
+				slug: { $in: [...new Set(seedApps.map((a) => a.categorySlug))] },
+			})
+			.project({ _id: 1, slug: 1 })
+			.toArray(),
+		db
+			.collection("tags")
+			.find({
+				slug: { $in: [...new Set(seedApps.flatMap((a) => a.tagSlugs))] },
+			})
+			.project({ _id: 1, slug: 1 })
+			.toArray(),
+	]);
+
+	const devIdByEmail = new Map<string, ObjectId>(
+		devDocs
+			.filter(
+				(d): d is { _id: ObjectId; contactEmail: string } =>
+					typeof d === "object" &&
+					d !== null &&
+					"contactEmail" in d &&
+					"_id" in d &&
+					typeof d.contactEmail === "string",
+			)
+			.map((d) => [d.contactEmail, d._id]),
+	);
+	const catIdBySlug = new Map<string, ObjectId>(
+		catDocs
+			.filter(
+				(c): c is { _id: ObjectId; slug: string } =>
+					typeof c === "object" &&
+					c !== null &&
+					"slug" in c &&
+					"_id" in c &&
+					typeof c.slug === "string",
+			)
+			.map((c) => [c.slug, c._id]),
+	);
+	const tagIdBySlug = new Map<string, ObjectId>(
+		tagDocs
+			.filter(
+				(t): t is { _id: ObjectId; slug: string } =>
+					typeof t === "object" &&
+					t !== null &&
+					"slug" in t &&
+					"_id" in t &&
+					typeof t.slug === "string",
+			)
+			.map((t) => [t.slug, t._id]),
+	);
+
+	await upsertManyByKey({
+		collection: appsCol,
+		keyField: "slug",
+		items: seedApps.map((a) => {
+			const developerId = devIdByEmail.get(a.developerContactEmail);
+			if (!developerId) {
+				throw new Error(
+					`Seed invariant failed: missing developer contactEmail=${a.developerContactEmail}`,
+				);
+			}
+			const categoryId = catIdBySlug.get(a.categorySlug) || null;
+			const tagIds = a.tagSlugs
+				.map((slug) => tagIdBySlug.get(slug))
+				.filter((id): id is ObjectId => Boolean(id));
+
+			return {
+				key: a.slug,
+				doc: {
+					name: a.name,
+					slug: a.slug,
+					description: a.description,
+					iconUrl: a.iconUrl,
+					price: a.price,
+					status: a.status,
+					developer: developerId,
+					category: categoryId,
+					tags: tagIds,
+					flags: a.flags,
+					priority: a.priority,
+					isDisabled: a.isDisabled,
+					isDeleted: a.isDeleted,
+					createdAt: a.createdAt,
+					updatedAt: a.updatedAt,
+				},
+			};
+		}),
+	});
+
+	console.log(`✅ Apps upserted: ${seedApps.length}`);
+}
+

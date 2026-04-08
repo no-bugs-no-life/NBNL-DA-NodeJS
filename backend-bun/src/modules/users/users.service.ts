@@ -89,6 +89,24 @@ export class UsersService {
 		return this.repository.delete(targetId);
 	}
 
+	async addBalance(
+		targetId: string,
+		amount: number,
+		requestingUserRole: UserRole,
+	): Promise<IUserPublic> {
+		if (!this.canManageRole(requestingUserRole, "DEVELOPER")) {
+			throw forbidden("Bạn không có quyền nạp số dư cho người dùng");
+		}
+
+		if (!Number.isInteger(amount) || amount <= 0) {
+			throw badRequest("Số dư nạp phải là số nguyên dương");
+		}
+
+		const updated = await this.repository.incrementCoin(targetId, amount);
+		if (!updated) throw notFound("Người dùng không tồn tại");
+		return this.toPublic(updated);
+	}
+
 	private toPublic(user: IUser): IUserPublic {
 		const { password: _, ...pub } = user as IUser & { password?: string };
 		return pub as IUserPublic;

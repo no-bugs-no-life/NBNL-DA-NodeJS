@@ -1,6 +1,11 @@
 import { z } from "zod";
 import { PaymentMethod } from "./orders.types";
 
+const paymentMethodSchema = z.union([
+	z.nativeEnum(PaymentMethod),
+	z.literal("bank_transfer"),
+]);
+
 export const CreateOrderSchema = z
 	.object({
 		items: z
@@ -14,7 +19,9 @@ export const CreateOrderSchema = z
 			)
 			.min(1, "Phải có ít nhất 1 sản phẩm"),
 		couponCode: z.string().optional(),
-		paymentMethod: z.nativeEnum(PaymentMethod),
+		paymentMethod: paymentMethodSchema.transform((value) =>
+			value === "bank_transfer" ? PaymentMethod.BANK_QR : value,
+		),
 	})
 	.strict();
 

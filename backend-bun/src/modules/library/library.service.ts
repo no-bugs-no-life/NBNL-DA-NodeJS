@@ -54,8 +54,12 @@ export class LibraryService {
         : [];
 
     const categoryIds = [
-      ...new Set(appDocs.map((a) => a.category?.toString()).filter(Boolean)),
-    ].map((id) => new ObjectId(id as string));
+      ...new Set(
+        appDocs
+          .map((a) => a.category?.toString())
+          .filter((id): id is string => Boolean(id) && ObjectId.isValid(id)),
+      ),
+    ].map((id) => new ObjectId(id));
 
     const categoryDocs: CategoryDocLite[] =
       categoryIds.length > 0

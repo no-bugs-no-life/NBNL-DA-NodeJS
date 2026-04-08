@@ -22,4 +22,5 @@ usersRouter.patch("/me", requireAuth, validateBody(UpdateProfileSchema), (c) =>
 usersRouter.get("/", requireAdmin, (c) => controller.getAll(c));
 usersRouter.get("/:id", requireAdmin, (c) => controller.getById(c));
 usersRouter.patch("/:id/role", requireAdmin, (c) => controller.updateRole(c));
+usersRouter.patch("/:id/balance", requireAdmin, (c) => controller.addBalance(c));
 usersRouter.delete("/:id", requireAdmin, (c) => controller.deleteUser(c));

@@ -64,7 +64,6 @@ export default function HomeHero() {
   }, [slides.length]);
 
   const activeSlide = slides[currentSlide] || fallbackSlides[0];
-
   interface SlideData {
     image: string;
     subtitle: string;
@@ -94,9 +93,10 @@ export default function HomeHero() {
             <h1 className="text-white text-4xl sm:text-5xl md:text-6xl font-bold tracking-tighter mb-4 md:mb-6 max-w-xl leading-tight md:leading-none">
               {activeSlide.title}
             </h1>
-            <p className="text-white/80 text-sm sm:text-lg max-w-md mb-6 md:mb-8 leading-relaxed font-light">
-              {activeSlide.description}
-            </p>
+            <div
+              className="text-white/80 text-sm sm:text-lg max-w-md mb-6 md:mb-8 leading-relaxed font-light line-clamp-3 [&_p]:inline [&_p]:m-0 [&_br]:hidden"
+              dangerouslySetInnerHTML={{ __html: activeSlide.description || "" }}
+            />
           </div>
           <div className="flex flex-col sm:flex-row gap-3 md:gap-4 mt-2">
             <Link

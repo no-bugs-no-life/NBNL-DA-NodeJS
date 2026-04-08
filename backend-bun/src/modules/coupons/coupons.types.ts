@@ -22,6 +22,7 @@ export interface ICoupon {
 	usedCount: number;
 	apps: ObjectId[];
 	isGlobal: boolean;
+	isDisabled?: boolean;
 	createdAt?: Date;
 	updatedAt?: Date;
 }

@@ -44,14 +44,22 @@ export const fetchReviews = async (
   isPending = false,
 ): Promise<PaginatedResult<ReviewItem>> => {
   const endpoint = isPending
-    ? "/api/v1/reviews/pending"
-    : "/api/v1/reviews/admin";
+    ? "/api/v1/admin/reviews/pending"
+    : "/api/v1/admin/reviews";
   const res = await api.get(`${endpoint}?page=${page}&limit=${limit}`);
   return res.data;
 };
 
 export const createReviewAdmin = async (data: ReviewInput) => {
-  const res = await api.post(`/api/v1/reviews/admin`, data);
+  // Backend expects `app` and `user` fields.
+  const payload = {
+    app: data.appId,
+    user: data.userId,
+    rating: data.rating,
+    comment: data.comment,
+    status: data.status,
+  };
+  const res = await api.post(`/api/v1/admin/reviews`, payload);
   return res.data;
 };
 
@@ -59,26 +67,32 @@ export const updateReviewAdmin = async (
   id: string,
   data: Partial<ReviewInput>,
 ) => {
-  const res = await api.put(`/api/v1/reviews/admin/${id}`, data);
+  const payload: Record<string, unknown> = {};
+  if (data.appId !== undefined) payload.app = data.appId;
+  if (data.userId !== undefined) payload.user = data.userId;
+  if (data.rating !== undefined) payload.rating = data.rating;
+  if (data.comment !== undefined) payload.comment = data.comment;
+  if (data.status !== undefined) payload.status = data.status;
+  const res = await api.put(`/api/v1/admin/reviews/${id}`, payload);
   return res.data;
 };
 
 export const approveReview = async (id: string) => {
-  const res = await api.post(`/api/v1/reviews/${id}/approve`, {});
+  const res = await api.post(`/api/v1/admin/reviews/${id}/approve`, {});
   return res.data;
 };
 
 export const rejectReview = async (id: string) => {
-  const res = await api.post(`/api/v1/reviews/${id}/reject`, {});
+  const res = await api.post(`/api/v1/admin/reviews/${id}/reject`, {});
   return res.data;
 };
 
 export const deleteReview = async (id: string) => {
-  const res = await api.delete(`/api/v1/reviews/admin/${id}`);
+  const res = await api.delete(`/api/v1/admin/reviews/${id}`);
   return res.data;
 };
 
 export const resetReview = async (id: string) => {
-  const res = await api.post(`/api/v1/reviews/${id}/reset`, {});
+  const res = await api.post(`/api/v1/admin/reviews/${id}/reset`, {});
   return res.data;
 };

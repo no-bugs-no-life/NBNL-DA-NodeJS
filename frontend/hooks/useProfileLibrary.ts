@@ -29,13 +29,20 @@ const FALLBACK_IMAGE = "https://i.sstatic.net/l60Hf.png";
 
 const normalizeImage = (image?: string) => {
   if (!image) return FALLBACK_IMAGE;
-  if (
-    image.startsWith("http") ||
-    image.startsWith("blob:") ||
-    image.startsWith("data:")
-  ) {
-    return image;
+
+  if (image.startsWith("http") || image.startsWith("https")) {
+    try {
+      const url = new URL(image);
+      if (url.pathname.startsWith("/uploads/")) {
+        const base = new URL(API_URL);
+        return `${base.origin}${url.pathname}${url.search || ""}`;
+      }
+      return image;
+    } catch {
+    }
   }
+
+  // 相对路径：补全为 API_URL
   return `${API_URL}/${image.replace(/\\/g, "/")}`;
 };
 

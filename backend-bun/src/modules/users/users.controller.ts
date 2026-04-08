@@ -1,6 +1,7 @@
 import type { Context } from "hono";
 import { BaseController } from "@/shared/base";
 import {
+	AddBalanceSchema,
 	RegisterSchema,
 	UpdateProfileSchema,
 	UserQuerySchema,
@@ -81,5 +82,20 @@ export class UsersController extends BaseController {
 			payload.role as UserRole,
 		);
 		return c.json(this.ok(null, "Xóa người dùng thành công"));
+	}
+
+	async addBalance(c: Context) {
+		const { id } = c.req.param();
+		const payload = c.get("jwtPayload");
+		if (!payload) return c.json(this.fail("Chưa đăng nhập"), 401);
+
+		const body = await c.req.json();
+		const { amount } = AddBalanceSchema.parse(body);
+		const user = await this.usersService.addBalance(
+			id,
+			amount,
+			payload.role as UserRole,
+		);
+		return c.json(this.ok(user, "Nạp số dư thành công"));
 	}
 }

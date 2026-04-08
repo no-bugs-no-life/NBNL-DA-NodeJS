@@ -8,6 +8,7 @@ import {
 } from "@/shared/middlewares/validate";
 import { ReviewsController } from "./reviews.controller";
 import {
+	AdminCreateReviewSchema,
 	AdminReviewQuerySchema,
 	CreateReviewSchema,
 	ReviewParamsSchema,
@@ -16,6 +17,7 @@ import {
 } from "./reviews.schema";
 
 export const reviewsRouter = new Hono();
+export const adminReviewsRouter = new Hono();
 const controller = new ReviewsController();
 
 const requireAuth = jwt({ secret: env.JWT_ACCESS_SECRET, alg: "HS256" });
@@ -24,9 +26,6 @@ const requireAdmin = jwt({ secret: env.JWT_ACCESS_SECRET, alg: "HS256" });
 // Public Routes
 reviewsRouter.get("/", validateQuery(ReviewQuerySchema), (c) =>
 	controller.list(c),
-);
-reviewsRouter.get("/:id", validateParams(ReviewParamsSchema), (c) =>
-	controller.getById(c),
 );
 reviewsRouter.get("/app/:app", (c) => controller.getByApp(c));
 
@@ -48,56 +47,58 @@ reviewsRouter.delete(
 	(c) => controller.delete(c),
 );
 
-// Admin Routes
-// GET /reviews - List all reviews (admin) - defaults to pending status
-reviewsRouter.get(
+// Admin Routes (RESTful): /admin/reviews/*
+adminReviewsRouter.get(
+	"/",
+	requireAdmin,
+	validateQuery(ReviewQuerySchema),
+	(c) => controller.listAdmin(c),
+);
+adminReviewsRouter.get(
 	"/pending",
 	requireAdmin,
 	validateQuery(AdminReviewQuerySchema),
 	(c) => controller.listAdmin(c),
 );
-reviewsRouter.get(
-	"/admin",
-	requireAdmin,
-	validateQuery(ReviewQuerySchema),
-	(c) => controller.listAdmin(c),
+reviewsRouter.get("/:id", validateParams(ReviewParamsSchema), (c) =>
+	controller.getById(c),
 );
 
 // Admin CRUD
-reviewsRouter.post(
-	"/admin",
+adminReviewsRouter.post(
+	"/",
 	requireAdmin,
-	validateBody(CreateReviewSchema),
+	validateBody(AdminCreateReviewSchema),
 	(c) => controller.createAdmin(c),
 );
-reviewsRouter.put(
-	"/admin/:id",
+adminReviewsRouter.put(
+	"/:id",
 	requireAdmin,
 	validateParams(ReviewParamsSchema),
 	validateBody(UpdateReviewSchema),
 	(c) => controller.updateAdmin(c),
 );
-reviewsRouter.delete(
-	"/admin/:id",
+adminReviewsRouter.delete(
+	"/:id",
 	requireAdmin,
 	validateParams(ReviewParamsSchema),
 	(c) => controller.deleteAdmin(c),
 );
 
 // Admin actions
-reviewsRouter.post(
+adminReviewsRouter.post(
 	"/:id/approve",
 	requireAdmin,
 	validateParams(ReviewParamsSchema),
 	(c) => controller.approve(c),
 );
-reviewsRouter.post(
+adminReviewsRouter.post(
 	"/:id/reject",
 	requireAdmin,
 	validateParams(ReviewParamsSchema),
 	(c) => controller.reject(c),
 );
-reviewsRouter.post(
+adminReviewsRouter.post(
 	"/:id/reset",
 	requireAdmin,
 	validateParams(ReviewParamsSchema),

@@ -120,9 +120,9 @@ export function SubPackageTable({
                   {formatDuration(pkg.durationDays)}
                 </span>
                 <span
-                  className={`text-xs font-semibold ${pkg.isActive ? "text-green-600" : "text-slate-400"}`}
+                  className={`text-xs font-semibold ${pkg.isActive ? "text-green-600" : "text-red-600"}`}
                 >
-                  {pkg.isActive ? "Hoạt động" : "Tắt"}
+                  {pkg.isActive ? "Hoạt động" : "Đã thu hồi"}
                 </span>
               </div>
               {pkg.description && (
@@ -236,9 +236,9 @@ function DataRows({
           </td>
           <td className="px-6 py-4">
             <span
-              className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold ${pkg.isActive ? "bg-green-50 text-green-600" : "bg-slate-100 text-slate-400"}`}
+              className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold ${pkg.isActive ? "bg-green-50 text-green-600" : "bg-red-50 text-red-600"}`}
             >
-              {pkg.isActive ? "Hoạt động" : "Tắt"}
+              {pkg.isActive ? "Hoạt động" : "Đã thu hồi"}
             </span>
           </td>
           <td className="px-6 py-4 text-right">

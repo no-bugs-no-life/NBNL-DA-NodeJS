@@ -13,6 +13,12 @@ export enum PaymentMethod {
 	PAYPAL = "paypal",
 	COIN = "coin",
 	CARD = "card",
+	BANK_QR = "bank_qr",
+}
+
+export enum PaymentStatus {
+	EXACT = "exact",
+	OVERPAID = "overpaid",
 }
 
 export interface OrderItem {
@@ -24,6 +30,7 @@ export interface OrderItem {
 
 export interface IOrder {
 	_id?: ObjectId;
+	orderNo: string;
 	user: ObjectId;
 	items: OrderItem[];
 	totalAmount: number;
@@ -33,6 +40,10 @@ export interface IOrder {
 	status: OrderStatus;
 	paymentMethod: PaymentMethod;
 	paymentId?: string;
+	paymentRef?: string;
+	paymentContent?: string;
+	paymentStatus?: PaymentStatus;
+	paidAmount?: number;
 	paidAt?: Date;
 	createdAt?: Date;
 	updatedAt?: Date;
@@ -40,6 +51,7 @@ export interface IOrder {
 
 export interface IOrderPublic {
 	id: string;
+	orderNo: string;
 	user: string;
 	items: OrderItemPublic[];
 	totalAmount: number;
@@ -49,6 +61,10 @@ export interface IOrderPublic {
 	status: OrderStatus;
 	paymentMethod: PaymentMethod;
 	paymentId?: string;
+	paymentRef?: string;
+	paymentContent?: string;
+	paymentStatus?: PaymentStatus;
+	paidAmount?: number;
 	paidAt?: Date;
 	createdAt: Date;
 }

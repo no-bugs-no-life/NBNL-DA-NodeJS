@@ -72,16 +72,14 @@ versionSchema.index({ "files.platform": 1 });
 versionSchema.index({ status: 1, publishedAt: -1 });
 
 // Pre-save hook: auto unset isLatest when new version is marked as latest
-versionSchema.pre("save", async function (next) {
-	if (this.isNew || this.isModified("isLatest")) {
-		if (this.isLatest) {
-			await this.constructor.updateMany(
-				{ app: this.app, _id: { $ne: this._id } },
-				{ $set: { isLatest: false } },
-			);
-		}
-	}
-	next();
+versionSchema.pre("save", async function () {
+	if (!this.isNew && !this.isModified("isLatest")) return;
+	if (!this.isLatest) return;
+
+	await (this.constructor as mongoose.Model<Version>).updateMany(
+		{ app: this.app, _id: { $ne: this._id } },
+		{ $set: { isLatest: false } },
+	);
 });
 
 export const VersionModel =

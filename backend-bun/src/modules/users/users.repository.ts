@@ -11,6 +11,7 @@ export interface IUserRepository extends IBaseRepository<IUser> {
 		query: UserQuery,
 	): Promise<{ users: IUser[]; total: number }>;
 	updateProfile(id: string, data: Partial<IUser>): Promise<IUser | null>;
+	incrementCoin(id: string, amount: number): Promise<IUser | null>;
 }
 
 export class UsersRepository implements IUserRepository {
@@ -116,6 +117,16 @@ export class UsersRepository implements IUserRepository {
 		const result = await this.collection.findOneAndUpdate(
 			{ _id: new ObjectId(id) },
 			{ $set: { ...data, updatedAt: new Date() } },
+			{ returnDocument: "after", projection: { password: 0 } },
+		);
+		return result as unknown as IUser | null;
+	}
+
+	async incrementCoin(id: string, amount: number): Promise<IUser | null> {
+		if (!ObjectId.isValid(id)) return null;
+		const result = await this.collection.findOneAndUpdate(
+			{ _id: new ObjectId(id) },
+			{ $inc: { coin: amount }, $set: { updatedAt: new Date() } },
 			{ returnDocument: "after", projection: { password: 0 } },
 		);
 		return result as unknown as IUser | null;

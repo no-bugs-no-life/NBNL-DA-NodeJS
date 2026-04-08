@@ -12,6 +12,7 @@ ordersRouter.post("/", requireAuth, validateBody(CreateOrderSchema), (c) =>
 	controller.create(c),
 );
 ordersRouter.get("/my", requireAuth, (c) => controller.getMyOrders(c));
+ordersRouter.get("/my/:id", requireAuth, (c) => controller.getMyOrderById(c));
 
 // Admin Routes
 ordersRouter.get("/", requireAdmin, (c) => controller.getAll(c));

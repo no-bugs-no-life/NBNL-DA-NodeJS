@@ -3,6 +3,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Squares2X2Icon,
+  UserGroupIcon,
   FolderOpenIcon,
   DevicePhoneMobileIcon,
   TagIcon,
@@ -58,6 +59,7 @@ const MENU_GROUPS = [
         icon: CodeBracketIcon,
         path: "/admin/developers",
       },
+      { name: "Quản lý Người dùng", icon: UserGroupIcon, path: "/admin/users" },
       { name: "Quản lý Yêu thích", icon: HeartIcon, path: "/admin/wishlists" },
       {
         name: "Quản lý Giỏ hàng",

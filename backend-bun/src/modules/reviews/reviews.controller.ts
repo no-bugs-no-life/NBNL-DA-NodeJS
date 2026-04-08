@@ -5,6 +5,7 @@ import {
 	apiSuccess,
 } from "@/shared/utils/api-response.util";
 import type {
+	AdminCreateReviewRequest,
 	CreateReviewRequest,
 	ReviewQueryRequest,
 	UpdateReviewRequest,
@@ -18,30 +19,35 @@ export class ReviewsController {
 		this.service = service || new ReviewsService();
 	}
 
-	list(c: Context) {
+	async list(c: Context) {
 		const query = c.req.valid("query") as ReviewQueryRequest;
-		return apiSuccess(c, this.service.findAll(query));
+		const data = await this.service.findAll(query);
+		return apiSuccess(c, data);
 	}
 
-	getById(c: Context) {
+	async getById(c: Context) {
 		const id = c.req.param("id");
-		return apiSuccess(c, this.service.findById(id));
+		const review = await this.service.findById(id);
+		return apiSuccess(c, review);
 	}
 
-	getByApp(c: Context) {
+	async getByApp(c: Context) {
 		const app = c.req.param("app");
-		return apiSuccess(c, this.service.findByAppId(app));
+		const data = await this.service.findByAppId(app);
+		return apiSuccess(c, data);
 	}
 
-	create(c: Context) {
+	async create(c: Context) {
 		const body = c.req.valid("json") as CreateReviewRequest;
-		return apiCreated(c, this.service.create(body));
+		const review = await this.service.create(body);
+		return apiCreated(c, review);
 	}
 
-	update(c: Context) {
+	async update(c: Context) {
 		const id = c.req.param("id");
 		const body = c.req.valid("json") as UpdateReviewRequest;
-		return apiSuccess(c, this.service.update(id, body));
+		const review = await this.service.update(id, body);
+		return apiSuccess(c, review);
 	}
 
 	delete(c: Context) {
@@ -58,7 +64,7 @@ export class ReviewsController {
 	}
 
 	async createAdmin(c: Context) {
-		const body = c.req.valid("json") as CreateReviewRequest;
+		const body = c.req.valid("json") as AdminCreateReviewRequest;
 		const review = await this.service.createAdmin(body);
 		const populated = await this.service.findByIdAdmin(review._id.toString());
 		return apiCreated(c, populated);

@@ -14,7 +14,8 @@ import { VersionsService } from "./versions.service";
 import type { Platform } from "./versions.types";
 
 interface AuthPayload {
-	sub: string;
+	sub?: string;
+	id?: string;
 	role: string;
 }
 
@@ -34,68 +35,90 @@ export class VersionsController {
 		}
 	}
 
-	list(c: Context) {
+	private getUserId(user: AuthPayload | null): string | undefined {
+		return user?.id || user?.sub;
+	}
+
+	private toAbsoluteUrl(c: Context, maybeRelativeUrl: string): string {
+		if (maybeRelativeUrl.startsWith("http://") || maybeRelativeUrl.startsWith("https://")) {
+			return maybeRelativeUrl;
+		}
+		return new URL(maybeRelativeUrl, c.req.url).toString();
+	}
+
+	async list(c: Context) {
 		const query = c.req.valid("query") as VersionQueryRequest;
-		return apiSuccess(c, this.service.findAll(query));
+		const result = await this.service.findAll(query);
+		return apiSuccess(c, result);
 	}
 
-	getById(c: Context) {
+	async getById(c: Context) {
 		const id = c.req.param("id");
-		return apiSuccess(c, this.service.findById(id));
+		const result = await this.service.findById(id);
+		return apiSuccess(c, result);
 	}
 
-	getByApp(c: Context) {
+	async getByApp(c: Context) {
 		const app = c.req.param("app");
-		return apiSuccess(c, this.service.findByAppId(app));
+		const versions = await this.service.findByAppId(app);
+		return apiSuccess(c, versions);
 	}
 
-	getLatestByApp(c: Context) {
+	async getLatestByApp(c: Context) {
 		const app = c.req.param("app");
-		return apiSuccess(c, this.service.findLatestByAppId(app));
+		const latest = await this.service.findLatestByAppId(app);
+		return apiSuccess(c, latest);
 	}
 
-	getByPlatform(c: Context) {
+	async getByPlatform(c: Context) {
 		const app = c.req.param("app");
 		const platform = c.req.param("platform") as Platform;
-		return apiSuccess(c, this.service.findByPlatform(app, platform));
+		const versions = await this.service.findByPlatform(app, platform);
+		return apiSuccess(c, versions);
 	}
 
-	create(c: Context) {
+	async create(c: Context) {
 		const body = c.req.valid("json") as CreateVersionRequest;
-		return apiCreated(c, this.service.create(body));
+		const created = await this.service.create(body);
+		return apiCreated(c, created);
 	}
 
-	update(c: Context) {
+	async update(c: Context) {
 		const id = c.req.param("id");
 		const body = c.req.valid("json") as UpdateVersionRequest;
-		return apiSuccess(c, this.service.update(id, body));
+		const updated = await this.service.update(id, body);
+		return apiSuccess(c, updated);
 	}
 
-	delete(c: Context) {
+	async delete(c: Context) {
 		const id = c.req.param("id");
-		this.service.delete(id);
+		await this.service.delete(id);
 		return apiNoContent(c);
 	}
 
-	publish(c: Context) {
+	async publish(c: Context) {
 		const id = c.req.param("id");
-		return apiSuccess(c, this.service.publish(id));
+		const result = await this.service.publish(id);
+		return apiSuccess(c, result);
 	}
 
-	deprecate(c: Context) {
+	async deprecate(c: Context) {
 		const id = c.req.param("id");
-		return apiSuccess(c, this.service.deprecate(id));
+		const result = await this.service.deprecate(id);
+		return apiSuccess(c, result);
 	}
 
-	revokeDownloadLink(c: Context) {
+	async revokeDownloadLink(c: Context) {
 		const id = c.req.param("id");
-		return apiSuccess(c, this.service.revokeDownloadLink(id));
+		const result = await this.service.revokeDownloadLink(id);
+		return apiSuccess(c, result);
 	}
 
-	markLatest(c: Context) {
+	async markLatest(c: Context) {
 		const id = c.req.param("id");
 		const app = c.req.param("app");
-		return apiSuccess(c, this.service.markAsLatest(id, app));
+		const result = await this.service.markAsLatest(id, app);
+		return apiSuccess(c, result);
 	}
 
 	/**
@@ -103,52 +126,51 @@ export class VersionsController {
 	 * - Check user purchase status (truyền từ client hoặc query orders)
 	 * - Generate short-lived token
 	 */
-	getDownloadInfo(c: Context) {
+	async getDownloadInfo(c: Context) {
 		const id = c.req.param("id");
 		const platform = c.req.param("platform") as Platform;
 		const user = this.getAuthUser(c);
+		const userId = this.getUserId(user);
+		if (!userId) throw AppError.unauthorized("Unauthorized");
+		const hasPurchased = await this.service.hasPurchasedVersionApp(userId, id);
 
-		// TODO: Check purchase từ orders module (hoặc query orders service)
-		const hasPurchased = false; // Placeholder - implement với orders service
-
-		const result = this.service.getDownloadInfo(
+		const result = await this.service.getDownloadInfo(
 			id,
 			platform,
-			user?.sub,
+			userId,
 			user?.role,
 			hasPurchased,
 		);
 
-		return apiSuccess(c, result);
+		return apiSuccess(c, {
+			...result,
+			downloadUrl: this.toAbsoluteUrl(c, result.downloadUrl),
+		});
+	}
+
+	async getAppDownloadInfo(c: Context) {
+		const appId = c.req.param("app");
+		const platform = c.req.param("platform") as Platform;
+		const user = this.getAuthUser(c);
+		const userId = this.getUserId(user);
+		if (!userId) throw AppError.unauthorized("Unauthorized");
+
+		const result = await this.service.getLatestDownloadInfoByApp(
+			appId,
+			platform,
+			userId,
+			user?.role,
+		);
+		return apiSuccess(c, {
+			...result,
+			downloadUrl: this.toAbsoluteUrl(c, result.downloadUrl),
+		});
 	}
 
 	/**
 	 * Download file với token verification
 	 */
-	download(c: Context) {
-		const token = c.req.query("token");
-		const platform = c.req.query("platform") as Platform;
-
-		if (!token) {
-			throw AppError.badRequest("Missing token");
-		}
-
-		const payload = this.service.verifyDownloadToken(token);
-		if (!payload) {
-			throw AppError.unauthorized("Invalid or expired token");
-		}
-
-		// Verify platform match
-		if (platform && payload.platform !== platform) {
-			throw AppError.badRequest("Platform mismatch");
-		}
-
-		// Increment download count
-		this.service.incrementDownloadCount(payload.versionId);
-
-		return apiSuccess(c, {
-			fileKey: payload.fileKey,
-			platform: payload.platform,
-		});
+	download(_c: Context) {
+		throw AppError.notFound("Endpoint moved to /downloads/:downloadId");
 	}
 }

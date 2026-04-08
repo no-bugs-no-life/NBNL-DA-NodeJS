@@ -72,7 +72,7 @@ export const tokenBucketRateLimiter = (
 			const token = cookieToken || bearerToken;
 
 			if (token) {
-				const payload = (await verify(token, env.JWT_ACCESS_SECRET)) as {
+				const payload = (await verify(token, env.JWT_ACCESS_SECRET, "HS256")) as {
 					role?: string;
 					sub?: string;
 					id?: string;

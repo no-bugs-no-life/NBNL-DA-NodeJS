@@ -13,7 +13,8 @@ export const CreateCouponSchema = z
 		discountValue: z.number().positive("Giá trị giảm phải lớn hơn 0"),
 		startDate: z.string(),
 		endDate: z.string(),
-		usageLimit: z.number().int().positive().optional().default(100),
+		// 0 = không giới hạn, >0 = giới hạn số lần sử dụng
+		usageLimit: z.number().int().min(0).optional().default(0),
 		apps: z.array(z.string()).optional(),
 	})
 	.refine((data) => new Date(data.endDate) > new Date(data.startDate), {
@@ -30,7 +31,8 @@ export const UpdateCouponSchema = z
 		discountValue: z.number().positive().optional(),
 		startDate: z.string().optional(),
 		endDate: z.string().optional(),
-		usageLimit: z.number().int().positive().optional(),
+		// Cho phép chỉnh về 0 = không giới hạn
+		usageLimit: z.number().int().min(0).optional(),
 		apps: z.array(z.string()).optional(),
 	})
 	.strict();

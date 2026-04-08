@@ -53,7 +53,12 @@ export function useAddToCart() {
       plan?: string;
       quantity?: number;
     }) => {
-      const response = await api.post(`/api/v1/carts/my/items`, data);
+      const response = await api.post(`/api/v1/carts/my/items`, {
+        app: data.appId,
+        itemType: data.itemType,
+        plan: data.plan,
+        quantity: data.quantity,
+      });
       return response.data;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["cart"] }),

@@ -100,7 +100,9 @@ export class AppsController {
 	 */
 	async getById(c: Context) {
 		const id = c.req.param("id");
-		const app = await this.service.findById(id);
+		const role = this.getAuthRole(c);
+		const includeDeleted = this.isAdminRole(role);
+		const app = await this.service.findById(id, { includeDeleted });
 		return apiSuccess(c, this.withAbsoluteIconUrl(c, app));
 	}
 
@@ -166,6 +168,16 @@ export class AppsController {
 		const id = c.req.param("id");
 		await this.service.delete(id);
 		return apiNoContent(c);
+	}
+
+	/**
+	 * POST /apps/:id/restore - Restore a deleted app (admin)
+	 */
+	async restore(c: Context) {
+		this.assertAdmin(c);
+		const id = c.req.param("id");
+		const app = await this.service.restore(id);
+		return apiSuccess(c, this.withAbsoluteIconUrl(c, app));
 	}
 
 	/**

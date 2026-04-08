@@ -47,3 +47,14 @@ export const UserQuerySchema = z.object({
 });
 
 export type UserQueryRequest = z.infer<typeof UserQuerySchema>;
+
+export const AddBalanceSchema = z
+	.object({
+		amount: z.coerce
+			.number()
+			.int("Số dư nạp phải là số nguyên")
+			.positive("Số dư nạp phải lớn hơn 0"),
+	})
+	.strict();
+
+export type AddBalanceRequest = z.infer<typeof AddBalanceSchema>;

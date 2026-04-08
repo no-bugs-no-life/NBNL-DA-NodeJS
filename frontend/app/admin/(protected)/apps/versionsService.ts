@@ -46,9 +46,31 @@ export interface CreateAppVersionInput {
   isLatest?: boolean;
 }
 
+function normalizeVersionsPayload(payload: unknown): AppVersion[] {
+  if (Array.isArray(payload)) return payload as AppVersion[];
+  if (!payload || typeof payload !== "object") return [];
+
+  const p = payload as Record<string, unknown>;
+  const candidates = [
+    p.data,
+    p.docs,
+    p.items,
+    p.results,
+    (p.data as any)?.docs,
+    (p.data as any)?.items,
+    (p.data as any)?.results,
+  ];
+
+  for (const c of candidates) {
+    if (Array.isArray(c)) return c as AppVersion[];
+  }
+
+  return [];
+}
+
 export async function fetchVersionsByApp(appId: string): Promise<AppVersion[]> {
   const res = await api.get(`/api/v1/versions/app/${appId}`);
-  return (res.data?.data || res.data || []) as AppVersion[];
+  return normalizeVersionsPayload(res.data);
 }
 
 export async function createVersion(input: CreateAppVersionInput) {

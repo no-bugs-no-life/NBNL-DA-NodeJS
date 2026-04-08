@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 // Enums as const
-const APP_STATUSES = ["pending", "published", "rejected", "archived"] as const;
+const APP_STATUSES = ["pending", "published", "rejected", "archived", "deleted"] as const;
 const APP_QUERY_STATUSES = [...APP_STATUSES, "approved"] as const;
 
 // Schemas

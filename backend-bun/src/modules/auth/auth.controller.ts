@@ -4,6 +4,7 @@ import { env } from "@/config/env";
 import { BaseController } from "@/shared/base";
 import type {
 	ChangePasswordRequest,
+	GoogleVerifyRequest,
 	LoginRequest,
 	VerifyTwoFactorRequest,
 } from "./auth.schema";
@@ -12,14 +13,11 @@ import { AuthService } from "./auth.service";
 export class AuthController extends BaseController {
 	private readonly authService = new AuthService();
 
-	async login(c: Context) {
-		// @ts-expect-error
-		const data = c.req.valid("json") as LoginRequest;
-
-		const result = await this.authService.login(data);
-
-		// Lưu accessToken vào HTTP-only cookie
-		setCookie(c, "access_token", result.accessToken, {
+	private setAuthCookies(
+		c: Context,
+		payload: { accessToken: string; refreshToken: string },
+	) {
+		setCookie(c, "access_token", payload.accessToken, {
 			httpOnly: true,
 			secure: process.env.NODE_ENV === "production",
 			sameSite: "Strict",
@@ -27,14 +25,22 @@ export class AuthController extends BaseController {
 			path: "/",
 		});
 
-		// Lưu refreshToken vào HTTP-only cookie
-		setCookie(c, "refresh_token", result.refreshToken, {
+		setCookie(c, "refresh_token", payload.refreshToken, {
 			httpOnly: true,
 			secure: process.env.NODE_ENV === "production",
 			sameSite: "Strict",
 			maxAge: env.JWT_REFRESH_EXPIRES_IN,
 			path: "/",
 		});
+	}
+
+	async login(c: Context) {
+		// @ts-expect-error
+		const data = c.req.valid("json") as LoginRequest;
+
+		const result = await this.authService.login(data);
+
+		this.setAuthCookies(c, result);
 
 		return c.json(
 			this.ok(
@@ -58,21 +64,7 @@ export class AuthController extends BaseController {
 		try {
 			const result = await this.authService.refresh(refreshToken);
 
-			setCookie(c, "access_token", result.accessToken, {
-				httpOnly: true,
-				secure: process.env.NODE_ENV === "production",
-				sameSite: "Strict",
-				maxAge: env.JWT_ACCESS_EXPIRES_IN,
-				path: "/",
-			});
-
-			setCookie(c, "refresh_token", result.refreshToken, {
-				httpOnly: true,
-				secure: process.env.NODE_ENV === "production",
-				sameSite: "Strict",
-				maxAge: env.JWT_REFRESH_EXPIRES_IN,
-				path: "/",
-			});
+			this.setAuthCookies(c, result);
 
 			return c.json(this.ok(result.user, "Làm mới token thành công"));
 		} catch (error: unknown) {
@@ -137,5 +129,72 @@ export class AuthController extends BaseController {
 
 		const result = await this.authService.verifyTwoFactor(userId, data);
 		return c.json(this.ok(result, "Xác minh 2FA thành công"));
+	}
+
+	googleStart(c: Context) {
+		if (!env.GOOGLE_CLIENT_ID) {
+			return c.json(this.fail("Missing GOOGLE_CLIENT_ID"), 500);
+		}
+
+		const redirect = c.req.query("redirect") || env.FRONTEND_URL;
+		const state = Buffer.from(JSON.stringify({ redirect })).toString("base64url");
+
+		const url = new URL("https://accounts.google.com/o/oauth2/v2/auth");
+		url.searchParams.set("client_id", env.GOOGLE_CLIENT_ID);
+		url.searchParams.set("redirect_uri", env.GOOGLE_REDIRECT_URI);
+		url.searchParams.set("response_type", "code");
+		url.searchParams.set("scope", "openid email profile");
+		url.searchParams.set("state", state);
+		url.searchParams.set("prompt", "select_account");
+
+		return c.redirect(url.toString());
+	}
+
+	async googleCallback(c: Context) {
+		const idToken = c.req.query("id_token");
+		const state = c.req.query("state") || "";
+
+		let redirect = env.FRONTEND_URL;
+		try {
+			if (state) {
+				const decoded = JSON.parse(Buffer.from(state, "base64url").toString());
+				if (decoded?.redirect) redirect = String(decoded.redirect);
+			}
+		} catch {
+			// ignore
+		}
+
+		if (!idToken) {
+			return c.redirect(
+				`${redirect}/login?google=error&reason=missing_id_token`,
+			);
+		}
+
+		try {
+			const result = await this.authService.loginWithGoogleCredential({
+				credential: idToken,
+			});
+			this.setAuthCookies(c, result);
+
+			return c.redirect(`${redirect}/login?google=success`);
+		} catch (err) {
+			const reason = encodeURIComponent(
+				err instanceof Error ? err.message : "google_login_failed",
+			);
+			return c.redirect(`${redirect}/login?google=error&reason=${reason}`);
+		}
+	}
+
+	async googleVerify(c: Context) {
+		// @ts-expect-error
+		const data = c.req.valid("json") as GoogleVerifyRequest;
+		const result = await this.authService.loginWithGoogleCredential(data);
+		this.setAuthCookies(c, result);
+		return c.json(
+			this.ok(
+				{ user: result.user, token: result.accessToken },
+				"Đăng nhập Google thành công",
+			),
+		);
 	}
 }

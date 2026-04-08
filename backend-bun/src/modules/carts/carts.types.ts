@@ -1,4 +1,4 @@
-import type { ObjectId } from "mongoose";
+import type { ObjectId } from "mongodb";
 
 export enum CartItemType {
 	ONE_TIME = "one_time",
@@ -53,7 +53,14 @@ export interface ICart {
 // API Response Types - matching frontend
 export interface CartItemResponse {
 	_id: string;
-	app: {
+	appId: {
+		_id: string;
+		name: string;
+		iconUrl: string;
+		price: number;
+		subscriptionPrice?: number;
+	};
+	app?: {
 		_id: string;
 		name: string;
 		iconUrl: string;

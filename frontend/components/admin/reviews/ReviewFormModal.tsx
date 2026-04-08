@@ -1,5 +1,5 @@
 "use client";
-import { useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Select } from "antd";
 import "antd/dist/reset.css";
 import {
@@ -107,6 +107,21 @@ export function ReviewFormModal({
     { value: string; label: string }[]
   >([]);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    // Seed options so Select isn't empty before searching
+    if (users.length === 0) return;
+
+    const seed = users.slice(0, 50).map((u) => ({
+      value: u._id,
+      label: `${u.email}${u.fullName ? ` (${u.fullName})` : ""}`,
+    }));
+
+    setUserOptions((prev) => {
+      if (prev.length > 0) return prev;
+      return seed;
+    });
+  }, [users]);
   const handleUserSearch = (val: string) => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
     timeoutRef.current = setTimeout(() => {
@@ -127,6 +142,21 @@ export function ReviewFormModal({
   };
   const selectedApp = apps.find((a) => a._id === formData.appId);
   const selectedUser = users.find((u) => u._id === formData.userId);
+
+  useEffect(() => {
+    // Ensure current selected user is always renderable in Select (edit or prefilled)
+    if (!formData.userId) return;
+    const has = userOptions.some((o) => o.value === formData.userId);
+    if (has) return;
+
+    const u = users.find((x) => x._id === formData.userId);
+    const label = u
+      ? `${u.email}${u.fullName ? ` (${u.fullName})` : ""}`
+      : `Unknown user (${formData.userId})`;
+
+    setUserOptions((prev) => [{ value: formData.userId, label }, ...prev]);
+  }, [formData.userId, userOptions, users]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSubmit(formData);
@@ -232,7 +262,9 @@ export function ReviewFormModal({
                       name={
                         selectedUser?.fullName || selectedUser?.username || ""
                       }
-                      avatarUrl={selectedUser?.avatarUrl}
+                      avatarUrl={
+                        selectedUser?.avatarUrl || (selectedUser as any)?.avatar
+                      }
                     />
                   </div>
                   <Select
@@ -245,7 +277,11 @@ export function ReviewFormModal({
                     defaultActiveFirstOption={false}
                     showArrow={false}
                     filterOption={false}
-                    notFoundContent={null}
+                    notFoundContent={
+                      <span className="text-xs text-slate-400 px-2">
+                        Không tìm thấy người dùng
+                      </span>
+                    }
                     options={userOptions}
                     onSearch={handleUserSearch}
                     onChange={(val) =>

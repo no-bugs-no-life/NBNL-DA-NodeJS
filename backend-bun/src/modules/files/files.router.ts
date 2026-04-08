@@ -23,3 +23,6 @@ filesRouter.delete("/:id", (c) => controller.delete(c));
 // Upload Routes (placeholder)
 filesRouter.post("/upload-image", (c) => controller.uploadImage(c));
 filesRouter.post("/upload-app-file", (c) => controller.uploadAppFile(c));
+filesRouter.post("/uploads/init", (c) => controller.uploadInit(c));
+filesRouter.post("/uploads/chunk", (c) => controller.uploadChunk(c));
+filesRouter.post("/uploads/complete", (c) => controller.completeUpload(c));

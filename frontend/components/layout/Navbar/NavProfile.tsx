@@ -66,7 +66,7 @@ export default function NavProfile() {
             className="h-9 w-9 rounded-full overflow-hidden border-2 border-slate-200 hover:border-blue-500 transition-all relative focus:outline-none shrink-0"
           >
             <Image
-              alt={user.fullName || user.username}
+              alt={user.fullName || user.username || "User avatar"}
               src={user.avatarUrl || "https://i.sstatic.net/l60Hf.png"}
               fill
               className="object-cover"
@@ -79,7 +79,7 @@ export default function NavProfile() {
                 <div className="flex items-center gap-3">
                   <div className="h-10 w-10 rounded-full overflow-hidden border border-slate-200 relative">
                     <Image
-                      alt={user.fullName || user.username}
+                      alt={user.fullName || user.username || "User avatar"}
                       src={user.avatarUrl || "https://i.sstatic.net/l60Hf.png"}
                       fill
                       className="object-cover"

@@ -41,13 +41,23 @@ export class FilesService {
 		return toPublicFile(file);
 	}
 
-	async createFile(data: CreateFileRequest): Promise<FilePublic> {
+	async createFile(
+		data: CreateFileRequest & {
+			size?: number;
+			mimeType?: string;
+			fileKey?: string;
+			uploader?: string;
+		},
+	): Promise<FilePublic> {
 		const fileData = {
 			ownerType: data.ownerType,
 			ownerId: data.ownerId ?? "",
 			fileType: data.fileType,
 			url: data.url,
-			size: 0,
+			size: data.size ?? 0,
+			mimeType: data.mimeType,
+			fileKey: data.fileKey,
+			uploader: data.uploader,
 		};
 		const file = await this.repository.create(fileData);
 		return toPublicFile(file);

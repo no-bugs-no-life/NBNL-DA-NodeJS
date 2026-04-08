@@ -7,11 +7,13 @@ export interface App {
 	iconUrl: string;
 	price: number;
 	status: AppStatus;
+	deletedFromStatus?: AppStatus;
 	developer: string;
 	category: string;
 	tags: string[];
 	isDisabled: boolean;
 	isDeleted: boolean;
+	deletedAt?: Date | null;
 	flags?: string[];
 	priority?: number;
 	createdAt: Date;
@@ -19,7 +21,7 @@ export interface App {
 }
 
 // Enum types
-export type AppStatus = "pending" | "published" | "rejected" | "archived";
+export type AppStatus = "pending" | "published" | "rejected" | "archived" | "deleted";
 
 // DTOs
 export interface CreateAppDTO {
@@ -92,6 +94,7 @@ export interface AppWithRelations {
 	iconUrl?: string;
 	price: number;
 	status: AppStatus;
+	deletedFromStatus?: AppStatus;
 	developer: DeveloperInfo;
 	category: CategoryInfo;
 	tags?: TagInfo[];
@@ -99,6 +102,7 @@ export interface AppWithRelations {
 	ratingCount?: number;
 	isDisabled?: boolean;
 	isDeleted?: boolean;
+	deletedAt?: string;
 	flags?: string[];
 	priority?: number;
 	createdAt: string;

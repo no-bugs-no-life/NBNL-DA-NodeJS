@@ -1,5 +1,6 @@
 // Public API - Barrel export
 export { filesRouter } from "./files.router";
+export { startFilesCleanupCron } from "./files.cleanup.cron";
 export type {
 	CreateFileRequest,
 	FileParams,

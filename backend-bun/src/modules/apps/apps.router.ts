@@ -63,7 +63,7 @@ appsRouter.get("/", optionalAuth, validateQuery(AppQuerySchema), (c) =>
 );
 
 // GET /apps/:id - Get app by ID
-appsRouter.get("/:id", (c) => controller.getById(c));
+appsRouter.get("/:id", optionalAuth, (c) => controller.getById(c));
 
 // GET /apps/slug/:slug - Get app by slug
 appsRouter.get("/slug/:slug", (c) => controller.getBySlug(c));
@@ -87,6 +87,9 @@ appsRouter.put("/:id", requireAuth, validateBody(UpdateAppSchema), (c) =>
 appsRouter.delete("/:id", requireAuth, (c) => controller.delete(c));
 
 // ============ ADMIN ROUTES ============
+
+// POST /apps/:id/restore - Restore deleted app
+appsRouter.post("/:id/restore", requireAuth, (c) => controller.restore(c));
 
 // POST /apps/approve/:id - Approve and publish app
 appsRouter.post("/approve/:id", requireAuth, (c) => controller.approve(c));

@@ -21,27 +21,27 @@ export class WishlistsController {
 
 	// User endpoints
 	async getMyWishlist(c: Context) {
-		const user = c.req.var("user") as string;
+		const user = c.get("user") as string;
 		const wishlist = await this.service.findByUserId(user);
 		return apiSuccess(c, wishlist);
 	}
 
 	async addApp(c: Context) {
 		const body = c.req.valid("json") as AddToWishlistRequest;
-		const user = c.req.var("user") as string;
+		const user = c.get("user") as string;
 		const wishlist = await this.service.addApp(user, body.app);
 		return apiSuccess(c, wishlist);
 	}
 
 	async removeApp(c: Context) {
 		const app = c.req.param("app");
-		const user = c.req.var("user") as string;
+		const user = c.get("user") as string;
 		const wishlist = await this.service.removeApp(user, app);
 		return apiSuccess(c, wishlist);
 	}
 
 	async clear(c: Context) {
-		const user = c.req.var("user") as string;
+		const user = c.get("user") as string;
 		const wishlist = await this.service.clearApps(user);
 		return apiSuccess(c, wishlist);
 	}

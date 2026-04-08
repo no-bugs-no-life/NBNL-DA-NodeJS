@@ -18,47 +18,51 @@ export class SubPackagesController {
 		this.service = service || new SubPackagesService();
 	}
 
-	list(c: Context) {
+	async list(c: Context) {
 		const query = c.req.valid("query") as SubPackageQueryRequest;
-		return apiSuccess(c, this.service.findAll(query));
+		const data = await this.service.findAll(query);
+		return apiSuccess(c, data);
 	}
 
-	getById(c: Context) {
+	async getById(c: Context) {
 		const id = c.req.param("id");
-		return apiSuccess(c, this.service.findById(id));
+		const data = await this.service.findById(id);
+		return apiSuccess(c, data);
 	}
 
-	getByApp(c: Context) {
+	async getByApp(c: Context) {
 		const app = c.req.param("app");
-		return apiSuccess(
-			c,
-			this.service.findByAppId(app === "global" ? null : app),
-		);
+		const data = await this.service.findByAppId(app === "global" ? null : app);
+		return apiSuccess(c, data);
 	}
 
-	getGlobal(c: Context) {
-		return apiSuccess(c, this.service.findByAppId(null));
+	async getGlobal(c: Context) {
+		const data = await this.service.findByAppId(null);
+		return apiSuccess(c, data);
 	}
 
-	create(c: Context) {
+	async create(c: Context) {
 		const body = c.req.valid("json") as CreateSubPackageRequest;
-		return apiCreated(c, this.service.create(body));
+		const data = await this.service.create(body);
+		return apiCreated(c, data);
 	}
 
-	update(c: Context) {
+	async update(c: Context) {
 		const id = c.req.param("id");
 		const body = c.req.valid("json") as UpdateSubPackageRequest;
-		return apiSuccess(c, this.service.update(id, body));
+		const data = await this.service.update(id, body);
+		return apiSuccess(c, data);
 	}
 
-	delete(c: Context) {
+	async delete(c: Context) {
 		const id = c.req.param("id");
-		this.service.delete(id);
+		await this.service.delete(id);
 		return apiNoContent(c);
 	}
 
-	toggleActive(c: Context) {
+	async toggleActive(c: Context) {
 		const id = c.req.param("id");
-		return apiSuccess(c, this.service.toggleActive(id));
+		const data = await this.service.toggleActive(id);
+		return apiSuccess(c, data);
 	}
 }

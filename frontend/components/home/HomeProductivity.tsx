@@ -49,9 +49,10 @@ export default function HomeProductivity() {
             </div>
             <div className="flex-1 min-w-0">
               <h4 className="font-bold truncate">{app.name}</h4>
-              <p className="text-xs text-on-surface-variant truncate">
-                {app.description}
-              </p>
+              <div
+                className="text-xs text-on-surface-variant truncate [&_p]:inline [&_p]:m-0 [&_br]:hidden"
+                dangerouslySetInnerHTML={{ __html: app.description || "" }}
+              />
               <div className="mt-2 flex items-center gap-3">
                 <span
                   className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${app.price === 0 ? "bg-tertiary-container/10 text-tertiary" : "bg-surface-container-highest text-on-surface"}`}

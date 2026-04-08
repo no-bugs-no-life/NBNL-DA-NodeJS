@@ -1,4 +1,6 @@
 import { AppError } from "@/shared/errors";
+import { CacheHelper } from "@/infra/cache/redis";
+import { OrdersRepository } from "@/modules/orders/orders.repository";
 import { VersionsRepository } from "./versions.repository";
 import type {
 	CreateVersionDTO,
@@ -30,6 +32,7 @@ export interface DownloadPermission {
 
 export class VersionsService {
 	private repo: VersionsRepository;
+	private readonly ordersRepo = new OrdersRepository();
 
 	constructor(repo?: VersionsRepository) {
 		this.repo = repo || new VersionsRepository();
@@ -100,6 +103,44 @@ export class VersionsService {
 
 	async incrementDownloadCount(id: string): Promise<Version | null> {
 		return this.repo.incrementDownloadCount(id);
+	}
+
+	private buildDownloadCacheKey(downloadId: string): string {
+		return `downloads:${downloadId}`;
+	}
+
+	private createDownloadId(): string {
+		return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+	}
+
+	private async createDownloadLink(userId: string, fileKey: string): Promise<string> {
+		const downloadId = this.createDownloadId();
+		await CacheHelper.set(
+			this.buildDownloadCacheKey(downloadId),
+			{
+				downloadId,
+				userId,
+				fileKey,
+			},
+			300,
+		);
+		return `/downloads/${downloadId}`;
+	}
+
+	async getDownloadLink(downloadId: string): Promise<{ userId: string; fileKey: string } | null> {
+		return CacheHelper.get<{ userId: string; fileKey: string }>(
+			this.buildDownloadCacheKey(downloadId),
+		);
+	}
+
+	async hasPurchasedVersionApp(userId: string, versionId: string): Promise<boolean> {
+		const version = await this.findById(versionId);
+		const orders = await this.ordersRepo.findByUserId(userId);
+		return orders.some(
+			(order) =>
+				order.status === "completed" &&
+				order.items.some((item) => item.app.toString() === version.app),
+		);
 	}
 
 	/**
@@ -228,63 +269,38 @@ export class VersionsService {
 			} as Record<string, unknown>);
 		}
 
-		const _version = await this.findById(versionId);
-
-		// Generate download token (10 phút)
-		const token = this.generateDownloadToken(
-			versionId,
-			platform,
-			permission.file?.fileKey,
+		const downloadUrl = await this.createDownloadLink(
+			user || "",
+			permission.file?.fileKey || "",
 		);
-		const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+		const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
 
 		return {
 			fileName: permission.file?.fileName,
 			fileSize: permission.file?.fileSize,
 			mimeType: permission.file?.mimeType,
 			checksum: permission.file?.checksum,
-			downloadUrl: `/api/versions/download/${versionId}?token=${token}&platform=${platform}`,
+			downloadUrl,
 			expiresAt,
 			reason: permission.reason,
 		};
 	}
 
-	/**
-	 * Generate short-lived download token
-	 */
-	private generateDownloadToken(
-		versionId: string,
+	async getLatestDownloadInfoByApp(
+		appId: string,
 		platform: Platform,
-		fileKey: string,
-	): string {
-		const payload = {
-			versionId,
+		userId: string,
+		userRole?: string,
+	) {
+		const latest = await this.repo.findLatestByAppId(appId);
+		if (!latest) throw AppError.notFound("Version not found");
+		const hasPurchased = await this.hasPurchasedVersionApp(userId, latest._id.toString());
+		return this.getDownloadInfo(
+			latest._id.toString(),
 			platform,
-			fileKey,
-			exp: Math.floor(Date.now() / 1000) + 600, // 10 minutes
-		};
-		// Simple base64 encoding for demo - in production use JWT
-		return Buffer.from(JSON.stringify(payload)).toString("base64url");
-	}
-
-	/**
-	 * Verify download token
-	 */
-	verifyDownloadToken(
-		token: string,
-	): { versionId: string; platform: Platform; fileKey: string } | null {
-		try {
-			const payload = JSON.parse(Buffer.from(token, "base64url").toString());
-			if (payload.exp < Math.floor(Date.now() / 1000)) {
-				return null; // Token expired
-			}
-			return {
-				versionId: payload.versionId,
-				platform: payload.platform,
-				fileKey: payload.fileKey,
-			};
-		} catch {
-			return null;
-		}
+			userId,
+			userRole,
+			hasPurchased,
+		);
 	}
 }
