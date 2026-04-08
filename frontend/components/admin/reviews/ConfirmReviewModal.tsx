@@ -59,18 +59,14 @@ export function ConfirmReviewModal({
   };
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200">
-      {" "}
       <div className="bg-white rounded-2xl w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-200">
-        {" "}
-        {/* Header */}{" "}
+        {/* Header */}
         <div className="p-6 border-b border-slate-100 flex items-center justify-between">
-          {" "}
-          <h2 className="text-xl font-bold text-slate-800">{title}</h2>{" "}
+          <h2 className="text-xl font-bold text-slate-800">{title}</h2>
           <button
             onClick={onClose}
             className="p-2 hover:bg-slate-100 rounded-lg text-slate-500 transition-colors"
           >
-            {" "}
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="w-5 h-5"
@@ -79,22 +75,19 @@ export function ConfirmReviewModal({
               strokeWidth={2}
               stroke="currentColor"
             >
-              {" "}
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 d="M6 18 18 6M6 6l12 12"
-              />{" "}
-            </svg>{" "}
-          </button>{" "}
-        </div>{" "}
-        {/* Body */}{" "}
+              />
+            </svg>
+          </button>
+        </div>
+        {/* Body */}
         <div className="p-6 flex flex-col items-center text-center gap-4">
-          {" "}
           <div
             className={`w-14 h-14 rounded-full flex items-center justify-center ${iconBg}`}
           >
-            {" "}
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="w-7 h-7 text-current"
@@ -103,32 +96,28 @@ export function ConfirmReviewModal({
               strokeWidth={2}
               stroke="currentColor"
             >
-              {" "}
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 d={iconPath}
-              />{" "}
-            </svg>{" "}
-          </div>{" "}
-          <p className="text-sm text-slate-500">{messages[action]}</p>{" "}
-        </div>{" "}
-        {/* Footer */}{" "}
+              />
+            </svg>
+          </div>
+          <p className="text-sm text-slate-500">{messages[action]}</p>
+        </div>
+        {/* Footer */}
         <div className="p-4 bg-slate-50 border-t border-slate-100 flex gap-3">
-          {" "}
           <button
             onClick={onClose}
             className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-slate-100 transition-colors"
           >
-            {" "}
-            Huy{" "}
-          </button>{" "}
+            Huy
+          </button>
           <button
             onClick={onConfirm}
             disabled={loading}
             className={`flex-1 px-4 py-2.5 rounded-xl text-white font-semibold transition-colors flex items-center justify-center gap-2 disabled:opacity-50 ${btnClass}`}
           >
-            {" "}
             {loading && (
               <svg
                 className="w-4 h-4 animate-spin"
@@ -136,7 +125,6 @@ export function ConfirmReviewModal({
                 fill="none"
                 viewBox="0 0 24 24"
               >
-                {" "}
                 <circle
                   className="opacity-25"
                   cx="12"
@@ -144,18 +132,18 @@ export function ConfirmReviewModal({
                   r="10"
                   stroke="currentColor"
                   strokeWidth="4"
-                />{" "}
+                />
                 <path
                   className="opacity-75"
                   fill="currentColor"
                   d="M4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4z"
-                />{" "}
+                />
               </svg>
-            )}{" "}
-            {btnText}{" "}
-          </button>{" "}
-        </div>{" "}
-      </div>{" "}
+            )}
+            {btnText}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

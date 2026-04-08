@@ -19,7 +19,6 @@ const STATUS_LABEL: Record<string, string> = {
 function StarRating({ rating }: { rating: number }) {
   return (
     <div className="flex items-center gap-0.5">
-      {" "}
       {Array.from({ length: 5 }).map((_, i) => (
         <span
           key={i}
@@ -30,7 +29,7 @@ function StarRating({ rating }: { rating: number }) {
         >
           star
         </span>
-      ))}{" "}
+      ))}
     </div>
   );
 }
@@ -65,8 +64,7 @@ function StatusBadge({ status }: { status: string }) {
     <span
       className={`text-xs font-semibold px-2.5 py-1 rounded-md ${styles[status] ?? "text-slate-500 bg-slate-50"}`}
     >
-      {" "}
-      {STATUS_LABEL[status] ?? status}{" "}
+      {STATUS_LABEL[status] ?? status}
     </span>
   );
 }
@@ -118,9 +116,8 @@ function ActionButton({
       onClick={() => onAction(review, action)}
       className={`flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${cfg.color}`}
     >
-      {" "}
-      <span className="material-symbols-outlined text-sm">{cfg.icon}</span>{" "}
-      {showLabel && cfg.label}{" "}
+      <span className="material-symbols-outlined text-sm">{cfg.icon}</span>
+      {showLabel && cfg.label}
     </button>
   );
 }
@@ -213,19 +210,16 @@ function LoadingCards() {
           key={i}
           className="animate-pulse bg-white p-4 rounded-xl border border-slate-100"
         >
-          {" "}
           <div className="flex gap-4 mb-4">
-            {" "}
-            <div className="w-9 h-9 bg-slate-100 rounded-full" />{" "}
+            <div className="w-9 h-9 bg-slate-100 rounded-full" />
             <div className="flex-1">
-              {" "}
-              <div className="h-4 bg-slate-100 rounded w-1/2 mb-2" />{" "}
-              <div className="h-3 bg-slate-100 rounded w-1/4" />{" "}
-            </div>{" "}
-          </div>{" "}
-          <div className="h-8 bg-slate-100 rounded w-full" />{" "}
+              <div className="h-4 bg-slate-100 rounded w-1/2 mb-2" />
+              <div className="h-3 bg-slate-100 rounded w-1/4" />
+            </div>
+          </div>
+          <div className="h-8 bg-slate-100 rounded w-full" />
         </div>
-      ))}{" "}
+      ))}
     </>
   );
 }
@@ -251,42 +245,38 @@ function MobileCards({
           key={review._id}
           className="bg-white p-4 rounded-xl border border-slate-100 flex flex-col gap-3"
         >
-          {" "}
           <div className="flex items-start gap-3">
-            {" "}
             <Avatar
               name={review.userId?.fullName || "Người dùng vô danh"}
               avatarUrl={review.userId?.avatarUrl}
-            />{" "}
+            />
             <div className="flex-1 overflow-hidden">
-              {" "}
               <h3 className="font-bold text-slate-800 text-sm">
                 {review.userId?.fullName || "Người dùng vô danh"}
-              </h3>{" "}
+              </h3>
               <p className="text-xs text-slate-500">
                 {review.appId?.name || "Ứng dụng đã xoá"}
-              </p>{" "}
+              </p>
               <div className="mt-1.5">
                 <StarRating rating={review.rating} />
-              </div>{" "}
-            </div>{" "}
-          </div>{" "}
+              </div>
+            </div>
+          </div>
           {review.comment && (
             <p className="text-xs text-slate-600 bg-slate-50 rounded-lg px-3 py-2 line-clamp-2">
               {review.comment}
             </p>
-          )}{" "}
+          )}
           <div className="flex items-center justify-between pt-2 border-t border-slate-50">
-            {" "}
-            <StatusBadge status={review.status} />{" "}
+            <StatusBadge status={review.status} />
             <MobileActions
               review={review}
               isPendingFilter={isPendingFilter}
               onAction={onAction}
-            />{" "}
-          </div>{" "}
+            />
+          </div>
         </div>
-      ))}{" "}
+      ))}
     </>
   );
 }
@@ -303,7 +293,6 @@ function MobileActions({
   if (!actions.length) return null;
   return (
     <div className="flex items-center gap-1.5">
-      {" "}
       {actions.map((a) => (
         <ActionButton
           key={a}
@@ -312,7 +301,7 @@ function MobileActions({
           onAction={onAction}
           showLabel={false}
         />
-      ))}{" "}
+      ))}
     </div>
   );
 }

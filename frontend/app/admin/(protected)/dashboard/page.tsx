@@ -1,7 +1,90 @@
 "use client";
 import useAuthStore from "@/store/useAuthStore";
+import api from "@/lib/axios";
 import { notFound } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
+
+interface DashboardStats {
+  totalUsers: number;
+  newUsersThisMonth: number;
+  totalApps: number;
+  publishedApps: number;
+  pendingApps: number;
+  totalRevenue: number;
+  revenueThisMonth: number;
+  totalDownloads: number;
+  downloadsThisMonth: number;
+}
+
+interface ChartDataPoint {
+  date: string;
+  value: number;
+}
+
+interface DashboardBundle {
+  stats: DashboardStats | null;
+  revenueData: ChartDataPoint[];
+  usersData: ChartDataPoint[];
+}
+
+const DASHBOARD_CACHE_TTL_MS = 15000;
+let dashboardCache: { data: DashboardBundle; fetchedAt: number } | null = null;
+let inFlightDashboardRequest: Promise<DashboardBundle> | null = null;
+
+async function fetchDashboardBundle(): Promise<DashboardBundle> {
+  if (inFlightDashboardRequest) return inFlightDashboardRequest;
+
+  inFlightDashboardRequest = (async () => {
+    const [statsRes, revenueRes, usersRes] = await Promise.all([
+      api.get("/api/v1/dashboard/stats"),
+      api.get("/api/v1/dashboard/chart/revenue?days=30"),
+      api.get("/api/v1/dashboard/chart/users?days=30"),
+    ]);
+
+    const statsJson = statsRes.data;
+    const revenueJson = revenueRes.data;
+    const usersJson = usersRes.data;
+
+    const data: DashboardBundle = {
+      stats: statsJson.success ? statsJson.data : null,
+      revenueData: revenueJson.success ? revenueJson.data : [],
+      usersData: usersJson.success ? usersJson.data : [],
+    };
+
+    dashboardCache = { data, fetchedAt: Date.now() };
+    return data;
+  })();
+
+  try {
+    return await inFlightDashboardRequest;
+  } finally {
+    inFlightDashboardRequest = null;
+  }
+}
+
+function formatNumber(num: number): string {
+  if (num >= 1000000) return (num / 1000000).toFixed(1) + "M";
+  if (num >= 1000) return (num / 1000).toFixed(1) + "K";
+  return num.toString();
+}
+
+function formatCurrency(amount: number): string {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(amount);
+}
 
 function StatCard({
   title,
@@ -33,52 +116,181 @@ function StatCard({
   );
 }
 
-function DashboardGrid() {
+function DashboardGrid({ stats }: { stats: DashboardStats | null }) {
+  const isLoading = !stats;
+
+  const cards = [
+    {
+      title: "Người dùng",
+      value: isLoading ? "..." : formatNumber(stats.totalUsers),
+      icon: "group",
+      color: "bg-blue-50 text-blue-600",
+    },
+    {
+      title: "Ứng dụng",
+      value: isLoading ? "..." : formatNumber(stats.totalApps),
+      icon: "apps",
+      color: "bg-emerald-50 text-emerald-600",
+    },
+    {
+      title: "Doanh thu",
+      value: isLoading ? "..." : formatCurrency(stats.totalRevenue),
+      icon: "payments",
+      color: "bg-amber-50 text-amber-600",
+    },
+    {
+      title: "Lượt tải",
+      value: isLoading ? "..." : formatNumber(stats.totalDownloads),
+      icon: "download",
+      color: "bg-purple-50 text-purple-600",
+    },
+  ];
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      <StatCard
-        title="Người dùng"
-        value="1,245"
-        icon="group"
-        color="bg-blue-50 text-blue-600"
-      />
-      <StatCard
-        title="Ứng dụng"
-        value="842"
-        icon="apps"
-        color="bg-emerald-50 text-emerald-600"
-      />
-      <StatCard
-        title="Doanh thu"
-        value="$4,521"
-        icon="payments"
-        color="bg-amber-50 text-amber-600"
-      />
-      <StatCard
-        title="Lượt tải"
-        value="12.5K"
-        icon="download"
-        color="bg-purple-50 text-purple-600"
-      />
+      {cards.map((card, i) => (
+        <StatCard key={i} {...card} />
+      ))}
     </div>
   );
 }
 
-function ChartPlaceholder() {
+function OverviewChart({
+  revenueData,
+  usersData,
+}: {
+  revenueData: ChartDataPoint[];
+  usersData: ChartDataPoint[];
+}) {
+  const [activeTab, setActiveTab] = useState<"revenue" | "users">("revenue");
+
+  const data = activeTab === "revenue" ? revenueData : usersData;
+  const isDataEmpty = !data || data.length === 0;
+
   return (
-    <div className="mt-8 bg-white border border-slate-200 rounded-2xl p-8 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.02)] min-h-[400px] flex flex-col">
-      <h2 className="text-lg font-extrabold text-slate-800 mb-6">
-        Biểu đồ tổng quan
-      </h2>
-      <div className="flex-1 w-full bg-slate-50/50 rounded-xl flex items-center justify-center border border-dashed border-slate-200">
-        <div className="text-center">
-          <span className="material-symbols-outlined text-4xl text-slate-300 mb-2">
-            bar_chart
-          </span>
-          <p className="text-slate-400 font-medium text-sm">
-            Dữ liệu biểu đồ sẽ hiển thị ở đây
-          </p>
+    <div className="mt-8 bg-white border border-slate-200 rounded-2xl p-8 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.02)] min-h-[460px] flex flex-col">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
+        <h2 className="text-lg font-extrabold text-slate-800">
+          Biểu đồ tổng quan
+        </h2>
+        <div className="flex bg-slate-100 p-1 rounded-xl">
+          <button
+            onClick={() => setActiveTab("revenue")}
+            className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+              activeTab === "revenue"
+                ? "bg-white text-amber-600 shadow-sm"
+                : "text-slate-500 hover:text-slate-700"
+            }`}
+          >
+            Doanh thu
+          </button>
+          <button
+            onClick={() => setActiveTab("users")}
+            className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+              activeTab === "users"
+                ? "bg-white text-blue-600 shadow-sm"
+                : "text-slate-500 hover:text-slate-700"
+            }`}
+          >
+            Người dùng mới
+          </button>
         </div>
+      </div>
+
+      <div className="flex-1 w-full h-[320px]">
+        {isDataEmpty ? (
+          <div className="w-full h-full bg-slate-50/50 rounded-xl flex items-center justify-center border border-dashed border-slate-200">
+            <div className="text-center">
+              <span className="material-symbols-outlined text-4xl text-slate-300 mb-2">
+                bar_chart
+              </span>
+              <p className="text-slate-400 font-medium text-sm">
+                Chưa có dữ liệu
+              </p>
+            </div>
+          </div>
+        ) : (
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart
+              data={data}
+              margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+            >
+              <defs>
+                <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
+                  <stop
+                    offset="5%"
+                    stopColor={activeTab === "revenue" ? "#f59e0b" : "#2563eb"}
+                    stopOpacity={0.3}
+                  />
+                  <stop
+                    offset="95%"
+                    stopColor={activeTab === "revenue" ? "#f59e0b" : "#2563eb"}
+                    stopOpacity={0}
+                  />
+                </linearGradient>
+              </defs>
+              <XAxis
+                dataKey="date"
+                axisLine={false}
+                tickLine={false}
+                tick={{ fill: "#94a3b8", fontSize: 12 }}
+                dy={10}
+                tickFormatter={(val) => {
+                  const d = new Date(val);
+                  return `${d.getDate()}/${d.getMonth() + 1}`;
+                }}
+              />
+              <YAxis
+                axisLine={false}
+                tickLine={false}
+                tick={{ fill: "#94a3b8", fontSize: 12 }}
+                tickFormatter={(val) =>
+                  activeTab === "revenue"
+                    ? `$${val >= 1000 ? (val / 1000).toFixed(1) + "k" : val}`
+                    : val
+                }
+                dx={-10}
+              />
+              <CartesianGrid
+                vertical={false}
+                stroke="#e2e8f0"
+                strokeDasharray="4 4"
+              />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: "#fff",
+                  borderRadius: "12px",
+                  border: "1px solid #e2e8f0",
+                  boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.05)",
+                }}
+                itemStyle={{ color: "#1e293b", fontWeight: 600 }}
+                labelFormatter={(label) => {
+                  const d = new Date(label as string);
+                  return `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
+                }}
+                formatter={(value: any) => {
+                  const numValue = Number(value) || 0;
+                  if (activeTab === "revenue")
+                    return [formatCurrency(numValue), "Doanh thu"];
+                  return [numValue, "Người dùng mới"];
+                }}
+              />
+              <Area
+                type="monotone"
+                dataKey="value"
+                stroke={activeTab === "revenue" ? "#f59e0b" : "#2563eb"}
+                strokeWidth={3}
+                fillOpacity={1}
+                fill="url(#colorValue)"
+                activeDot={{
+                  r: 6,
+                  strokeWidth: 0,
+                  fill: activeTab === "revenue" ? "#f59e0b" : "#2563eb",
+                }}
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        )}
       </div>
     </div>
   );
@@ -86,10 +298,50 @@ function ChartPlaceholder() {
 
 export default function DashboardPage() {
   const { isAdmin, isLoading, checkAuth } = useAuthStore();
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [revenueData, setRevenueData] = useState<ChartDataPoint[]>([]);
+  const [usersData, setUsersData] = useState<ChartDataPoint[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     checkAuth();
   }, [checkAuth]);
+
+  useEffect(() => {
+    if (isLoading || !isAdmin()) return;
+
+    const fetchDashboardData = async () => {
+      try {
+        if (
+          dashboardCache &&
+          Date.now() - dashboardCache.fetchedAt < DASHBOARD_CACHE_TTL_MS
+        ) {
+          setStats(dashboardCache.data.stats);
+          setRevenueData(dashboardCache.data.revenueData);
+          setUsersData(dashboardCache.data.usersData);
+          setError(null);
+          return;
+        }
+
+        const data = await fetchDashboardBundle();
+        setStats(data.stats);
+        setRevenueData(data.revenueData);
+        setUsersData(data.usersData);
+        setError(null);
+      } catch (err) {
+        const status = (err as { response?: { status?: number } })?.response
+          ?.status;
+        if (status === 429) {
+          setError("Bạn thao tác quá nhanh. Vui lòng chờ vài giây rồi thử lại.");
+          return;
+        }
+        setError("Failed to fetch dashboard data");
+        console.error(err);
+      }
+    };
+
+    fetchDashboardData();
+  }, [isAdmin, isLoading]);
 
   if (!isLoading && !isAdmin()) {
     notFound();
@@ -107,8 +359,13 @@ export default function DashboardPage() {
           Báo cáo hiệu suất, quản lý người dùng và doanh thu.
         </p>
       </div>
-      <DashboardGrid />
-      <ChartPlaceholder />
+      {error && (
+        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-xl text-red-600">
+          {error}
+        </div>
+      )}
+      <DashboardGrid stats={stats} />
+      <OverviewChart revenueData={revenueData} usersData={usersData} />
     </>
   );
 }

@@ -20,7 +20,7 @@ export const fetchCategories = async (
   const res = await axios.get(
     `${API_URL}/api/v1/categories?page=${page}&limit=${limit}`,
   );
-  return res.data;
+  return res.data?.data || res.data;
 };
 
 export const createCategory = async (

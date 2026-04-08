@@ -1,15 +1,31 @@
 "use client";
 import { useState } from "react";
+import dynamic from "next/dynamic";
 import { AppItem, AppInput } from "@/app/admin/(protected)/apps/appsService";
 import { useCategories } from "@/hooks/useCategories";
 import { useDevelopers } from "@/hooks/useDevelopers";
 import { useTags } from "@/hooks/useTags";
-import { apiClient } from "@/store/useAuthStore";
 import useAuthStore from "@/store/useAuthStore";
 import { API_URL } from "@/configs/api";
+import { uploadFileByChunks } from "@/lib/chunkUpload";
+
+const CKEditor = dynamic(
+  async () => {
+    const mod = await import("@ckeditor/ckeditor5-react");
+    const editorBuild = (await import("ckeditor5-custom-build-v5-full")).default;
+
+    const WrappedEditor = ({ data, onChange }: { data: string; onChange: (_event: unknown, editor: { getData: () => string }) => void; }) => (
+      <mod.CKEditor editor={editorBuild} data={data} onChange={onChange} />
+    );
+
+    return WrappedEditor;
+  },
+  { ssr: false },
+);
 
 const getIconDisplayUrl = (url: string) => {
   if (!url) return "";
+  if (url.includes("via.placeholder.com")) return "";
   if (
     url.startsWith("http") ||
     url.startsWith("blob:") ||
@@ -18,6 +34,14 @@ const getIconDisplayUrl = (url: string) => {
     return url;
   if (/^[a-fA-F0-9]{24}$/.test(url)) return ""; // Broken old ObjectID, require reupload
   return `${API_URL}/${url.replace(/\\/g, "/")}`;
+};
+
+const PRICE_PATTERN = /^(0|[1-9]\d*)(\.\d{0,2})?$/;
+
+const normalizePrice = (value: string) => {
+  if (value === "") return 0;
+  if (!PRICE_PATTERN.test(value)) return null;
+  return Number(value);
 };
 
 interface Props {
@@ -46,7 +70,7 @@ export function AppFormModal({
   );
   const developers = devsData?.docs || [];
 
-  const { data: tagsData, isLoading: isLoadingTags } = useTags(1, 1000);
+  const { data: tagsData, isLoading: isLoadingTags } = useTags(1, 100);
   const tagsList = tagsData?.docs || [];
 
   const { user } = useAuthStore();
@@ -68,10 +92,10 @@ export function AppFormModal({
         slug: app.slug || "",
         description: (app as any).description || "",
         price: app.price || 0,
-        categoryId: app.categoryId?._id || "",
+        category: app.category?._id || "",
         tags: app.tags?.map((t: any) => t._id) || [],
         iconUrl: app.iconUrl || "",
-        developerId: app.developerId?._id || "",
+        developer: app.developer?._id || "",
       };
     }
     return {
@@ -79,10 +103,10 @@ export function AppFormModal({
       slug: "",
       description: "",
       price: 0,
-      categoryId: "",
+      category: "",
       tags: [],
       iconUrl: "",
-      developerId: "",
+      developer: "",
     };
   });
 
@@ -95,23 +119,16 @@ export function AppFormModal({
   };
 
   const uploadFile = async (file: File) => {
-    const formPayload = new FormData();
-    formPayload.append("file", file);
-    formPayload.append("ownerType", "APP");
-    formPayload.append("ownerId", app?._id || user?._id || "ADMIN");
-    formPayload.append("fileType", "icon");
-
-    const res = await apiClient.post(
-      "/api/v1/files/upload-image",
-      formPayload,
-      {
-        headers: { "Content-Type": "multipart/form-data" },
-      },
-    );
-    return res.data.url.replace(/\\/g, "/"); // return URL instead of local filesId
+    const uploaded = await uploadFileByChunks({
+      file,
+      ownerType: "app",
+      ownerId: app?._id || user?._id || "admin",
+      fileType: "icon",
+    });
+    return uploaded.url.replace(/\\/g, "/");
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SyntheticEvent) => {
     e.preventDefault();
 
     let finalIconUrl = formData.iconUrl;
@@ -135,7 +152,7 @@ export function AppFormModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-white rounded-2xl w-full max-w-xl shadow-xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
+      <div className="bg-white rounded-2xl w-full max-w-4xl shadow-xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
         <div className="p-6 border-b border-slate-100 flex items-center justify-between">
           <h2 className="text-xl font-bold text-slate-800">
             {action === "create" ? "Thêm Ứng dụng mới" : "Chỉnh sửa Ứng dụng"}
@@ -150,18 +167,18 @@ export function AppFormModal({
 
         <div className="p-6 overflow-y-auto flex-1">
           <form id="app-form" onSubmit={handleSubmit} className="space-y-5">
-            <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               {isAdmin && action === "create" && (
-                <div>
+                <div className="md:col-span-2">
                   <label className="block text-sm font-semibold text-slate-700 mb-1.5">
-                    Workspace (Developer){" "}
+                    Workspace (Developer)
                     <span className="text-red-500">*</span>
                   </label>
                   <select
                     required
-                    value={formData.developerId || ""}
+                    value={formData.developer || ""}
                     onChange={(e) =>
-                      setFormData({ ...formData, developerId: e.target.value })
+                      setFormData({ ...formData, developer: e.target.value })
                     }
                     disabled={isLoadingDevs}
                     className="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-sm bg-white"
@@ -194,42 +211,39 @@ export function AppFormModal({
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-1.5">
-                    Slug (URL)
-                  </label>
-                  <input
-                    required
-                    type="text"
-                    value={formData.slug}
-                    onChange={(e) =>
-                      setFormData({ ...formData, slug: e.target.value })
-                    }
-                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-sm"
-                    placeholder="vi-du-flappy-bird"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-1.5">
-                    Giá bán ($)
-                  </label>
-                  <input
-                    required
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    value={formData.price}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        price: Number(e.target.value),
-                      })
-                    }
-                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-sm"
-                    placeholder="0 = Miễn phí"
-                  />
-                </div>
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-1.5">
+                  Slug (URL)
+                </label>
+                <input
+                  required
+                  type="text"
+                  value={formData.slug}
+                  onChange={(e) =>
+                    setFormData({ ...formData, slug: e.target.value })
+                  }
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-sm"
+                  placeholder="vi-du-flappy-bird"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-1.5">
+                  Giá bán ($)
+                </label>
+                <input
+                  required
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={formData.price}
+                  onChange={(e) => {
+                    const parsedPrice = normalizePrice(e.target.value);
+                    if (parsedPrice === null) return;
+                    setFormData({ ...formData, price: parsedPrice });
+                  }}
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-sm"
+                  placeholder="0 = Miễn phí"
+                />
               </div>
 
               <div>
@@ -238,9 +252,9 @@ export function AppFormModal({
                 </label>
                 <select
                   required
-                  value={formData.categoryId}
+                  value={formData.category}
                   onChange={(e) =>
-                    setFormData({ ...formData, categoryId: e.target.value })
+                    setFormData({ ...formData, category: e.target.value })
                   }
                   disabled={isLoadingCategories}
                   className="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-sm bg-white"
@@ -256,71 +270,101 @@ export function AppFormModal({
                 </select>
               </div>
 
-              <div>
+              <div className="md:col-span-2">
                 <label className="block text-sm font-semibold text-slate-700 mb-1.5">
                   Tags
                 </label>
                 <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto p-2 border border-slate-200 rounded-xl bg-slate-50">
                   {isLoadingTags ? (
-                    <span className="text-sm text-slate-500 px-2">Đang tải tags...</span>
+                    <span className="text-sm text-slate-500 px-2">
+                      Đang tải tags...
+                    </span>
                   ) : tagsList.length === 0 ? (
-                    <span className="text-sm text-slate-500 px-2">Chưa có tag nào</span>
-                  ) : tagsList.map((tag: any) => (
-                    <label key={tag._id} className="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-50 transition-colors">
-                      <input
-                        type="checkbox"
-                        checked={formData.tags?.includes(tag._id) || false}
-                        onChange={(e) => {
-                          const newTags = e.target.checked
-                            ? [...(formData.tags || []), tag._id]
-                            : (formData.tags || []).filter(id => id !== tag._id);
-                          setFormData({ ...formData, tags: newTags });
-                        }}
-                        className="rounded text-blue-600 focus:ring-blue-500 w-4 h-4 cursor-pointer"
-                      />
-                      <span className="text-sm font-medium text-slate-700 select-none">{tag.name}</span>
-                    </label>
-                  ))}
+                    <span className="text-sm text-slate-500 px-2">
+                      Chưa có tag nào
+                    </span>
+                  ) : (
+                    tagsList.map((tag: any) => (
+                      <label
+                        key={tag._id}
+                        className="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-50 transition-colors"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={formData.tags?.includes(tag._id) || false}
+                          onChange={(e) => {
+                            const newTags = e.target.checked
+                              ? [...(formData.tags || []), tag._id]
+                              : (formData.tags || []).filter(
+                                (id) => id !== tag._id,
+                              );
+                            setFormData({ ...formData, tags: newTags });
+                          }}
+                          className="rounded text-blue-600 focus:ring-blue-500 w-4 h-4 cursor-pointer"
+                        />
+                        <span className="text-sm font-medium text-slate-700 select-none">
+                          {tag.name}
+                        </span>
+                      </label>
+                    ))
+                  )}
                 </div>
               </div>
 
-              <div>
+              <div className="md:col-span-2">
                 <label className="block text-sm font-semibold text-slate-700 mb-1.5">
-                  Mô tả ngăn
+                  Mô tả
                 </label>
-                <textarea
-                  rows={3}
-                  value={formData.description}
-                  onChange={(e) =>
-                    setFormData({ ...formData, description: e.target.value })
-                  }
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-sm resize-none"
-                  placeholder="Điền mô tả ngắn cho ứng dụng..."
-                />
+                <div className="rounded-xl border border-slate-200 overflow-hidden bg-white">
+                  <CKEditor
+                    data={formData.description || ""}
+                    onChange={(_, editor) =>
+                      setFormData({ ...formData, description: editor.getData() })
+                    }
+                  />
+                </div>
               </div>
 
-              <div>
+              <div className="md:col-span-2">
                 <label className="block text-sm font-semibold text-slate-700 mb-2">
                   Ảnh màn hình Icon
                 </label>
-                <div className="flex items-center gap-5">
-                  {iconPreviewUrl ? (
-                    <img
-                      src={iconPreviewUrl}
-                      alt="Icon preview"
-                      className="w-16 h-16 rounded-xl object-cover border-2 border-slate-100 shadow-sm bg-slate-50"
-                    />
-                  ) : (
-                    <div className="w-16 h-16 rounded-xl border-2 border-dashed border-slate-200 bg-slate-50 flex items-center justify-center text-slate-400">
-                      <span className="material-symbols-outlined">image</span>
+                <div className="rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 to-white p-4 md:p-5">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                    <div className="relative shrink-0">
+                      {iconPreviewUrl ? (
+                        <img
+                          src={iconPreviewUrl}
+                          alt="Icon preview"
+                          className="w-20 h-20 rounded-2xl object-cover border border-slate-200 shadow-sm bg-white"
+                        />
+                      ) : (
+                        <div className="w-20 h-20 rounded-2xl border-2 border-dashed border-slate-300 bg-slate-100/70 flex items-center justify-center text-slate-400">
+                          <span className="material-symbols-outlined text-2xl">
+                            image
+                          </span>
+                        </div>
+                      )}
+                      <span className="absolute -bottom-2 -right-2 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-100 text-blue-700 border border-blue-200">
+                        Preview
+                      </span>
                     </div>
-                  )}
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileChange}
-                    className="text-sm text-slate-600 file:mr-4 file:py-2.5 file:px-5 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer transition-colors w-full"
-                  />
+
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-slate-700 mb-1">
+                        Tải lên icon ứng dụng
+                      </p>
+                      <p className="text-xs text-slate-500 mb-3">
+                        Khuyến nghị ảnh vuông, rõ nét (PNG/JPG/WebP).
+                      </p>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileChange}
+                        className="w-full text-sm text-slate-600 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border file:border-blue-200 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer transition-colors"
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

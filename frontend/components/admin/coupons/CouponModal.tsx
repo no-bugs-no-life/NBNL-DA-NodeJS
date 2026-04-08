@@ -84,42 +84,34 @@ export function CouponModal({
   };
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      {" "}
-      <div className="bg-white rounded-2xl p-8 w-full max-w-lg mx-4 animate-in fade-in slide-in-from-bottom-4 duration-200 max-h-[90vh] overflow-y-auto">
-        {" "}
+      <div className="bg-white rounded-2xl p-8 w-full max-w-2xl mx-4 animate-in fade-in slide-in-from-bottom-4 duration-200 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-6">
-          {" "}
           <h2 className="text-xl font-bold text-slate-800">
             {title} Coupon
-          </h2>{" "}
+          </h2>
           <button
             onClick={onClose}
             className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500 hover:text-slate-700 transition-colors"
           >
-            {" "}
             <span className="material-symbols-outlined text-xl">
               close
-            </span>{" "}
-          </button>{" "}
-        </div>{" "}
+            </span>
+          </button>
+        </div>
         {error && (
           <div className="mb-4 px-4 py-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-600 flex items-center gap-2">
-            {" "}
             <span className="material-symbols-outlined text-sm">
               error
-            </span>{" "}
-            {error}{" "}
+            </span>
+            {error}
           </div>
-        )}{" "}
+        )}
         <div className="space-y-4">
-          {" "}
-          {/* Code */}{" "}
+          {/* Code */}
           <div>
-            {" "}
             <label className="block text-sm font-semibold text-slate-700 mb-1.5">
-              {" "}
-              Mã coupon <span className="text-red-500">*</span>{" "}
-            </label>{" "}
+              Mã coupon <span className="text-red-500">*</span>
+            </label>
             <input
               type="text"
               value={code}
@@ -131,16 +123,14 @@ export function CouponModal({
               placeholder="VD: SUMMER2026"
               disabled={isEdit}
               className={`w-full border rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500 ${isEdit ? "bg-slate-50 text-slate-400 cursor-not-allowed" : "border-slate-200"}`}
-            />{" "}
-          </div>{" "}
-          {/* Discount type + value */}{" "}
+            />
+          </div>
+          {/* Discount type + value */}
           <div className="grid grid-cols-2 gap-4">
-            {" "}
             <div>
-              {" "}
               <label className="block text-sm font-semibold text-slate-700 mb-1.5">
                 Loại giảm giá
-              </label>{" "}
+              </label>
               <select
                 value={discountType}
                 onChange={(e) =>
@@ -148,16 +138,14 @@ export function CouponModal({
                 }
                 className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500 bg-white"
               >
-                {" "}
-                <option value="percentage">Phần trăm (%)</option>{" "}
-                <option value="fixed">Cố định (VNĐ)</option>{" "}
-              </select>{" "}
-            </div>{" "}
+                <option value="percentage">Phần trăm (%)</option>
+                <option value="fixed">Cố định (VNĐ)</option>
+              </select>
+            </div>
             <div>
-              {" "}
               <label className="block text-sm font-semibold text-slate-700 mb-1.5">
                 Giá trị {discountType === "percentage" ? "(%)" : "(VNĐ)"}
-              </label>{" "}
+              </label>
               <input
                 type="number"
                 value={discountValue}
@@ -166,47 +154,42 @@ export function CouponModal({
                 min="0"
                 max={discountType === "percentage" ? "100" : undefined}
                 className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500"
-              />{" "}
-            </div>{" "}
-          </div>{" "}
-          {/* Date range */}{" "}
+              />
+            </div>
+          </div>
+          {/* Date range */}
           <div className="grid grid-cols-2 gap-4">
-            {" "}
             <div>
-              {" "}
               <label className="block text-sm font-semibold text-slate-700 mb-1.5">
                 Ngày bắt đầu
-              </label>{" "}
+              </label>
               <input
                 type="datetime-local"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
                 className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500"
-              />{" "}
-            </div>{" "}
+              />
+            </div>
             <div>
-              {" "}
               <label className="block text-sm font-semibold text-slate-700 mb-1.5">
                 Ngày kết thúc
-              </label>{" "}
+              </label>
               <input
                 type="datetime-local"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
                 className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500"
-              />{" "}
-            </div>{" "}
-          </div>{" "}
-          {/* Usage limit */}{" "}
+              />
+            </div>
+          </div>
+          {/* Usage limit */}
           <div>
-            {" "}
             <label className="block text-sm font-semibold text-slate-700 mb-1.5">
-              {" "}
-              Số lượt sử dụng{" "}
+              Số lượt sử dụng
               <span className="text-slate-400 font-normal">
                 (0 = không giới hạn)
-              </span>{" "}
-            </label>{" "}
+              </span>
+            </label>
             <input
               type="number"
               value={usageLimit}
@@ -214,28 +197,25 @@ export function CouponModal({
               placeholder="0"
               min="0"
               className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500"
-            />{" "}
-          </div>{" "}
-        </div>{" "}
+            />
+          </div>
+        </div>
         <div className="flex gap-3 mt-6">
-          {" "}
           <button
             onClick={onClose}
             className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 transition-colors"
           >
-            {" "}
-            Huỷ{" "}
-          </button>{" "}
+            Huỷ
+          </button>
           <button
             onClick={handleSubmit}
             disabled={loading}
             className="flex-1 px-4 py-2.5 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700 disabled:opacity-50 transition-colors"
           >
-            {" "}
-            {loading ? "Đang lưu..." : "Lưu"}{" "}
-          </button>{" "}
-        </div>{" "}
-      </div>{" "}
+            {loading ? "Đang lưu..." : "Lưu"}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

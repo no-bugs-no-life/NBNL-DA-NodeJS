@@ -45,7 +45,7 @@ export default function TagsPage() {
           setPage(page - 1);
         }
       } catch (error: any) {
-        alert(error.response?.data?.message || "Lỗi khi xoá");
+        alert(error.response?.data?.msg || error.response?.data?.error || "Lỗi khi xoá");
       }
     }
   };
@@ -59,7 +59,7 @@ export default function TagsPage() {
       }
       setIsModalOpen(false);
     } catch (error: any) {
-      alert(error.response?.data?.message || "Đã xảy ra lỗi");
+      alert(error.response?.data?.msg || error.response?.data?.error || "Đã xảy ra lỗi");
     }
   };
 
@@ -85,7 +85,7 @@ export default function TagsPage() {
         </div>
         <button
           onClick={handleCreate}
-          className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold shadow-sm shadow-blue-200 transition-all active:scale-95"
+          className="flex items-center gap-2 px-5 py-2.5 bg-blue-100 hover:bg-blue-200 text-blue-800 rounded-xl font-semibold shadow-sm shadow-blue-200 transition-all active:scale-95"
         >
           <span className="material-symbols-outlined text-sm">add</span>
           Thêm Tag mới

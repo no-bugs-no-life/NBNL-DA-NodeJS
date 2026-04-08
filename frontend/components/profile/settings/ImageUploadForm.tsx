@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
-import { User, apiClient } from "@/store/useAuthStore";
+import { User } from "@/store/useAuthStore";
+import { uploadFileByChunks } from "@/lib/chunkUpload";
 
 export function ImageUploadForm({
   user,
@@ -49,16 +50,13 @@ export function ImageUploadForm({
   };
 
   const uploadFile = async (file: File, fileType: string) => {
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("ownerType", "USER");
-    formData.append("ownerId", user._id);
-    formData.append("fileType", fileType);
-
-    const res = await apiClient.post("/api/v1/files/upload-image", formData, {
-      headers: { "Content-Type": "multipart/form-data" },
+    const uploaded = await uploadFileByChunks({
+      file,
+      ownerType: "user",
+      ownerId: user._id,
+      fileType,
     });
-    return res.data._id;
+    return uploaded._id;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {

@@ -1,6 +1,5 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import axios from "axios";
-import { API_URL } from "@/configs/api";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { apiClient } from "@/store/useAuthStore";
 
 export interface WishlistAppItem {
   _id: string;
@@ -14,13 +13,20 @@ export interface WishlistAppItem {
 
 export interface WishlistItem {
   _id: string;
-  userId: {
+  user?: {
     _id: string;
     fullName?: string;
     email?: string;
     avatarUrl?: string;
   };
-  appIds: WishlistAppItem[];
+  userId?: {
+    _id: string;
+    fullName?: string;
+    email?: string;
+    avatarUrl?: string;
+  };
+  apps?: WishlistAppItem[];
+  appIds?: WishlistAppItem[];
   createdAt?: string;
   updatedAt?: string;
 }
@@ -31,11 +37,8 @@ export function useMyWishlist() {
   return useQuery({
     queryKey: ["wishlist", "me"],
     queryFn: async () => {
-      const token = localStorage.getItem("token");
-      const response = await axios.get(`${API_URL}/api/v1/wishlists`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      return response.data as WishlistItem | null;
+      const response = await apiClient.get("/api/v1/wishlists/my");
+      return (response.data?.data ?? response.data ?? null) as WishlistItem | null;
     },
   });
 }
@@ -44,13 +47,10 @@ export function useAddToWishlist() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (appId: string) => {
-      const token = localStorage.getItem("token");
-      const response = await axios.post(
-        `${API_URL}/api/v1/wishlists`,
-        { appId },
-        { headers: { Authorization: `Bearer ${token}` } },
-      );
-      return response.data;
+      const response = await apiClient.post("/api/v1/wishlists/my/apps", {
+        app: appId,
+      });
+      return response.data?.data ?? response.data;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["wishlist"] }),
   });
@@ -60,14 +60,8 @@ export function useRemoveFromWishlist() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (appId: string) => {
-      const token = localStorage.getItem("token");
-      const response = await axios.delete(
-        `${API_URL}/api/v1/wishlists/${appId}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        },
-      );
-      return response.data;
+      const response = await apiClient.delete(`/api/v1/wishlists/my/apps/${appId}`);
+      return response.data?.data ?? response.data;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["wishlist"] }),
   });
@@ -77,11 +71,8 @@ export function useClearWishlist() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async () => {
-      const token = localStorage.getItem("token");
-      const response = await axios.delete(`${API_URL}/api/v1/wishlists`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      return response.data;
+      const response = await apiClient.delete("/api/v1/wishlists/my");
+      return response.data?.data ?? response.data;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["wishlist"] }),
   });
@@ -93,12 +84,10 @@ export function useAdminWishlists(page: number = 1, limit: number = 20) {
   return useQuery({
     queryKey: ["admin", "wishlists", page, limit],
     queryFn: async () => {
-      const token = localStorage.getItem("token");
-      const response = await axios.get(`${API_URL}/api/v1/wishlists/all`, {
+      const response = await apiClient.get("/api/v1/wishlists", {
         params: { page, limit },
-        headers: { Authorization: `Bearer ${token}` },
       });
-      return response.data;
+      return response.data?.data ?? response.data;
     },
   });
 }
@@ -107,11 +96,8 @@ export function useDeleteWishlist() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      const token = localStorage.getItem("token");
-      const response = await axios.delete(`${API_URL}/api/v1/wishlists/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      return response.data;
+      const response = await apiClient.delete(`/api/v1/wishlists/${id}`);
+      return response.data?.data ?? response.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin", "wishlists"] });
@@ -123,15 +109,11 @@ export function useCreateWishlistAdmin() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (data: { userId: string; appIds: string[] }) => {
-      const token = localStorage.getItem("token");
-      const response = await axios.post(
-        `${API_URL}/api/v1/wishlists/admin`,
-        data,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        },
-      );
-      return response.data;
+      const response = await apiClient.post("/api/v1/wishlists", {
+        user: data.userId,
+        apps: data.appIds,
+      });
+      return response.data?.data ?? response.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin", "wishlists"] });
@@ -149,15 +131,11 @@ export function useUpdateWishlistAdmin() {
       id: string;
       data: { userId?: string; appIds?: string[] };
     }) => {
-      const token = localStorage.getItem("token");
-      const response = await axios.put(
-        `${API_URL}/api/v1/wishlists/${id}`,
-        data,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        },
-      );
-      return response.data;
+      const response = await apiClient.put(`/api/v1/wishlists/${id}`, {
+        ...(data.userId ? { user: data.userId } : {}),
+        ...(data.appIds ? { apps: data.appIds } : {}),
+      });
+      return response.data?.data ?? response.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin", "wishlists"] });

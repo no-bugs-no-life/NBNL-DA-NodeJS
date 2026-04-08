@@ -1,23 +1,45 @@
 "use client";
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { Select } from "antd";
+import "antd/dist/reset.css";
 import { useUsers } from "@/hooks/useUsers";
 import { useAdminSubPackages } from "@/app/admin/(protected)/sub-packages/useAdminSubPackages";
 
 interface Props {
   onClose: () => void;
-  onSubmit: (data: {
-    userId: string;
-    packageId: string;
-  }) => void;
+  onSubmit: (data: { userId: string; packageId: string }) => void;
   loading?: boolean;
 }
 
 export function SubscriptionModal({ onClose, onSubmit, loading }: Props) {
   const [userId, setUserId] = useState("");
   const [packageId, setPackageId] = useState("");
+  const [userOptions, setUserOptions] = useState<
+    { value: string; label: string }[]
+  >([]);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const { data: users = [] } = useUsers();
   const { packages } = useAdminSubPackages();
+
+  const handleUserSearch = (val: string) => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    timeoutRef.current = setTimeout(() => {
+      const q = val.trim().toLowerCase();
+      const filtered = users
+        .filter((u) => {
+          const email = (u.email || "").toLowerCase();
+          const name = (u.fullName || u.username || "").toLowerCase();
+          return email.includes(q) || name.includes(q);
+        })
+        .slice(0, 50)
+        .map((u) => ({
+          value: u._id,
+          label: `${u.email}${u.fullName ? ` (${u.fullName})` : ""}`,
+        }));
+      setUserOptions(filtered);
+    }, 300);
+  };
 
   const isValid = userId && packageId;
 
@@ -28,7 +50,7 @@ export function SubscriptionModal({ onClose, onSubmit, loading }: Props) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-white rounded-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
+      <div className="bg-white rounded-2xl w-full max-w-2xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
         <div className="p-6 border-b border-slate-100 flex items-center justify-between">
           <h2 className="text-xl font-bold text-slate-800">Tạo Subscription</h2>
           <button
@@ -39,23 +61,24 @@ export function SubscriptionModal({ onClose, onSubmit, loading }: Props) {
           </button>
         </div>
 
-        <div className="p-6 overflow-y-auto flex-1 space-y-5">
+        <div className="p-6 overflow-y-auto flex-1 grid grid-cols-1 md:grid-cols-2 gap-5">
           <div>
             <label className="block text-sm font-semibold text-slate-700 mb-1.5">
               Người dùng <span className="text-red-500">*</span>
             </label>
-            <select
-              value={userId}
-              onChange={(e) => setUserId(e.target.value)}
-              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-sm bg-white"
-            >
-              <option value="">-- Chọn người dùng --</option>
-              {users.map((u) => (
-                <option key={u._id} value={u._id}>
-                  {u.fullName || u.email}
-                </option>
-              ))}
-            </select>
+            <Select
+              showSearch
+              placeholder="Chọn người dùng"
+              value={userId || undefined}
+              style={{ width: "100%" }}
+              defaultActiveFirstOption={false}
+              showArrow={false}
+              filterOption={false}
+              notFoundContent={null}
+              options={userOptions}
+              onSearch={handleUserSearch}
+              onChange={(val) => setUserId(String(val || ""))}
+            />
           </div>
 
           <div>
@@ -75,8 +98,8 @@ export function SubscriptionModal({ onClose, onSubmit, loading }: Props) {
                     ? "Hàng tháng"
                     : pkg.type === "yearly"
                       ? "Hàng năm"
-                      : "Vĩnh viễn"}{" "}
-                  —{" "}
+                      : "Vĩnh viễn"}
+                  —
                   {new Intl.NumberFormat("vi-VN", {
                     style: "currency",
                     currency: "VND",
@@ -87,13 +110,13 @@ export function SubscriptionModal({ onClose, onSubmit, loading }: Props) {
             </select>
             {packages.length === 0 && (
               <p className="text-xs text-slate-400 mt-1">
-                Chưa có gói Subscription nào.{" "}
+                Chưa có gói Subscription nào.
                 <a
                   href="/admin/sub-packages"
                   className="text-blue-500 underline"
                 >
                   Tạo gói
-                </a>{" "}
+                </a>
                 trước.
               </p>
             )}

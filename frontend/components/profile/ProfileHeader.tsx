@@ -48,7 +48,7 @@ export default function ProfileHeader() {
           <div className="relative w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-white overflow-hidden shadow-md bg-slate-100">
             <Image
               src={user.avatarUrl || "https://i.sstatic.net/l60Hf.png"}
-              alt={user.fullName || user.username}
+              alt={user.fullName || user.username || "Profile avatar"}
               fill
               className="object-cover"
             />

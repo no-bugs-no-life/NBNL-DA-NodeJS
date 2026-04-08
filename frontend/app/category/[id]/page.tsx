@@ -4,9 +4,12 @@ import Sidebar from "../../../components/category/Sidebar";
 import FeaturedArea from "../../../components/category/FeaturedArea";
 import ProductGrid from "../../../components/category/ProductGrid";
 
-export default async function CategoryDetailPage() {
-  // We can await params if we need the ID, but for the UI layout, it mirrors `/apps`
-  // const { id } = await params;
+export default async function CategoryDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
 
   return (
     <>
@@ -15,7 +18,7 @@ export default async function CategoryDetailPage() {
         <Sidebar />
         <div className="flex-1 min-w-0">
           <FeaturedArea />
-          <ProductGrid />
+          <ProductGrid categoryId={id} />
         </div>
       </main>
       <Footer />

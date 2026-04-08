@@ -34,18 +34,21 @@ export function useAdminSubscriptions() {
     setTimeout(() => setToast(null), 3000);
   };
 
-  const { data: subsData, isLoading } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ["admin-subscriptions", page, limit, statusFilter],
     queryFn: () =>
       fetchSubscriptions({ page, limit, status: statusFilter || undefined }),
   });
 
-  const subscriptions = subsData?.docs || [];
-  const totalPages = subsData?.totalPages || 1;
+  const subscriptions = data?.docs || [];
+  const totalPages = data?.totalPages || 1;
 
   const mCreate = useMutation({
-    mutationFn: (data: { userId: string; packageId: string }) =>
-      createSubscription(data),
+    mutationFn: (data: {
+      userId: string;
+      appId: string;
+      subPackageId: string;
+    }) => createSubscription(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-subscriptions"] });
       setShowCreate(false);
@@ -53,8 +56,8 @@ export function useAdminSubscriptions() {
     },
     onError: (err: unknown) => {
       const msg =
-        (err as { response?: { data?: { message?: string } } })?.response?.data
-          ?.message || "Lỗi khi tạo subscription!";
+        (err as { response?: { data?: { msg?: string } } })?.response?.data
+          ?.msg || "Lỗi khi tạo subscription!";
       notify(msg, "error");
     },
   });
@@ -69,8 +72,8 @@ export function useAdminSubscriptions() {
     },
     onError: (err: unknown) => {
       const msg =
-        (err as { response?: { data?: { message?: string } } })?.response?.data
-          ?.message || "Lỗi khi gia hạn!";
+        (err as { response?: { data?: { msg?: string } } })?.response?.data
+          ?.msg || "Lỗi khi gia hạn!";
       notify(msg, "error");
     },
   });
@@ -83,8 +86,8 @@ export function useAdminSubscriptions() {
     },
     onError: (err: unknown) => {
       const msg =
-        (err as { response?: { data?: { message?: string } } })?.response?.data
-          ?.message || "Lỗi khi hủy subscription!";
+        (err as { response?: { data?: { msg?: string } } })?.response?.data
+          ?.msg || "Lỗi khi hủy subscription!";
       notify(msg, "error");
     },
   });
@@ -98,8 +101,8 @@ export function useAdminSubscriptions() {
     },
     onError: (err: unknown) => {
       const msg =
-        (err as { response?: { data?: { message?: string } } })?.response?.data
-          ?.message || "Lỗi khi xóa subscription!";
+        (err as { response?: { data?: { msg?: string } } })?.response?.data
+          ?.msg || "Lỗi khi xóa subscription!";
       notify(msg, "error");
     },
   });

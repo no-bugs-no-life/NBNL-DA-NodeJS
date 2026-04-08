@@ -2,17 +2,17 @@
 
 import { useState } from "react";
 import DealCard from "./DealCard";
-import { dealsData } from "./data";
+import { DealItem } from "./data";
 
-export default function DealGrid() {
+export default function DealGrid({ deals }: { deals: DealItem[] }) {
   const [visibleCount, setVisibleCount] = useState(8);
 
   const handleLoadMore = () => {
     setVisibleCount((prev) => prev + 4);
   };
 
-  const visibleDeals = dealsData.slice(0, visibleCount);
-  const hasMore = visibleCount < dealsData.length;
+  const visibleDeals = deals.slice(0, visibleCount);
+  const hasMore = visibleCount < deals.length;
 
   return (
     <div className="w-full">
@@ -26,7 +26,7 @@ export default function DealGrid() {
         <div className="mt-8 flex justify-center">
           <button
             onClick={handleLoadMore}
-            className="px-6 py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-medium rounded-full transition-colors"
+            className="px-6 py-2.5 bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-medium rounded-full transition-colors"
           >
             Xem thêm khuyến mãi
           </button>

@@ -82,12 +82,12 @@ export function useAdminSubPackages() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-sub-packages"] });
       setDeleteTarget(null);
-      notify("Xóa gói thành công!", "success");
+      notify("Đã thu hồi gói thành công!", "success");
     },
     onError: (err: unknown) => {
       const msg =
         (err as { response?: { data?: { message?: string } } })?.response?.data
-          ?.message || "Lỗi khi xóa gói!";
+          ?.message || "Lỗi khi thu hồi gói!";
       notify(msg, "error");
     },
   });

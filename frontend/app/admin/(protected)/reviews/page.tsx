@@ -50,7 +50,7 @@ function TopBar({
         </div>{" "}
         <button
           onClick={onAddClick}
-          className="flex items-center gap-2 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-sm font-semibold transition-colors "
+          className="flex items-center gap-2 px-4 py-2 bg-blue-100 hover:bg-blue-200 text-blue-800 rounded-lg text-sm font-semibold transition-colors "
         >
           {" "}
           <span className="material-symbols-outlined text-sm">add</span> Thêm

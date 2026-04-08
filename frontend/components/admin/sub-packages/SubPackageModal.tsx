@@ -60,7 +60,7 @@ export function SubPackageModal({
   const [durationDays, setDurationDays] = useState("");
   const [description, setDescription] = useState("");
   const [isActive, setIsActive] = useState(true);
-  const [appId, setAppId] = useState("");
+  const [app, setApp] = useState("");
 
   const { data: appsData, isLoading: isLoadingApps } = useAdminApps();
   const apps = appsData || [];
@@ -73,10 +73,15 @@ export function SubPackageModal({
       setDurationDays(String(initialData.durationDays));
       setDescription(initialData.description || "");
       setIsActive(initialData.isActive);
-      setAppId(typeof initialData.appId === "object" ? initialData.appId?._id || "" : initialData.appId || "");
+      setApp(
+        typeof initialData.appId === "object" && initialData.appId !== null
+          ? (initialData.appId as { _id: string })._id
+          : (initialData.appId as string) || "",
+      );
     }
   }, [initialData]);
-  const isValid = name.trim() && price !== "" && Number(price) >= 0 && appId !== "";
+  const isValid =
+    name.trim() && price !== "" && Number(price) >= 0 && app !== "";
   const handleTypeChange = (newType: string) => {
     setType(newType);
     const opt = TYPE_OPTIONS.find((t) => t.value === newType);
@@ -84,10 +89,11 @@ export function SubPackageModal({
   };
   const handleSubmit = () => {
     if (!isValid) return;
+    const selectedType = type as "monthly" | "yearly" | "lifetime";
     const data = {
       name: name.trim(),
-      appId,
-      type,
+      app,
+      type: selectedType,
       price: Number(price),
       durationDays: type === "lifetime" ? 0 : Number(durationDays) || 30,
       description: description.trim(),
@@ -97,27 +103,23 @@ export function SubPackageModal({
   };
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200">
-      {" "}
-      <div className="bg-white rounded-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
-        {" "}
+      <div className="bg-white rounded-2xl w-full max-w-3xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
         <div className="p-6 border-b border-slate-100 flex items-center justify-between">
-          {" "}
           <h2 className="text-xl font-bold text-slate-800">
             {isEdit ? "Sửa gói" : "Tạo gói Subscription"}
-          </h2>{" "}
+          </h2>
           <button
             onClick={onClose}
             className="p-2 hover:bg-slate-100 rounded-lg text-slate-500 transition-colors"
           >
-            {" "}
             <span className="material-symbols-outlined text-xl">
               close
-            </span>{" "}
-          </button>{" "}
-        </div>{" "}
-        <div className="p-6 overflow-y-auto flex-1 space-y-5">
+            </span>
+          </button>
+        </div>
+        <div className="p-6 overflow-y-auto flex-1 grid grid-cols-1 md:grid-cols-2 gap-5">
           {/* App selector */}
-          <div>
+          <div className="md:col-span-2">
             <label className="block text-sm font-semibold text-slate-700 mb-1.5">
               Ứng dụng <span className="text-red-500">*</span>
             </label>
@@ -131,21 +133,21 @@ export function SubPackageModal({
               </div>
             ) : (
               <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-1">
-                {apps.map((app) => {
-                  const isSelected = appId === app._id;
+                {apps.map((appItem) => {
+                  const isSelected = app === appItem._id;
                   return (
                     <button
-                      key={app._id}
+                      key={appItem._id}
                       type="button"
-                      onClick={() => setAppId(app._id)}
+                      onClick={() => setApp(appItem._id)}
                       className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl border text-left transition-all text-sm ${isSelected
-                        ? "border-blue-400 bg-blue-50"
-                        : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50"
+                          ? "border-blue-400 bg-blue-50"
+                          : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50"
                         }`}
                     >
-                      <AppIcon iconUrl={app.iconUrl} name={app.name} />
+                      <AppIcon iconUrl={appItem.iconUrl} name={appItem.name} />
                       <span className="font-medium text-slate-700 truncate flex-1">
-                        {app.name}
+                        {appItem.name}
                       </span>
                       {isSelected && (
                         <svg
@@ -169,47 +171,41 @@ export function SubPackageModal({
               </div>
             )}
           </div>
-
           {/* Name */}
           <div>
-            {" "}
             <label className="block text-sm font-semibold text-slate-700 mb-1.5">
               Tên gói <span className="text-red-500">*</span>
-            </label>{" "}
+            </label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="VD: Premium Monthly"
               className="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-sm"
-            />{" "}
-          </div>{" "}
-          {/* Type */}{" "}
+            />
+          </div>
+          {/* Type */}
           <div>
-            {" "}
             <label className="block text-sm font-semibold text-slate-700 mb-1.5">
               Loại gói <span className="text-red-500">*</span>
-            </label>{" "}
+            </label>
             <div className="flex gap-3">
-              {" "}
               {TYPE_OPTIONS.map((opt) => (
                 <button
                   key={opt.value}
                   onClick={() => handleTypeChange(opt.value)}
                   className={`flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold border transition-all ${type === opt.value ? "bg-blue-600 text-white border-blue-600" : "bg-white text-slate-600 border-slate-200 hover:border-blue-400"}`}
                 >
-                  {" "}
-                  {opt.label}{" "}
+                  {opt.label}
                 </button>
-              ))}{" "}
-            </div>{" "}
-          </div>{" "}
-          {/* Price */}{" "}
+              ))}
+            </div>
+          </div>
+          {/* Price */}
           <div>
-            {" "}
             <label className="block text-sm font-semibold text-slate-700 mb-1.5">
               Giá (VND) <span className="text-red-500">*</span>
-            </label>{" "}
+            </label>
             <input
               type="number"
               value={price}
@@ -217,85 +213,79 @@ export function SubPackageModal({
               placeholder="VD: 99000"
               min="0"
               className="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-sm"
-            />{" "}
-          </div>{" "}
-          {/* Duration */}{" "}
+            />
+          </div>
+          {/* Duration */}
           {type !== "lifetime" && (
             <div>
-              {" "}
               <label className="block text-sm font-semibold text-slate-700 mb-1.5">
                 Số ngày
-              </label>{" "}
+              </label>
               <input
                 type="number"
                 value={durationDays}
                 onChange={(e) => setDurationDays(e.target.value)}
                 min="1"
                 className="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-sm"
-              />{" "}
+              />
             </div>
-          )}{" "}
-          {/* Description */}{" "}
-          <div>
-            {" "}
+          )}
+          {/* Description */}
+          <div className="md:col-span-2">
             <label className="block text-sm font-semibold text-slate-700 mb-1.5">
               Mô tả
-            </label>{" "}
+            </label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Mô tả chi tiết về gói..."
               rows={3}
               className="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-sm resize-none"
-            />{" "}
-          </div>{" "}
-          {/* Active toggle (edit only) */}{" "}
+            />
+          </div>
+          {/* Active toggle (edit only) */}
           {isEdit && (
-            <div className="flex items-center gap-3">
-              {" "}
+            <div className="flex items-center gap-3 md:col-span-2">
               <button
                 type="button"
                 onClick={() => setIsActive(!isActive)}
                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${isActive ? "bg-green-500" : "bg-slate-300"}`}
               >
-                {" "}
                 <span
                   className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${isActive ? "translate-x-6" : "translate-x-1"}`}
-                />{" "}
-              </button>{" "}
+                />
+              </button>
               <span className="text-sm font-medium text-slate-600">
                 {isActive ? "Đang hoạt động" : "Tắt"}
-              </span>{" "}
+              </span>
             </div>
-          )}{" "}
-        </div>{" "}
+          )}
+        </div>
         <div className="p-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
-          {" "}
           <button
             onClick={onClose}
             className="px-5 py-2.5 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-200 transition-colors"
           >
             Hủy
-          </button>{" "}
+          </button>
           <button
             disabled={!isValid || loading}
             onClick={handleSubmit}
             className="px-6 py-2.5 rounded-xl text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 transition-colors flex items-center gap-2"
           >
-            {" "}
             {loading && (
               <span className="material-symbols-outlined text-sm animate-spin">
                 progress_activity
               </span>
-            )}{" "}
+            )}
             {loading
               ? "Đang xử lý..."
               : isEdit
                 ? "Lưu thay đổi"
-                : "Tạo gói"}{" "}
-          </button>{" "}
-        </div>{" "}
-      </div>{" "}
+                : "Tạo gói"}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

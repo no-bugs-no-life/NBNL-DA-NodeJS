@@ -1,6 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import axios from "axios";
-import { API_URL } from "@/configs/api";
+import api from "@/lib/axios";
 
 export interface DeveloperPermissions {
   canPublishApp: boolean;
@@ -56,10 +55,8 @@ export function useDevelopers(
     queryFn: async () => {
       const params: any = { page, limit, sortBy, order };
       if (status) params.status = status;
-      const response = await axios.get(`${API_URL}/api/v1/developers`, {
-        params,
-      });
-      return response.data;
+      const response = await api.get(`/api/v1/developers`, { params });
+      return response.data?.data || response.data;
     },
   });
 }
@@ -68,11 +65,8 @@ export function useMyDeveloper() {
   return useQuery({
     queryKey: ["developers", "me"],
     queryFn: async () => {
-      const token = localStorage.getItem("token");
-      const response = await axios.get(`${API_URL}/api/v1/developers/my`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      return response.data as DeveloperItem | null;
+      const response = await api.get(`/api/v1/developers/my`);
+      return (response.data?.data || response.data) as DeveloperItem | null;
     },
   });
 }
@@ -81,11 +75,8 @@ export function useMyApps() {
   return useQuery({
     queryKey: ["developers", "my-apps"],
     queryFn: async () => {
-      const token = localStorage.getItem("token");
-      const response = await axios.get(`${API_URL}/api/v1/developers/my/apps`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      return response.data;
+      const response = await api.get(`/api/v1/developers/my/apps`);
+      return response.data?.data || response.data;
     },
   });
 }
@@ -94,10 +85,7 @@ export function useCreateDeveloper() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (data: Partial<DeveloperItem>) => {
-      const token = localStorage.getItem("token");
-      const response = await axios.post(`${API_URL}/api/v1/developers`, data, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await api.post(`/api/v1/developers`, data);
       return response.data;
     },
     onSuccess: () =>
@@ -115,14 +103,7 @@ export function useUpdateDeveloper() {
       id: string;
       data: Partial<DeveloperItem>;
     }) => {
-      const token = localStorage.getItem("token");
-      const response = await axios.put(
-        `${API_URL}/api/v1/developers/${id}`,
-        data,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        },
-      );
+      const response = await api.put(`/api/v1/developers/${id}`, data);
       return response.data;
     },
     onSuccess: () =>
@@ -134,14 +115,9 @@ export function useRevokeDeveloper() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, reason }: { id: string; reason?: string }) => {
-      const token = localStorage.getItem("token");
-      const response = await axios.put(
-        `${API_URL}/api/v1/developers/${id}/revoke`,
-        { reason },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        },
-      );
+      const response = await api.put(`/api/v1/developers/${id}/revoke`, {
+        reason,
+      });
       return response.data;
     },
     onSuccess: () =>
@@ -161,12 +137,9 @@ export function useApproveDeveloper() {
       id: string;
       permissions?: Partial<DeveloperPermissions>;
     }) => {
-      const token = localStorage.getItem("token");
-      const response = await axios.put(
-        `${API_URL}/api/v1/developers/${id}/approve`,
-        { permissions },
-        { headers: { Authorization: `Bearer ${token}` } },
-      );
+      const response = await api.put(`/api/v1/developers/${id}/approve`, {
+        permissions,
+      });
       return response.data;
     },
     onSuccess: () =>
@@ -178,12 +151,9 @@ export function useRejectDeveloper() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, reason }: { id: string; reason: string }) => {
-      const token = localStorage.getItem("token");
-      const response = await axios.put(
-        `${API_URL}/api/v1/developers/${id}/reject`,
-        { reason },
-        { headers: { Authorization: `Bearer ${token}` } },
-      );
+      const response = await api.put(`/api/v1/developers/${id}/reject`, {
+        reason,
+      });
       return response.data;
     },
     onSuccess: () =>
@@ -201,12 +171,9 @@ export function useUpdateDeveloperPermissions() {
       id: string;
       permissions: Partial<DeveloperPermissions>;
     }) => {
-      const token = localStorage.getItem("token");
-      const response = await axios.put(
-        `${API_URL}/api/v1/developers/${id}/permissions`,
-        { permissions },
-        { headers: { Authorization: `Bearer ${token}` } },
-      );
+      const response = await api.put(`/api/v1/developers/${id}/permissions`, {
+        permissions,
+      });
       return response.data;
     },
     onSuccess: () =>
