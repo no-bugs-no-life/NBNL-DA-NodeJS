@@ -26,9 +26,10 @@ export function useAdminReviews() {
     review: ReviewItem;
     action: "approve" | "reject" | "delete" | "reset";
   } | null>(null);
-  const [formTarget, setFormTarget] = useState<{ action: "create" | "edit", review?: ReviewItem } | null>(
-    null,
-  );
+  const [formTarget, setFormTarget] = useState<{
+    action: "create" | "edit";
+    review?: ReviewItem;
+  } | null>(null);
   const [toast, setToast] = useState<{
     message: string;
     type: "success" | "error";
@@ -99,7 +100,8 @@ export function useAdminReviews() {
   });
 
   const mUpdate = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<ReviewInput> }) => updateReviewAdmin(id, data),
+    mutationFn: ({ id, data }: { id: string; data: Partial<ReviewInput> }) =>
+      updateReviewAdmin(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["reviews"] });
       setFormTarget(null);

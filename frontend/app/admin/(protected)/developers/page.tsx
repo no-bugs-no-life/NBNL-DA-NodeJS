@@ -18,11 +18,15 @@ function TopBar({
   currentStatus,
   setStatus,
   onAddClick,
+  onRefresh,
+  isFetching,
 }: {
   count: number;
   currentStatus: string;
   setStatus: (s: string) => void;
   onAddClick: () => void;
+  onRefresh: () => void;
+  isFetching?: boolean;
 }) {
   return (
     <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
@@ -30,40 +34,54 @@ function TopBar({
         <h1 className="text-3xl font-bold text-slate-800">Quản lý Developer</h1>
         <p className="text-slate-500 text-sm">Hiển thị {count} hồ sơ</p>
       </div>
-      <div className="flex items-center gap-2">
-        <div className="flex bg-white rounded-xl p-1 shadow-sm border border-slate-200 overflow-x-auto">
+      <div className="flex flex-col xl:flex-row xl:items-center gap-3">
+        <div className="flex bg-slate-100 rounded-xl p-1 border border-slate-200 overflow-x-auto whitespace-nowrap hide-scrollbar max-w-full">
           <button
             onClick={() => setStatus("")}
-            className={`px-4 py-2 whitespace-nowrap rounded-lg text-sm font-semibold transition-colors ${currentStatus === "" ? "bg-blue-50 text-blue-600" : "text-slate-500 hover:text-slate-700"}`}
+            className={`px-3 py-1.5 whitespace-nowrap rounded-lg text-sm font-semibold transition-all ${currentStatus === "" ? "bg-white text-blue-600 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
           >
             Tất cả
           </button>
           <button
             onClick={() => setStatus("pending")}
-            className={`px-4 py-2 whitespace-nowrap rounded-lg text-sm font-semibold transition-colors ${currentStatus === "pending" ? "bg-amber-50 text-amber-600" : "text-slate-500 hover:text-slate-700"}`}
+            className={`px-3 py-1.5 whitespace-nowrap rounded-lg text-sm font-semibold transition-all ${currentStatus === "pending" ? "bg-white text-amber-600 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
           >
             Chờ duyệt
           </button>
           <button
             onClick={() => setStatus("approved")}
-            className={`px-4 py-2 whitespace-nowrap rounded-lg text-sm font-semibold transition-colors ${currentStatus === "approved" ? "bg-green-50 text-green-600" : "text-slate-500 hover:text-slate-700"}`}
+            className={`px-3 py-1.5 whitespace-nowrap rounded-lg text-sm font-semibold transition-all ${currentStatus === "approved" ? "bg-white text-green-600 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
           >
             Đã duyệt
           </button>
           <button
             onClick={() => setStatus("rejected")}
-            className={`px-4 py-2 whitespace-nowrap rounded-lg text-sm font-semibold transition-colors ${currentStatus === "rejected" ? "bg-red-50 text-red-600" : "text-slate-500 hover:text-slate-700"}`}
+            className={`px-3 py-1.5 whitespace-nowrap rounded-lg text-sm font-semibold transition-all ${currentStatus === "rejected" ? "bg-white text-red-600 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
           >
             Bị từ chối
           </button>
         </div>
-        <button
-          onClick={onAddClick}
-          className="flex items-center gap-2 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-sm font-semibold transition-colors shadow-sm whitespace-nowrap"
-        >
-          <span className="material-symbols-outlined text-sm">add</span> Thêm
-          mới
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={onRefresh}
+            disabled={isFetching}
+            className="flex items-center justify-center w-10 h-10 bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-lg text-sm transition-colors shadow-sm disabled:opacity-50"
+            title="Làm mới"
+          >
+            <span
+              className={`material-symbols-outlined text-[20px] ${isFetching ? "animate-spin text-blue-600" : ""}`}
+            >
+              refresh
+            </span>
+          </button>
+          <button
+            onClick={onAddClick}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-100 hover:bg-blue-200 text-blue-800 rounded-lg text-sm font-semibold transition-colors shadow-sm whitespace-nowrap"
+          >
+            <span className="material-symbols-outlined text-sm">add</span> Thêm
+            mới
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -90,7 +108,7 @@ function ToastAlert({
 export default function DevelopersPage() {
   const [page, setPage] = useState(1);
   const [filterStatus, setFilterStatus] = useState("");
-  const { data: devsData, isLoading } = useDevelopers(
+  const { data: devsData, isLoading, refetch, isFetching } = useDevelopers(
     page,
     20,
     "createdAt",
@@ -131,7 +149,9 @@ export default function DevelopersPage() {
     if (action === "edit") {
       setFormTarget({ dev, action: "edit" });
     } else if (action === "revoke") {
-      if (confirm(`Bạn có chắc muốn thu hồi tài khoản developer "${dev.name}"?`)) {
+      if (
+        confirm(`Bạn có chắc muốn thu hồi tài khoản developer "${dev.name}"?`)
+      ) {
         revokeMutation
           .mutateAsync({ id: dev._id })
           .then(() => {
@@ -139,7 +159,7 @@ export default function DevelopersPage() {
             if (devsData?.docs.length === 1 && page > 1) setPage(page - 1);
           })
           .catch((err: any) =>
-            showToast(err.response?.data?.error || "Lỗi khi thu hồi", "error"),
+            showToast(err.response?.data?.msg || err.response?.data?.error || "Lỗi khi thu hồi", "error"),
           );
       }
     } else {
@@ -159,6 +179,7 @@ export default function DevelopersPage() {
       setFormTarget(null);
     } catch (error: any) {
       showToast(
+        error.response?.data?.msg ||
         error.response?.data?.message ||
         error.response?.data?.error ||
         "Đã xảy ra lỗi",
@@ -185,6 +206,8 @@ export default function DevelopersPage() {
           setPage(1);
         }}
         onAddClick={() => setFormTarget({ action: "create" })}
+        onRefresh={refetch}
+        isFetching={isFetching}
       />
 
       <DeveloperTable
@@ -226,7 +249,7 @@ export default function DevelopersPage() {
                 setActionTarget(null);
               } catch (err: any) {
                 showToast(
-                  err.response?.data?.error || "Lỗi khi duyệt",
+                  err.response?.data?.msg || err.response?.data?.error || "Lỗi khi duyệt",
                   "error",
                 );
               }
@@ -241,7 +264,7 @@ export default function DevelopersPage() {
                 setActionTarget(null);
               } catch (err: any) {
                 showToast(
-                  err.response?.data?.error || "Lỗi khi từ chối",
+                  err.response?.data?.msg || err.response?.data?.error || "Lỗi khi từ chối",
                   "error",
                 );
               }

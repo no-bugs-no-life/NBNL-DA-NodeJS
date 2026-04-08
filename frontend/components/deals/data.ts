@@ -1,150 +1,100 @@
 export interface DealItem {
   id: string;
+  slug: string;
   title: string;
   developer: string;
   rating: number;
-  originalPrice: number; // in VND
-  discountPrice: number; // in VND
+  originalPrice: number;
+  discountPrice: number;
   discountPercentage: number;
   image: string;
   type: "game" | "app";
   category: string;
-  endDate?: string;
   isFeatured?: boolean;
 }
 
-export const featuredDeal: DealItem = {
-  id: "deal-feat-1",
-  title: "Cyberpunk 2077: Phantom Liberty Bundle",
-  developer: "CD PROJEKT RED",
-  rating: 4.8,
-  originalPrice: 1250000,
-  discountPrice: 625000,
-  discountPercentage: 50,
-  image:
-    "https://images.unsplash.com/photo-1605901309584-818e25960b8f?q=80&w=1200&auto=format&fit=crop",
-  type: "game",
-  category: "Action RPG",
-  endDate: "2026-05-01T00:00:00Z",
-  isFeatured: true,
-};
-
-export const dealsData: DealItem[] = [
+export const fallbackDeals: DealItem[] = [
   {
-    id: "d1",
-    title: "The Witcher 3: Wild Hunt - Complete Edition",
-    developer: "CD PROJEKT RED",
-    rating: 4.9,
-    originalPrice: 800000,
-    discountPrice: 200000,
-    discountPercentage: 75,
-    image:
-      "https://images.unsplash.com/photo-1579705745494-b223c6f2aebc?q=80&w=500&auto=format&fit=crop",
-    type: "game",
-    category: "RPG",
-  },
-  {
-    id: "d3",
-    title: "Red Dead Redemption 2",
-    developer: "Rockstar Games",
-    rating: 4.8,
-    originalPrice: 1000000,
-    discountPrice: 330000,
-    discountPercentage: 67,
-    image:
-      "https://images.unsplash.com/photo-1552820728-8b83bb6b773f?q=80&w=500&auto=format&fit=crop",
-    type: "game",
-    category: "Action/Adventure",
-  },
-  {
-    id: "d4",
-    title: "Grand Theft Auto V: Premium Edition",
-    developer: "Rockstar Games",
+    id: "fallback-1",
+    slug: "demo-game-1",
+    title: "Demo Game 1",
+    developer: "APKBugs Studio",
     rating: 4.7,
-    originalPrice: 500000,
-    discountPrice: 200000,
-    discountPercentage: 60,
-    image:
-      "https://images.unsplash.com/photo-1605901302636-fcfbd7fe3f50?q=80&w=500&auto=format&fit=crop",
-    type: "game",
-    category: "Action",
-  },
-  {
-    id: "d5",
-    title: "Adobe Creative Cloud Photography Plan",
-    developer: "Adobe Inc.",
-    rating: 4.5,
-    originalPrice: 300000,
-    discountPrice: 150000,
+    originalPrice: 19.99,
+    discountPrice: 9.99,
     discountPercentage: 50,
     image:
-      "https://images.unsplash.com/photo-1626785774573-4b799315345d?q=80&w=500&auto=format&fit=crop",
-    type: "app",
-    category: "Photography",
+      "https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=1200&auto=format&fit=crop",
+    type: "game",
+    category: "Game",
+    isFeatured: true,
   },
   {
-    id: "d6",
-    title: "Microsoft 365 Personal",
-    developer: "Microsoft Corporation",
+    id: "fallback-2",
+    slug: "demo-app-premium",
+    title: "Demo App Premium",
+    developer: "APKBugs Team",
     rating: 4.6,
-    originalPrice: 1300000,
-    discountPrice: 910000,
-    discountPercentage: 30,
-    image:
-      "https://images.unsplash.com/photo-1633419461186-7d40a38b556b?q=80&w=500&auto=format&fit=crop",
-    type: "app",
-    category: "Productivity",
-  },
-  {
-    id: "d7",
-    title: "God of War",
-    developer: "PlayStation PC LLC",
-    rating: 4.9,
-    originalPrice: 1150000,
-    discountPrice: 575000,
-    discountPercentage: 50,
-    image:
-      "https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=500&auto=format&fit=crop",
-    type: "game",
-    category: "Action",
-  },
-  {
-    id: "d8",
-    title: "Spotify Premium",
-    developer: "Spotify AB",
-    rating: 4.8,
-    originalPrice: 590000,
-    discountPrice: 295000,
-    discountPercentage: 50,
-    image:
-      "https://images.unsplash.com/photo-1614680376573-df3480f0c6ff?q=80&w=500&auto=format&fit=crop",
-    type: "app",
-    category: "Music",
-  },
-  {
-    id: "d9",
-    title: "Stardew Valley",
-    developer: "ConcernedApe",
-    rating: 4.9,
-    originalPrice: 165000,
-    discountPrice: 99000,
+    originalPrice: 29.99,
+    discountPrice: 17.99,
     discountPercentage: 40,
     image:
-      "https://images.unsplash.com/photo-1592839719941-8e2651039d01?q=80&w=500&auto=format&fit=crop",
-    type: "game",
-    category: "Farming Sim",
-  },
-  {
-    id: "d10",
-    title: "Notion Plus",
-    developer: "Notion Labs, Inc.",
-    rating: 4.8,
-    originalPrice: 1200000,
-    discountPrice: 840000,
-    discountPercentage: 30,
-    image:
-      "https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=500&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?q=80&w=1200&auto=format&fit=crop",
     type: "app",
     category: "Productivity",
   },
 ];
+
+const ensureNumber = (value: unknown, fallback = 0) => {
+  const num = typeof value === "number" ? value : Number(value);
+  return Number.isFinite(num) ? num : fallback;
+};
+
+export function mapAppsToDeals(apps: any[]): DealItem[] {
+  return apps
+    .map((app: any, index) => {
+      const basePrice = Math.max(
+        ensureNumber(app?.price, 0),
+        ensureNumber(app?.subscriptionPrice, 0),
+      );
+
+      if (basePrice <= 0) return null;
+
+      const discountPercentage =
+        ensureNumber(app?.priority, 0) > 0 ? 35 : index % 2 === 0 ? 30 : 20;
+
+      const discountPrice = Number(
+        (basePrice * ((100 - discountPercentage) / 100)).toFixed(2),
+      );
+
+      const image =
+        app?.screenshots?.[0] ||
+        app?.bannerUrl ||
+        app?.iconUrl ||
+        "https://images.unsplash.com/photo-1616588589676-62b3bd8b47e2?q=80&w=1200&auto=format&fit=crop";
+
+      const categoryName =
+        app?.categoryId?.name || app?.category?.name || app?.category || "Ứng dụng";
+
+      return {
+        id: app?._id || app?.id || `${index}`,
+        slug: app?.slug || app?._id || `${index}`,
+        title: app?.name || "Ứng dụng",
+        developer:
+          app?.developerId?.name || app?.developer?.name || app?.developer || "N/A",
+        rating: ensureNumber(app?.ratingScore, 4.5),
+        originalPrice: basePrice,
+        discountPrice,
+        discountPercentage,
+        image,
+        type:
+          String(categoryName).toLowerCase().includes("game") ||
+          String(app?.type || "").toLowerCase() === "game"
+            ? "game"
+            : "app",
+        category: categoryName,
+        isFeatured: index === 0,
+      } satisfies DealItem;
+    })
+    .filter(Boolean) as DealItem[];
+}

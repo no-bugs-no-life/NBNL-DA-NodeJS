@@ -1,6 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import axios from "axios";
-import { API_URL } from "@/configs/api";
+import api from "@/lib/axios";
 
 export interface TagItem {
   _id: string;
@@ -19,10 +18,10 @@ export function useTags(
   return useQuery({
     queryKey: ["tags", page, limit, search],
     queryFn: async () => {
-      const response = await axios.get(`${API_URL}/api/v1/tags`, {
-        params: { page, limit, search },
-      });
-      return response.data;
+      const params: Record<string, string | number> = { page, limit };
+      if (search.trim()) params.search = search.trim();
+      const response = await api.get(`/api/v1/tags`, { params });
+      return response.data?.data || response.data;
     },
   });
 }
@@ -31,12 +30,7 @@ export function useCreateTag() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (data: { name: string }) => {
-      const token = localStorage.getItem("token");
-      const response = await axios.post(`${API_URL}/api/v1/tags`, data, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await api.post(`/api/v1/tags`, data);
       return response.data;
     },
     onSuccess: () => {
@@ -55,12 +49,7 @@ export function useUpdateTag() {
       id: string;
       data: { name: string };
     }) => {
-      const token = localStorage.getItem("token");
-      const response = await axios.put(`${API_URL}/api/v1/tags/${id}`, data, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await api.put(`/api/v1/tags/${id}`, data);
       return response.data;
     },
     onSuccess: () => {
@@ -73,12 +62,7 @@ export function useDeleteTag() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      const token = localStorage.getItem("token");
-      const response = await axios.delete(`${API_URL}/api/v1/tags/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await api.delete(`/api/v1/tags/${id}`);
       return response.data;
     },
     onSuccess: () => {

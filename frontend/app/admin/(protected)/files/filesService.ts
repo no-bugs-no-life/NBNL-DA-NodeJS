@@ -1,5 +1,6 @@
-import api from "@/lib/axios";
 import { FileItem } from "@/hooks/useFiles";
+import { uploadFileByChunks } from "@/lib/chunkUpload";
+import api from "@/lib/axios";
 
 export interface PaginatedResult<T> {
   docs: T[];
@@ -43,16 +44,14 @@ export const deleteFile = async (id: string) => {
 };
 
 export const uploadFile = async (formData: FormData) => {
-  const fileType = formData.get("fileType") as string;
-  const isAppFile = ["apk", "ipa", "exe"].includes(fileType?.toLowerCase());
-  const endpoint = isAppFile
-    ? "/api/v1/files/upload-app-file"
-    : "/api/v1/files/upload-image";
-
-  const res = await api.post(endpoint, formData, {
-    headers: { "Content-Type": "multipart/form-data" },
-  });
-  return res.data;
+  const file = formData.get("file");
+  if (!(file instanceof File)) {
+    throw new Error("Thiếu file upload");
+  }
+  const fileType = String(formData.get("fileType") || "other");
+  const ownerType = String(formData.get("ownerType") || "app");
+  const ownerId = String(formData.get("ownerId") || "unknown");
+  return uploadFileByChunks({ file, fileType, ownerType, ownerId });
 };
 
 export const createFile = async (data: {

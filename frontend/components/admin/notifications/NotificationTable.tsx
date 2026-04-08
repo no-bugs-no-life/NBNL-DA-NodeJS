@@ -63,11 +63,10 @@ function TypeBadge({ type }: { type: string }) {
     <span
       className={`inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-md ${cfg.cls}`}
     >
-      {" "}
       <span className="material-symbols-outlined text-[12px]">
         {cfg.icon}
-      </span>{" "}
-      {cfg.label}{" "}
+      </span>
+      {cfg.label}
     </span>
   );
 }
@@ -76,18 +75,16 @@ function ReadBadge({ isRead }: { isRead: boolean }) {
     <span
       className={`inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-md ${isRead ? "text-slate-400 bg-slate-100" : "text-blue-600 bg-blue-50"}`}
     >
-      {" "}
       <span className="material-symbols-outlined text-[12px]">
         {isRead ? "mail" : "mark_email_unread"}
-      </span>{" "}
-      {isRead ? "Đã đọc" : "Chưa đọc"}{" "}
+      </span>
+      {isRead ? "Đã đọc" : "Chưa đọc"}
     </span>
   );
 }
 function UserCell({ user }: { user: NotificationItem["userId"] }) {
   return (
     <div className="flex items-center gap-3">
-      {" "}
       {user.avatarUrl ? (
         <img
           src={user.avatarUrl}
@@ -96,22 +93,20 @@ function UserCell({ user }: { user: NotificationItem["userId"] }) {
         />
       ) : (
         <div className="w-9 h-9 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-bold shrink-0">
-          {" "}
           {(user.fullName || "?")
             .split(" ")
             .map((n) => n[0])
             .join("")
             .slice(0, 2)
-            .toUpperCase()}{" "}
+            .toUpperCase()}
         </div>
-      )}{" "}
+      )}
       <div className="min-w-0">
-        {" "}
         <p className="font-semibold text-slate-800 text-sm truncate">
           {user.fullName}
-        </p>{" "}
-        <p className="text-xs text-slate-400 truncate">{user.email}</p>{" "}
-      </div>{" "}
+        </p>
+        <p className="text-xs text-slate-400 truncate">{user.email}</p>
+      </div>
     </div>
   );
 }
@@ -153,9 +148,8 @@ function ActionButton({
       onClick={onClick}
       className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${cfg.color}`}
     >
-      {" "}
-      <span className="material-symbols-outlined text-sm">{cfg.icon}</span>{" "}
-      {cfg.label}{" "}
+      <span className="material-symbols-outlined text-sm">{cfg.icon}</span>
+      {cfg.label}
     </button>
   );
 }
@@ -169,64 +163,56 @@ export function NotificationTable({
 }: Props) {
   return (
     <div className="space-y-4">
-      {" "}
       <div className="bg-white rounded-2xl overflow-hidden border border-slate-100">
-        {" "}
         <table className="w-full text-sm">
-          {" "}
           <thead>
-            {" "}
             <tr className="text-slate-500 bg-slate-50/50 border-b border-slate-100/50">
-              {" "}
               <th className="text-left px-6 py-4 font-semibold text-slate-600">
                 Người nhận
-              </th>{" "}
+              </th>
               <th className="text-left px-6 py-4 font-semibold text-slate-600">
                 Nội dung
-              </th>{" "}
+              </th>
               <th className="text-left px-6 py-4 font-semibold text-slate-600">
                 Loại
-              </th>{" "}
+              </th>
               <th className="text-left px-6 py-4 font-semibold text-slate-600">
                 Trạng thái
-              </th>{" "}
+              </th>
               <th className="text-right px-6 py-4 font-semibold text-slate-600">
                 Thao tác
-              </th>{" "}
-            </tr>{" "}
-          </thead>{" "}
+              </th>
+            </tr>
+          </thead>
           <tbody>
-            {" "}
             {isLoading ? (
               <LoadingRows />
             ) : (
               <DataRows notifications={notifications} onAction={onAction} />
-            )}{" "}
-          </tbody>{" "}
-        </table>{" "}
-      </div>{" "}
+            )}
+          </tbody>
+        </table>
+      </div>
       {!isLoading && (
         <Pagination
           currentPage={page}
           totalPages={totalPages}
           onPageChange={onPageChange}
         />
-      )}{" "}
+      )}
     </div>
   );
 }
 function LoadingRows() {
   return (
     <>
-      {" "}
       {Array.from({ length: 5 }).map((_, i) => (
         <tr key={i} className="animate-pulse border-b border-slate-50">
-          {" "}
           <td colSpan={5} className="px-6 py-4">
             <div className="h-4 bg-slate-100 rounded w-full" />
-          </td>{" "}
+          </td>
         </tr>
-      ))}{" "}
+      ))}
     </>
   );
 }
@@ -240,47 +226,40 @@ function DataRows({
   if (notifications.length === 0) {
     return (
       <tr>
-        {" "}
         <td colSpan={5} className="text-center py-16 text-slate-400">
           Chưa có thông báo nào.
-        </td>{" "}
+        </td>
       </tr>
     );
   }
   return (
     <>
-      {" "}
       {notifications.map((n) => (
         <tr
           key={n._id}
           className={`hover:bg-slate-50/50 transition-colors border-b border-slate-50 ${!n.isRead ? "bg-blue-50/20" : ""}`}
         >
-          {" "}
           <td className="px-6 py-4">
             <UserCell user={n.userId} />
-          </td>{" "}
+          </td>
           <td className="px-6 py-4 max-w-xs">
-            {" "}
             <p className="text-sm text-slate-700 line-clamp-2">
               {n.message}
-            </p>{" "}
+            </p>
             <p className="text-xs text-slate-400 mt-1">
-              {" "}
               {n.createdAt
                 ? new Date(n.createdAt).toLocaleString("vi-VN")
-                : ""}{" "}
-            </p>{" "}
-          </td>{" "}
+                : ""}
+            </p>
+          </td>
           <td className="px-6 py-4">
             <TypeBadge type={n.type} />
-          </td>{" "}
+          </td>
           <td className="px-6 py-4">
             <ReadBadge isRead={n.isRead} />
-          </td>{" "}
+          </td>
           <td className="px-6 py-4 text-right">
-            {" "}
             <div className="flex items-center justify-end gap-2">
-              {" "}
               {n.isRead ? (
                 <ActionButton
                   action="markUnread"
@@ -291,16 +270,16 @@ function DataRows({
                   action="markRead"
                   onClick={() => onAction(n, "markRead")}
                 />
-              )}{" "}
-              <ActionButton action="edit" onClick={() => onAction(n, "edit")} />{" "}
+              )}
+              <ActionButton action="edit" onClick={() => onAction(n, "edit")} />
               <ActionButton
                 action="delete"
                 onClick={() => onAction(n, "delete")}
-              />{" "}
-            </div>{" "}
-          </td>{" "}
+              />
+            </div>
+          </td>
         </tr>
-      ))}{" "}
+      ))}
     </>
   );
 }

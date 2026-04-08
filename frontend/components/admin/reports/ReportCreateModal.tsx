@@ -112,7 +112,7 @@ export function ReportCreateModal({ onClose, onSubmit, loading }: ModalProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-lg mx-4 animate-in fade-in slide-in-from-bottom-4 duration-200 max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-3xl mx-4 animate-in fade-in slide-in-from-bottom-4 duration-200 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-bold text-slate-800">Tạo Report mới</h2>
           <button
@@ -125,12 +125,12 @@ export function ReportCreateModal({ onClose, onSubmit, loading }: ModalProps) {
 
         {error && (
           <div className="mb-4 px-4 py-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-600 flex items-center gap-2">
-            <span className="material-symbols-outlined text-sm">error</span>{" "}
+            <span className="material-symbols-outlined text-sm">error</span>
             {error}
           </div>
         )}
 
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Target type */}
           <div>
             <label className="block text-sm font-semibold text-slate-700 mb-2">
@@ -146,13 +146,13 @@ export function ReportCreateModal({ onClose, onSubmit, loading }: ModalProps) {
                   setSearchResults([]);
                 }}
                 className={`px-4 py-2.5 rounded-xl text-sm font-semibold border-2 transition-all ${targetType === "app"
-                  ? "bg-purple-50 border-purple-300 text-purple-700"
-                  : "bg-slate-50 border-transparent text-slate-500 hover:bg-slate-100"
+                    ? "bg-purple-50 border-purple-300 text-purple-700"
+                    : "bg-slate-50 border-transparent text-slate-500 hover:bg-slate-100"
                   }`}
               >
                 <span className="material-symbols-outlined text-sm mr-1">
                   apps
-                </span>{" "}
+                </span>
                 App
               </button>
               <button
@@ -164,13 +164,13 @@ export function ReportCreateModal({ onClose, onSubmit, loading }: ModalProps) {
                   setSearchResults([]);
                 }}
                 className={`px-4 py-2.5 rounded-xl text-sm font-semibold border-2 transition-all ${targetType === "review"
-                  ? "bg-orange-50 border-orange-300 text-orange-700"
-                  : "bg-slate-50 border-transparent text-slate-500 hover:bg-slate-100"
+                    ? "bg-orange-50 border-orange-300 text-orange-700"
+                    : "bg-slate-50 border-transparent text-slate-500 hover:bg-slate-100"
                   }`}
               >
                 <span className="material-symbols-outlined text-sm mr-1">
                   star
-                </span>{" "}
+                </span>
                 Review
               </button>
             </div>
@@ -179,7 +179,7 @@ export function ReportCreateModal({ onClose, onSubmit, loading }: ModalProps) {
           {/* Target search */}
           <div>
             <label className="block text-sm font-semibold text-slate-700 mb-1.5">
-              Chọn {targetType === "app" ? "App" : "Review"}{" "}
+              Chọn {targetType === "app" ? "App" : "Review"}
               <span className="text-red-500">*</span>
             </label>
             {targetType === "app" ? (
@@ -304,7 +304,7 @@ export function ReportCreateModal({ onClose, onSubmit, loading }: ModalProps) {
           </div>
 
           {/* Reason */}
-          <div>
+          <div className="md:col-span-2">
             <label className="block text-sm font-semibold text-slate-700 mb-1.5">
               Lý do báo cáo <span className="text-red-500">*</span>
             </label>

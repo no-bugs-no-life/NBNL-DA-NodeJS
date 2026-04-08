@@ -330,7 +330,7 @@ function DataRows({
                 Apps: <b>{dev.stats?.totalApps || 0}</b>
               </span>
               <span>
-                Đánh giá:{" "}
+                Đánh giá:
                 <b>
                   {dev.stats?.avgRating ? dev.stats.avgRating.toFixed(1) : "0"}
                 </b>

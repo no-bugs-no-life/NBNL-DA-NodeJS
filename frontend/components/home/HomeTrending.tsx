@@ -10,7 +10,8 @@ export default function HomeTrending() {
     queryKey: ["apps", "trending"],
     queryFn: async () => {
       const response = await axios.get(`${API_URL}/api/v1/apps?limit=5`);
-      return response.data?.docs || response.data;
+      const payload = response.data?.data;
+      return Array.isArray(payload) ? payload : payload?.docs || [];
     },
   });
 
@@ -49,9 +50,10 @@ export default function HomeTrending() {
                 </span>
               </div>
               <h3 className="text-2xl font-bold mb-2">{firstApp.name}</h3>
-              <p className="text-on-surface-variant mb-6 max-w-xs block truncate w-full whitespace-normal line-clamp-2 overflow-hidden h-[45px]">
-                {firstApp.description}
-              </p>
+              <div
+                className="text-on-surface-variant mb-6 max-w-xs block w-full whitespace-normal line-clamp-2 overflow-hidden h-[45px] [&_p]:inline [&_p]:m-0 [&_br]:hidden"
+                dangerouslySetInnerHTML={{ __html: firstApp.description || "" }}
+              />
             </div>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
@@ -94,9 +96,10 @@ export default function HomeTrending() {
               <h4 className="font-bold text-sm mb-1 group-hover:text-primary transition-colors truncate">
                 {app.name}
               </h4>
-              <p className="text-xs text-on-surface-variant mb-3 truncate block">
-                {app.description}
-              </p>
+              <div
+                className="text-xs text-on-surface-variant mb-3 truncate block [&_p]:inline [&_p]:m-0 [&_br]:hidden"
+                dangerouslySetInnerHTML={{ __html: app.description || "" }}
+              />
               <div className="flex items-center justify-between mt-2">
                 <span
                   className={`text-xs font-bold ${app.price === 0 ? "text-tertiary" : "text-on-surface"}`}

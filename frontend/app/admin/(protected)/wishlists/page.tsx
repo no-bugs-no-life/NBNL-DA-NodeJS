@@ -40,13 +40,15 @@ function TopBar({
           className="flex items-center justify-center w-10 h-10 bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-lg text-sm transition-colors shadow-sm disabled:opacity-50"
           title="Làm mới"
         >
-          <span className={`material-symbols-outlined text-[20px] ${isFetching ? "animate-spin text-blue-600" : ""}`}>
+          <span
+            className={`material-symbols-outlined text-[20px] ${isFetching ? "animate-spin text-blue-600" : ""}`}
+          >
             refresh
           </span>
         </button>
         <button
           onClick={onAddClick}
-          className="flex items-center gap-2 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-sm font-semibold transition-colors shadow-sm"
+          className="flex items-center gap-2 px-4 py-2 bg-blue-100 hover:bg-blue-200 text-blue-800 rounded-lg text-sm font-semibold transition-colors shadow-sm"
         >
           <span className="material-symbols-outlined text-sm">add</span> Thêm
           mới
@@ -77,13 +79,24 @@ function ToastAlert({
 export default function WishlistsAdminPage() {
   const { checkAuth } = useAuthStore();
   const [page, setPage] = useState(1);
-  const [selectedWishlist, setSelectedWishlist] = useState<WishlistItem | null>(null);
-  const [updateWishlist, setUpdateWishlist] = useState<WishlistItem | null>(null);
+  const [selectedWishlist, setSelectedWishlist] = useState<WishlistItem | null>(
+    null,
+  );
+  const [updateWishlist, setUpdateWishlist] = useState<WishlistItem | null>(
+    null,
+  );
   const [removingAppId, setRemovingAppId] = useState<string | undefined>();
   const [showForm, setShowForm] = useState(false);
-  const [toast, setToast] = useState<{ message: string; type: string } | null>(null);
+  const [toast, setToast] = useState<{ message: string; type: string } | null>(
+    null,
+  );
 
-  const { data: wishlistsData, isLoading, isFetching, refetch } = useAdminWishlists(page, 20);
+  const {
+    data: wishlistsData,
+    isLoading,
+    isFetching,
+    refetch,
+  } = useAdminWishlists(page, 20);
   const deleteMutation = useDeleteWishlist();
   const createMutation = useCreateWishlistAdmin();
   const updateMutation = useUpdateWishlistAdmin();

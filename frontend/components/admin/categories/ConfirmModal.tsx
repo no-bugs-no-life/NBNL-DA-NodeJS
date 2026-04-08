@@ -24,7 +24,7 @@ export function ConfirmModal({
           </div>
           <h2 className="text-lg font-bold text-slate-800">Xác nhận xoá</h2>
           <p className="text-sm text-slate-500">
-            Bạn có chắc muốn xoá{" "}
+            Bạn có chắc muốn xoá
             <span className="font-semibold text-slate-700">
               &quot;{name}&quot;
             </span>

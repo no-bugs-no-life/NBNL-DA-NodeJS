@@ -9,7 +9,7 @@ export default function AppReviewItem({
   userId,
   createdAt,
   comment,
-  rating = 5,
+  rating = 0,
 }: AppReviewItemProps) {
   const name = userId?.fullName || "Người dùng Khách";
   const initials =
@@ -27,6 +27,11 @@ export default function AppReviewItem({
     month: "long",
     year: "numeric",
   });
+
+  const safeRating =
+    typeof rating === "number" && Number.isFinite(rating)
+      ? Math.min(5, Math.max(0, Math.round(rating)))
+      : 0;
 
   return (
     <div className="bg-surface-container-lowest p-8 rounded-2xl shadow-sm">
@@ -51,7 +56,7 @@ export default function AppReviewItem({
                   key={n}
                   className="material-symbols-outlined text-[16px]"
                   style={{
-                    fontVariationSettings: `'FILL' ${n <= rating ? 1 : 0}`,
+                    fontVariationSettings: `'FILL' ${n <= safeRating ? 1 : 0}`,
                   }}
                 >
                   star

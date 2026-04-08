@@ -43,80 +43,67 @@ export function ReportStatusModal({
   };
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      {" "}
       <div className="bg-white rounded-2xl p-8 w-full max-w-lg mx-4 animate-in fade-in slide-in-from-bottom-4 duration-200">
-        {" "}
         <div className="flex items-center justify-between mb-6">
-          {" "}
           <div>
-            {" "}
             <h2 className="text-xl font-bold text-slate-800">
               Xử lý Report
-            </h2>{" "}
+            </h2>
             <p className="text-xs text-slate-400 font-mono mt-0.5">
               #{reportCode}
-            </p>{" "}
-          </div>{" "}
+            </p>
+          </div>
           <button
             onClick={onClose}
             className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500 hover:text-slate-700 transition-colors"
           >
-            {" "}
             <span className="material-symbols-outlined text-xl">
               close
-            </span>{" "}
-          </button>{" "}
-        </div>{" "}
+            </span>
+          </button>
+        </div>
         <div className="space-y-4">
-          {" "}
-          {/* Status selector */}{" "}
+          {/* Status selector */}
           <div>
-            {" "}
             <label className="block text-sm font-semibold text-slate-700 mb-2">
               Trạng thái xử lý
-            </label>{" "}
+            </label>
             <div className="grid grid-cols-2 gap-2">
-              {" "}
               {STATUS_OPTIONS.map((opt) => (
                 <button
                   key={opt.value}
                   onClick={() => setStatus(opt.value)}
                   className={`px-4 py-2.5 rounded-xl text-sm font-semibold border-2 transition-all ${status === opt.value ? `${opt.color} border-current opacity-100` : "bg-slate-50 text-slate-500 border-transparent hover:bg-slate-100"}`}
                 >
-                  {" "}
-                  {opt.label}{" "}
+                  {opt.label}
                 </button>
-              ))}{" "}
-            </div>{" "}
-          </div>{" "}
-          {/* Admin note */}{" "}
+              ))}
+            </div>
+          </div>
+          {/* Admin note */}
           <div>
-            {" "}
             <label className="block text-sm font-semibold text-slate-700 mb-1.5">
-              {" "}
-              Ghi chú Admin{" "}
+              Ghi chú Admin
               <span className="text-slate-400 font-normal">
                 (tuỳ chọn)
-              </span>{" "}
-            </label>{" "}
+              </span>
+            </label>
             <textarea
               value={adminNote}
               onChange={(e) => setAdminNote(e.target.value)}
               placeholder="Nhận xét hoặc lý do xử lý..."
               rows={4}
               className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-            />{" "}
-          </div>{" "}
-        </div>{" "}
+            />
+          </div>
+        </div>
         <div className="flex gap-3 mt-6">
-          {" "}
           <button
             onClick={onClose}
             className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 transition-colors"
           >
-            {" "}
-            Huỷ{" "}
-          </button>{" "}
+            Huỷ
+          </button>
           <button
             onClick={handleSubmit}
             disabled={
@@ -125,11 +112,10 @@ export function ReportStatusModal({
             }
             className="flex-1 px-4 py-2.5 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700 disabled:opacity-40 transition-colors"
           >
-            {" "}
-            {loading ? "Đang lưu..." : "Lưu thay đổi"}{" "}
-          </button>{" "}
-        </div>{" "}
-      </div>{" "}
+            {loading ? "Đang lưu..." : "Lưu thay đổi"}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

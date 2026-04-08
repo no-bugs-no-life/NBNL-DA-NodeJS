@@ -55,7 +55,7 @@ export default function AppScreenshots() {
           >
             <img
               alt={`Screen ${i}`}
-              className="w-full h-full object-cover"
+              className="block w-full h-full object-cover"
               src={src}
             />
           </div>

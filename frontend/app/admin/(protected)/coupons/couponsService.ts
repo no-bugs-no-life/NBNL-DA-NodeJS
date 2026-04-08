@@ -45,20 +45,21 @@ export const fetchCoupons = async (
   limit = 10,
 ): Promise<PaginatedResult<CouponItem>> => {
   const res = await api.get(`/api/v1/coupons?page=${page}&limit=${limit}`);
-  return res.data;
+  const payload = res.data?.data ?? res.data;
+  return payload;
 };
 
 export const createCoupon = async (data: CreateCouponInput) => {
   const res = await api.post(`/api/v1/coupons`, data);
-  return res.data;
+  return res.data?.data ?? res.data;
 };
 
 export const updateCoupon = async (id: string, data: UpdateCouponInput) => {
   const res = await api.put(`/api/v1/coupons/${id}`, data);
-  return res.data;
+  return res.data?.data ?? res.data;
 };
 
 export const deleteCoupon = async (id: string) => {
   const res = await api.delete(`/api/v1/coupons/${id}`);
-  return res.data;
+  return res.data?.data ?? res.data;
 };

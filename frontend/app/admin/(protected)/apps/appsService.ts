@@ -1,8 +1,4 @@
-import axios from "axios";
-import { API_URL } from "@/configs/api";
-
-const getHeaders = (token: string | null) =>
-  token ? { Authorization: `Bearer ${token}` } : {};
+import api from "@/lib/axios";
 
 export interface AppItem {
   _id: string;
@@ -11,13 +7,13 @@ export interface AppItem {
   iconUrl?: string;
   price: number;
   status: string;
-  developerId: {
+  developer: {
     _id: string;
     name: string;
     contactEmail: string;
     avatarUrl?: string;
   };
-  categoryId: { _id: string; name: string };
+  category: { _id: string; name: string };
   tags?: { _id: string; name: string }[];
   ratingScore?: number;
   ratingCount?: number;
@@ -42,9 +38,9 @@ export const fetchApps = async (
 ): Promise<PaginatedResult<AppItem>> => {
   let endpoint = `/api/v1/apps?page=${page}&limit=${limit}`;
 
-  // If using the admin endpoint, pass queries
+  // All queries use the same apps endpoint, but with auth token and filters
   if (filterStatus !== "published" || token) {
-    endpoint = `/api/v1/apps/admin?page=${page}&limit=${limit}`;
+    endpoint = `/api/v1/apps?page=${page}&limit=${limit}`;
 
     if (filterStatus === "deleted") {
       endpoint += `&isDeleted=true`;
@@ -55,62 +51,48 @@ export const fetchApps = async (
     }
   }
 
-  const res = await axios.get(`${API_URL}${endpoint}`, {
-    headers: getHeaders(token),
-  });
-  return res.data;
+  // token param kept for backwards compatibility (auth handled by axiosInstance)
+  void token;
+  const res = await api.get(endpoint);
+  return res.data?.data || res.data;
 };
 
 export const fetchAppById = async (
   id: string,
   token: string | null,
 ): Promise<AppItem> => {
-  const res = await axios.get(`${API_URL}/api/v1/apps/${id}`, {
-    headers: getHeaders(token),
-  });
-  return res.data;
+  void token;
+  const res = await api.get(`/api/v1/apps/${id}`);
+  return res.data?.data || res.data;
 };
 
 export const toggleDisableApp = async (id: string, token: string | null) => {
-  const res = await axios.patch(
-    `${API_URL}/api/v1/apps/${id}/disable`,
-    {},
-    { headers: getHeaders(token) },
-  );
+  void token;
+  const res = await api.patch(`/api/v1/apps/${id}/disable`, {});
   return res.data;
 };
 
 export const approveApp = async (id: string, token: string | null) => {
-  const res = await axios.post(
-    `${API_URL}/api/v1/apps/approve/${id}`,
-    {},
-    { headers: getHeaders(token) },
-  );
+  void token;
+  const res = await api.post(`/api/v1/apps/approve/${id}`, {});
   return res.data;
 };
 
 export const publishApp = async (id: string, token: string | null) => {
-  const res = await axios.post(
-    `${API_URL}/api/v1/apps/publish/${id}`,
-    {},
-    { headers: getHeaders(token) },
-  );
+  void token;
+  const res = await api.post(`/api/v1/apps/publish/${id}`, {});
   return res.data;
 };
 
 export const rejectApp = async (id: string, token: string | null) => {
-  const res = await axios.post(
-    `${API_URL}/api/v1/apps/reject/${id}`,
-    {},
-    { headers: getHeaders(token) },
-  );
+  void token;
+  const res = await api.post(`/api/v1/apps/reject/${id}`, {});
   return res.data;
 };
 
 export const deleteApp = async (id: string, token: string | null) => {
-  const res = await axios.delete(`${API_URL}/api/v1/apps/${id}`, {
-    headers: getHeaders(token),
-  });
+  void token;
+  const res = await api.delete(`/api/v1/apps/${id}`);
   return res.data;
 };
 
@@ -119,16 +101,15 @@ export interface AppInput {
   description?: string;
   slug: string;
   price: number;
-  categoryId: string;
+  category: string;
   tags?: string[];
   iconUrl?: string;
-  developerId?: string;
+  developer: string;
 }
 
 export const createApp = async (data: AppInput, token: string | null) => {
-  const res = await axios.post(`${API_URL}/api/v1/apps`, data, {
-    headers: getHeaders(token),
-  });
+  void token;
+  const res = await api.post(`/api/v1/apps`, data);
   return res.data;
 };
 
@@ -137,8 +118,7 @@ export const updateApp = async (
   data: AppInput,
   token: string | null,
 ) => {
-  const res = await axios.put(`${API_URL}/api/v1/apps/${id}`, data, {
-    headers: getHeaders(token),
-  });
+  void token;
+  const res = await api.put(`/api/v1/apps/${id}`, data);
   return res.data;
 };

@@ -84,7 +84,7 @@ function PageHeader({ onCreate }: { onCreate: () => void }) {
       </div>{" "}
       <button
         onClick={onCreate}
-        className="flex items-center gap-2 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-sm font-semibold transition-colors "
+        className="flex items-center gap-2 px-4 py-2 bg-blue-100 hover:bg-blue-200 text-blue-800 rounded-lg text-sm font-semibold transition-colors "
       >
         {" "}
         <span className="material-symbols-outlined text-sm">add</span> Tạo mới
@@ -181,10 +181,11 @@ function CreateCartModal({ onClose }: { onClose: () => void }) {
                         key={app._id}
                         type="button"
                         onClick={() => setSelectedAppId(app._id)}
-                        className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl border text-left transition-all text-sm ${isSelected
-                          ? "border-blue-400 bg-blue-50"
-                          : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50"
-                          }`}
+                        className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl border text-left transition-all text-sm ${
+                          isSelected
+                            ? "border-blue-400 bg-blue-50"
+                            : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50"
+                        }`}
                       >
                         <AppIcon iconUrl={app.iconUrl} name={app.name} />
                         <span className="font-medium text-slate-700 truncate flex-1">
@@ -215,10 +216,7 @@ function CreateCartModal({ onClose }: { onClose: () => void }) {
           )}{" "}
           {/* Step 3: Select Type */}{" "}
           {selectedAppId && (
-            <SelectTypeStep
-              itemType={itemType}
-              onTypeChange={setItemType}
-            />
+            <SelectTypeStep itemType={itemType} onTypeChange={setItemType} />
           )}{" "}
           {error && <p className="text-sm text-red-500">{error}</p>}{" "}
         </div>{" "}
@@ -362,8 +360,7 @@ function SelectTypeStep({
             </p>{" "}
             <p className="text-xs text-slate-500">Sở hữu vĩnh viễn</p>{" "}
           </div>{" "}
-        </label>
-        {" "}
+        </label>{" "}
         <label
           className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${itemType === "subscription" ? "border-blue-500 bg-blue-50" : "border-slate-200"}`}
         >
@@ -378,13 +375,10 @@ function SelectTypeStep({
           />{" "}
           <div>
             {" "}
-            <p className="font-semibold text-sm text-slate-800">
-              Đăng ký
-            </p>{" "}
+            <p className="font-semibold text-sm text-slate-800">Đăng ký</p>{" "}
             <p className="text-xs text-slate-500">Hủy bất kỳ lúc nào</p>{" "}
           </div>{" "}
-        </label>
-        {" "}
+        </label>{" "}
       </div>{" "}
     </div>
   );
@@ -413,7 +407,7 @@ function ModalFooter({
       <button
         onClick={onSubmit}
         disabled={disabled}
-        className="flex-1 px-4 py-2.5 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+        className="flex-1 px-4 py-2.5 rounded-xl bg-blue-100 text-blue-800 font-semibold hover:bg-blue-200 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
       >
         {" "}
         {isSubmitting && (

@@ -17,7 +17,7 @@ export function useProfileSettings() {
 
   const updateMutation = useMutation({
     mutationFn: async (data: Partial<User>) =>
-      (await apiClient.put("/api/v1/users/me", data)).data,
+      (await apiClient.patch("/api/v1/users/me", data)).data,
     onSuccess: async () => {
       await checkAuth();
       notify("Cập nhật thông tin thành công!", "success");

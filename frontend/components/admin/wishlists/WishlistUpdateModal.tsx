@@ -1,5 +1,7 @@
 "use client";
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { Select } from "antd";
+import "antd/dist/reset.css";
 import { WishlistItem } from "@/hooks/useWishlist";
 import { WishlistFormInput } from "./WishlistFormModal";
 import { useAdminApps } from "@/hooks/useAdminApps";
@@ -76,6 +78,29 @@ export function WishlistUpdateModal({
     userId: wishlist.userId?._id || "",
     appIds: wishlist.appIds?.map((a) => a._id) || [],
   });
+  const [userOptions, setUserOptions] = useState<
+    { value: string; label: string }[]
+  >([]);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleUserSearch = (val: string) => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    timeoutRef.current = setTimeout(() => {
+      const q = val.trim().toLowerCase();
+      const filtered = users
+        .filter((u) => {
+          const email = (u.email || "").toLowerCase();
+          const name = (u.fullName || u.username || "").toLowerCase();
+          return email.includes(q) || name.includes(q);
+        })
+        .slice(0, 50)
+        .map((u) => ({
+          value: u._id,
+          label: `${u.email}${u.fullName ? ` (${u.fullName})` : ""}`,
+        }));
+      setUserOptions(filtered);
+    }, 300);
+  };
 
   const selectedUser = users.find((u) => u._id === formData.userId);
 
@@ -95,7 +120,7 @@ export function WishlistUpdateModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-white rounded-2xl w-full max-w-2xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[85vh]">
+      <div className="bg-white rounded-2xl w-full max-w-4xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[85vh]">
         {/* Header */}
         <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between shrink-0">
           <div>
@@ -132,7 +157,7 @@ export function WishlistUpdateModal({
           <form
             id="wishlist-update-form"
             onSubmit={handleSubmit}
-            className="space-y-5"
+            className="grid grid-cols-1 md:grid-cols-2 gap-6"
           >
             {/* User selector */}
             <div>
@@ -148,26 +173,23 @@ export function WishlistUpdateModal({
                     avatarUrl={selectedUser?.avatarUrl}
                   />
                 </div>
-                <select
-                  required
-                  value={formData.userId}
-                  onChange={(e) =>
-                    setFormData({ ...formData, userId: e.target.value })
+                <Select
+                  showSearch
+                  placeholder={isLoadingUsers ? "Đang tải..." : "Chọn người dùng"}
+                  value={formData.userId || undefined}
+                  loading={isLoadingUsers}
+                  style={{ width: "100%" }}
+                  defaultActiveFirstOption={false}
+                  showArrow={false}
+                  filterOption={false}
+                  notFoundContent={null}
+                  options={userOptions}
+                  onSearch={handleUserSearch}
+                  onChange={(val) =>
+                    setFormData({ ...formData, userId: String(val || "") })
                   }
-                  disabled={isLoadingUsers}
-                  className="w-full pl-11 pr-8 py-2.5 rounded-xl border border-slate-200 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-sm bg-white appearance-none"
-                >
-                  <option value="">
-                    {isLoadingUsers ? "Đang tải..." : "-- Chọn người dùng --"}
-                  </option>
-                  {users.map((user) => (
-                    <option key={user._id} value={user._id}>
-                      {" "}
-                      {user.fullName || user.username}
-                      {user.email ? ` — ${user.email}` : ""}{" "}
-                    </option>
-                  ))}
-                </select>
+                  className="pl-8"
+                />
                 <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -191,7 +213,9 @@ export function WishlistUpdateModal({
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-1.5">
                 Ứng dụng
-                <span className="font-normal text-slate-400"> (chọn nhiều)</span>
+                <span className="font-normal text-slate-400">
+                  (chọn nhiều)
+                </span>
               </label>
               {isLoadingApps ? (
                 <div className="text-sm text-slate-400 py-2">
@@ -259,7 +283,9 @@ export function WishlistUpdateModal({
           <button
             type="submit"
             form="wishlist-update-form"
-            disabled={loading || !formData.userId || formData.appIds.length === 0}
+            disabled={
+              loading || !formData.userId || formData.appIds.length === 0
+            }
             className="px-6 py-2.5 rounded-xl text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-colors flex items-center gap-2 disabled:opacity-50"
           >
             {loading && (

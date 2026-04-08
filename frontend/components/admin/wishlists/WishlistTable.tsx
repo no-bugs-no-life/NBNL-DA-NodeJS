@@ -5,7 +5,11 @@ import { API_URL } from "@/configs/api";
 
 const getImageUrl = (url?: string) => {
   if (!url) return "";
-  if (url.startsWith("http") || url.startsWith("blob:") || url.startsWith("data:"))
+  if (
+    url.startsWith("http") ||
+    url.startsWith("blob:") ||
+    url.startsWith("data:")
+  )
     return url;
   if (/^[a-fA-F0-9]{24}$/.test(url)) return "https://i.sstatic.net/l60Hf.png";
   return `${API_URL}/${url.replace(/\\/g, "/")}`;
@@ -285,11 +289,7 @@ function UserCell({ user }: { user: WishlistItem["userId"] }) {
     <div className="flex items-center gap-3">
       <div className="w-9 h-9 rounded-full bg-slate-100 overflow-hidden shrink-0 border border-slate-200">
         {avatarUrl ? (
-          <img
-            src={avatarUrl}
-            alt=""
-            className="w-full h-full object-cover"
-          />
+          <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-slate-400">
             <span className="material-symbols-outlined text-lg">person</span>

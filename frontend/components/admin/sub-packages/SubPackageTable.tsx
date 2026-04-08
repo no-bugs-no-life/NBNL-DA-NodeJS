@@ -43,40 +43,34 @@ export function SubPackageTable({
 }: Props) {
   return (
     <>
-      {" "}
       <div className="hidden md:block bg-white rounded-2xl overflow-hidden">
-        {" "}
         <table className="w-full text-sm">
-          {" "}
           <thead>
-            {" "}
             <tr className="text-slate-500 bg-slate-50/50 border-b border-slate-100/50">
-              {" "}
               <th className="text-left px-6 py-4 font-semibold text-slate-600">
                 Tên gói
-              </th>{" "}
+              </th>
               <th className="text-left px-6 py-4 font-semibold text-slate-600">
                 Loại
-              </th>{" "}
+              </th>
               <th className="text-left px-6 py-4 font-semibold text-slate-600">
                 Giá
-              </th>{" "}
+              </th>
               <th className="text-left px-6 py-4 font-semibold text-slate-600">
                 Thời hạn
-              </th>{" "}
+              </th>
               <th className="text-left px-6 py-4 font-semibold text-slate-600">
                 Mô tả
-              </th>{" "}
+              </th>
               <th className="text-left px-6 py-4 font-semibold text-slate-600">
                 Trạng thái
-              </th>{" "}
+              </th>
               <th className="text-right px-6 py-4 font-semibold text-slate-600">
                 Thao tác
-              </th>{" "}
-            </tr>{" "}
-          </thead>{" "}
+              </th>
+            </tr>
+          </thead>
           <tbody>
-            {" "}
             {isLoading ? (
               <LoadingRows />
             ) : (
@@ -85,20 +79,19 @@ export function SubPackageTable({
                 onEdit={onEdit}
                 onDelete={onDelete}
               />
-            )}{" "}
-          </tbody>{" "}
-        </table>{" "}
+            )}
+          </tbody>
+        </table>
         {!isLoading && (
           <Pagination
             currentPage={page}
             totalPages={totalPages}
             onPageChange={onPageChange}
           />
-        )}{" "}
-      </div>{" "}
-      {/* MOBILE CARDS */}{" "}
+        )}
+      </div>
+      {/* MOBILE CARDS */}
       <div className="block md:hidden space-y-4">
-        {" "}
         {isLoading ? (
           <LoadingCards />
         ) : packages.length === 0 ? (
@@ -111,96 +104,85 @@ export function SubPackageTable({
               key={pkg._id}
               className="bg-white p-4 rounded-xl border border-slate-100 flex flex-col gap-3"
             >
-              {" "}
               <div className="flex items-center justify-between">
-                {" "}
-                <div className="font-bold text-slate-800">{pkg.name}</div>{" "}
+                <div className="font-bold text-slate-800">{pkg.name}</div>
                 <span
                   className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase ${TYPE_COLORS[pkg.type]}`}
                 >
                   {TYPE_LABELS[pkg.type]}
-                </span>{" "}
-              </div>{" "}
+                </span>
+              </div>
               <div className="flex items-center gap-4 text-xs">
-                {" "}
                 <span className="text-slate-600 font-semibold">
                   {formatPrice(pkg.price)}
-                </span>{" "}
+                </span>
                 <span className="text-slate-400">
                   {formatDuration(pkg.durationDays)}
-                </span>{" "}
+                </span>
                 <span
-                  className={`text-xs font-semibold ${pkg.isActive ? "text-green-600" : "text-slate-400"}`}
+                  className={`text-xs font-semibold ${pkg.isActive ? "text-green-600" : "text-red-600"}`}
                 >
-                  {" "}
-                  {pkg.isActive ? "Hoạt động" : "Tắt"}{" "}
-                </span>{" "}
-              </div>{" "}
+                  {pkg.isActive ? "Hoạt động" : "Đã thu hồi"}
+                </span>
+              </div>
               {pkg.description && (
                 <p className="text-xs text-slate-400 line-clamp-2">
                   {pkg.description}
                 </p>
-              )}{" "}
+              )}
               <div className="flex items-center justify-end gap-2 border-t border-slate-50 pt-3">
-                {" "}
                 <button
                   onClick={() => onEdit(pkg)}
                   className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 text-xs font-semibold"
                 >
-                  {" "}
                   <span className="material-symbols-outlined text-sm">
                     edit
-                  </span>{" "}
-                  Sửa{" "}
-                </button>{" "}
+                  </span>
+                  Sửa
+                </button>
                 <button
                   onClick={() => onDelete(pkg)}
                   className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 text-xs font-semibold"
                 >
-                  {" "}
                   <span className="material-symbols-outlined text-sm">
                     delete
-                  </span>{" "}
-                  Xóa{" "}
-                </button>{" "}
-              </div>{" "}
+                  </span>
+                  Xóa
+                </button>
+              </div>
             </div>
           ))
-        )}{" "}
-      </div>{" "}
+        )}
+      </div>
     </>
   );
 }
 function LoadingRows() {
   return (
     <>
-      {" "}
       {Array.from({ length: 5 }).map((_, i) => (
         <tr key={i} className="animate-pulse border-b border-slate-50">
-          {" "}
           <td colSpan={7} className="px-6 py-4">
             <div className="h-4 bg-slate-100 rounded w-full" />
-          </td>{" "}
+          </td>
         </tr>
-      ))}{" "}
+      ))}
     </>
   );
 }
 function LoadingCards() {
   return (
     <>
-      {" "}
       {Array.from({ length: 3 }).map((_, i) => (
         <div
           key={i}
           className="animate-pulse bg-white p-4 rounded-xl border border-slate-100"
         >
-          {" "}
-          <div className="h-5 bg-slate-100 rounded w-1/3 mb-3" />{" "}
-          <div className="h-4 bg-slate-100 rounded w-2/3 mb-3" />{" "}
-          <div className="h-8 bg-slate-100 rounded w-full" />{" "}
+          <div className="h-5 bg-slate-100 rounded w-1/3 mb-3" />
+          <div className="h-4 bg-slate-100 rounded w-2/3 mb-3" />
+          <div className="h-8 bg-slate-100 rounded w-full" />
         </div>
-      ))}{" "}
+      ))}
     </>
   );
 }
@@ -224,75 +206,63 @@ function DataRows({
   }
   return (
     <>
-      {" "}
       {packages.map((pkg) => (
         <tr
           key={pkg._id}
           className="hover:bg-slate-50/50 transition-colors border-b border-slate-50"
         >
-          {" "}
           <td className="px-6 py-4">
-            {" "}
-            <div className="font-semibold text-slate-800">{pkg.name}</div>{" "}
-          </td>{" "}
+            <div className="font-semibold text-slate-800">{pkg.name}</div>
+          </td>
           <td className="px-6 py-4">
-            {" "}
             <span
               className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold ${TYPE_COLORS[pkg.type]}`}
             >
               {TYPE_LABELS[pkg.type]}
-            </span>{" "}
-          </td>{" "}
+            </span>
+          </td>
           <td className="px-6 py-4">
-            {" "}
             <span className="font-semibold text-slate-700">
               {formatPrice(pkg.price)}
-            </span>{" "}
-          </td>{" "}
+            </span>
+          </td>
           <td className="px-6 py-4 text-slate-500 text-xs">
             {formatDuration(pkg.durationDays)}
-          </td>{" "}
+          </td>
           <td className="px-6 py-4">
-            {" "}
             <p className="text-xs text-slate-400 line-clamp-2 max-w-[200px]">
               {pkg.description || "—"}
-            </p>{" "}
-          </td>{" "}
+            </p>
+          </td>
           <td className="px-6 py-4">
-            {" "}
             <span
-              className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold ${pkg.isActive ? "bg-green-50 text-green-600" : "bg-slate-100 text-slate-400"}`}
+              className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold ${pkg.isActive ? "bg-green-50 text-green-600" : "bg-red-50 text-red-600"}`}
             >
-              {" "}
-              {pkg.isActive ? "Hoạt động" : "Tắt"}{" "}
-            </span>{" "}
-          </td>{" "}
+              {pkg.isActive ? "Hoạt động" : "Đã thu hồi"}
+            </span>
+          </td>
           <td className="px-6 py-4 text-right">
-            {" "}
             <div className="flex items-center justify-end gap-2">
-              {" "}
               <button
                 onClick={() => onEdit(pkg)}
                 className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 text-xs font-semibold"
               >
-                {" "}
                 <span className="material-symbols-outlined text-sm">
                   edit
-                </span>{" "}
-              </button>{" "}
+                </span>
+              </button>
               <button
                 onClick={() => onDelete(pkg)}
                 className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 text-xs font-semibold"
               >
-                {" "}
                 <span className="material-symbols-outlined text-sm">
                   delete
-                </span>{" "}
-              </button>{" "}
-            </div>{" "}
-          </td>{" "}
+                </span>
+              </button>
+            </div>
+          </td>
         </tr>
-      ))}{" "}
+      ))}
     </>
   );
 }
